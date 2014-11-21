@@ -35,7 +35,7 @@ There are four possible extends for dumping tables:
 * `full` - Whole table will be dumped
 
 ### Wildcards
-Of course you can define tables as wildcards.
+Of course you can use wildcards for table names (* for multiple characters, ? for a single character).
 
 Example:
 ```xml
@@ -54,7 +54,7 @@ Example:
   <table name="*_test" dump="none" />
 </slimdump>
 ```
-This is a valid configuration. Later table definitions will overwrite earlier ones.
+This is a valid configuration. If more than one instruction matches a specific table name, the most specific one will be used. E. g. if you have definitions for blog_* and blog_author, the latter will be used for your author table, independent of their sequence order in the config.
 
 ### Splitting configuration files
 You can even split your configuration in separate files. Just provide slimdump with a list of configuration files:
