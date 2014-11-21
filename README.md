@@ -77,7 +77,7 @@ Install dependencies via Composer:
     
 Start the Phar build:
 
-   ./box.phar build -v
+    ./box.phar build -v
    
 Use slimdump as Phar:
 
