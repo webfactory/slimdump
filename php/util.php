@@ -1,5 +1,9 @@
 <?php
 
+    /**
+     * @param string $dsn
+     * @return Zend_Db_Adapter_Abstract
+     */
 	function connect($dsn) {
 		try {
 			$db = Zend_Db::factory('Pdo_Mysql', parseDSN($dsn));
