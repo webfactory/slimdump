@@ -7,7 +7,7 @@
 			$db->query('SET NAMES utf8');
 			return $db;
 		} catch (Exception $e) {
-			fail("Datenbankfehler: " . $e->getMessage());
+			fail("Database error: " . $e->getMessage());
 		}
 	}
 

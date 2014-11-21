@@ -4,8 +4,6 @@
 
 	$db = connect(array_shift($_SERVER['argv']));
 
-
-
 	if (!$_SERVER['argv'])
 		fail("Usage: slimdump {DSN} {config.xml ...}");
 
