@@ -45,7 +45,7 @@ function processConfig($file, $db)
  */
 function dumpSchema($table, $db)
 {
-    print "-- BEGINN STRUKTUR $table \n";
+    print "-- BEGIN STRUCTURE $table \n";
     print "DROP TABLE IF EXISTS `$table`;\n";
     print $db->query("SHOW CREATE TABLE `$table`")->fetchColumn(1) . ";\n\n";
 }
@@ -137,11 +137,11 @@ function dumpData($table, $db, $nullBlob = false)
     }
     $s .= " FROM `$table`";
 
-    print "-- BEGINN DATEN $table \n";
+    print "-- BEGIN DATA $table \n";
 
     $firstRow = true;
     $bufferSize = 0;
-    $max = 100 * 1024 * 1024; // 100 MB willk�rliche Grenze
+    $max = 100 * 1024 * 1024; // 100 MB
     $numRows = $db->fetchOne("SELECT COUNT(*) FROM $table");
     $count = 0;
 
@@ -153,8 +153,7 @@ function dumpData($table, $db, $nullBlob = false)
 
         $b = rowLengthEstimate($row);
 
-        // Diese Zeile zu printen wuerde das Statement zu
-        // gro� machen. Neues Statement anfangen.
+        // Start a new statement to ensure that the line does not get too long.
         if ($bufferSize && $bufferSize + $b > $max) {
             print ";\n";
             $bufferSize = 0;
