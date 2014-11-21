@@ -4,14 +4,16 @@
 
 	$db = connect(array_shift($_SERVER['argv']));
 
-	if (!$_SERVER['argv'])
+	if (!$_SERVER['argv']) {
 		fail("Usage: slimdump {DSN} {config.xml ...}");
+	}
 
 	print "SET NAMES utf8;\n";
 	print "SET FOREIGN_KEY_CHECKS = 0;\n\n";
 
-	while ($config = array_shift($_SERVER['argv']))
+	while ($config = array_shift($_SERVER['argv'])) {
 		processConfig($config, $db);
+	}
 
 	function processConfig($file, $db) {
 		$modes = array('none' => 0, 'schema' => 1, 'noblob' => 2, 'full' => 3);
