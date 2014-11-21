@@ -139,7 +139,6 @@ function dumpData($table, $db, $nullBlob = false)
 
     print "-- BEGIN DATA $table \n";
 
-    $firstRow = true;
     $bufferSize = 0;
     $max = 100 * 1024 * 1024; // 100 MB
     $numRows = $db->fetchOne("SELECT COUNT(*) FROM $table");
