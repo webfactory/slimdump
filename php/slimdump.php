@@ -89,9 +89,15 @@ function cols($table, $db)
     return $c;
 }
 
+/**
+ * @param string $table
+ * @param $db
+ * @param array(string=>mixed) $cols
+ * @return string
+ */
 function insertValuesStatement($table, $db, $cols)
 {
-    print "INSERT INTO `$table` (`" . implode(array_keys($cols), '`, `') . "`) VALUES ";
+    return "INSERT INTO `$table` (`" . implode(array_keys($cols), '`, `') . "`) VALUES ";
 }
 
 function isBlob($col, $definitions)
