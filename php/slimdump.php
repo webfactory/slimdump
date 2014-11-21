@@ -16,6 +16,10 @@
 		processConfig($config, $db);
 	}
 
+    /**
+     * @param string $file
+     * @param Zend_Db_Adapter_Abstract $db
+     */
 	function processConfig($file, $db) {
 		$modes = array('none' => 0, 'schema' => 1, 'noblob' => 2, 'full' => 3);
 		$config = parseConfig($file);
@@ -31,6 +35,10 @@
 		}
 	}
 
+    /**
+     * @param string $table
+     * @param Zend_Db_Adapter_Abstract $db
+     */
 	function dumpSchema($table, $db) {
 		print "-- BEGINN STRUKTUR $table \n";
 		print "DROP TABLE IF EXISTS `$table`;\n";
