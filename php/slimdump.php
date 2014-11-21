@@ -1,5 +1,6 @@
 <?php
-	require_once(__DIR__.'/util.php');
+    require(__DIR__ . '/../vendor/autoload.php');
+
 	array_shift($_SERVER['argv']);
 
 	$db = connect(array_shift($_SERVER['argv']));
@@ -102,7 +103,7 @@
 
 		$firstRow = true;
 		$bufferSize = 0;
-		$max = 100 * 1024 * 1024; // 100 MB willkürliche Grenze
+		$max = 100 * 1024 * 1024; // 100 MB willkï¿½rliche Grenze
 		$numRows = $db->fetchOne("SELECT COUNT(*) FROM $table");
 		$count = 0;
 
@@ -115,7 +116,7 @@
 			$b = rowLengthEstimate($row);
 
 			// Diese Zeile zu printen wuerde das Statement zu
-			// groß machen. Neues Statement anfangen.
+			// groï¿½ machen. Neues Statement anfangen.
 			if ($bufferSize && $bufferSize + $b > $max) {
 				print ";\n";
 				$bufferSize = 0;

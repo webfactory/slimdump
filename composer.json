@@ -16,5 +16,8 @@
     ],
     "require": {
         "zendframework/zendframework1": "~1.11"
+    },
+    "autoload": {
+        "files": ["php/util.php"]
     }
 }

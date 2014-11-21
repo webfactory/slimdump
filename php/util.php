@@ -2,7 +2,6 @@
 
 	function connect($dsn) {
 		try {
-			require_once('Zend/Db.php');
 			$db = Zend_Db::factory('Pdo_Mysql', parseDSN($dsn));
 			$db->query('SET NAMES utf8');
 			return $db;
