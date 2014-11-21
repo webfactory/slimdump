@@ -1,0 +1,15 @@
+{
+    "chmod": "0755",
+    "main": "bin/slimdump.php",
+    "directories-bin": [
+        "php"
+    ],
+    "finder-bin": [
+        {
+            "name": "*.php",
+            "in": "vendor"
+        }
+    ],
+    "output": "slimdump.phar",
+    "stub": true
+}
