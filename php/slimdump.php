@@ -91,11 +91,10 @@ function cols($table, $db)
 
 /**
  * @param string $table
- * @param $db
  * @param array(string=>mixed) $cols
  * @return string
  */
-function insertValuesStatement($table, $db, $cols)
+function insertValuesStatement($table, $cols)
 {
     return "INSERT INTO `$table` (`" . implode(array_keys($cols), '`, `') . "`) VALUES ";
 }
@@ -165,7 +164,7 @@ function dumpData($table, $db, $nullBlob = false)
         }
 
         if ($bufferSize == 0) {
-            print insertValuesStatement($table, $db, $cols);
+            print insertValuesStatement($table, $cols);
         } else {
             print ",";
         }
