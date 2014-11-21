@@ -4,11 +4,11 @@ require(__DIR__ . '/../vendor/autoload.php');
 
 array_shift($_SERVER['argv']);
 
-$db = connect(array_shift($_SERVER['argv']));
-
 if (!$_SERVER['argv']) {
     fail("Usage: slimdump {DSN} {config.xml ...}");
 }
+
+$db = connect(array_shift($_SERVER['argv']));
 
 print "SET NAMES utf8;\n";
 print "SET FOREIGN_KEY_CHECKS = 0;\n\n";
