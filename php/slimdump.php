@@ -1,6 +1,14 @@
 <?php
 
-require(__DIR__ . '/../vendor/autoload.php');
+$possibleAutoloadFiles = array(
+    __DIR__ . '/../vendor/autoload.php',
+    __DIR__ . '/../../../autoload.php'
+);
+foreach ($possibleAutoloadFiles as $autoloadFile) {
+    if (file_exists($autoloadFile)) {
+        require_once $autoloadFile;
+    }
+}
 
 array_shift($_SERVER['argv']);
 
