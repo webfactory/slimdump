@@ -63,6 +63,26 @@ You can even split your configuration in separate files. Just provide slimdump w
 ## Other databases
 Currently only MySQL is supported. But feel free to port it to the database of your needs.
 
+## Development
+
+### Building the Phar
+
+Download [Box](https://github.com/box-project/box2) into the project root:
+
+    curl -LSs http://box-project.org/installer.php | php
+    
+Install dependencies via Composer:
+
+    php composer.phar install
+    
+Start the Phar build:
+
+   ./box.phar build -v
+   
+Use slimdump as Phar:
+
+    ./slimdump.phar {DSN} {config-file}
+
 ## Credits, Copyright and License
 This tool was started at webfactory GmbH, Bonn. It was started by [mpdude](https://github.com/mpdude).
 
