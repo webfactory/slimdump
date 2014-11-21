@@ -75,6 +75,11 @@ function findMode($table, $config)
     return 'none';
 }
 
+/**
+ * @param string $table
+ * @param Zend_Db_Adapter_Abstract $db
+ * @return array
+ */
 function cols($table, $db)
 {
     $c = array();
@@ -103,7 +108,11 @@ function rowLengthEstimate($row)
     return $l;
 }
 
-
+/**
+ * @param string $table
+ * @param Zend_Db_Adapter_Abstract $db
+ * @param bool $nullBlob
+ */
 function dumpData($table, $db, $nullBlob = false)
 {
     $cols = cols($table, $db);
