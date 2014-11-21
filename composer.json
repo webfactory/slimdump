@@ -1,0 +1,14 @@
+{
+    "name": "webfactory/slimdump",
+    "description": "",
+    "minimum-stability": "stable",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "webfactory GmbH",
+            "email": "info@webfactory.de",
+            "homepage": "http://www.webfactory.de",
+            "role": "Developer"
+        }
+    ]
+}
