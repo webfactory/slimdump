@@ -1,2 +1,4 @@
-#!/bin/sh
-php -d memory_limit=512M -d xdebug.default_enable=false $(dirname $_)/../php/slimdump.php $*
+#!/usr/bin/env php
+<?php
+
+include('slimdump.php');

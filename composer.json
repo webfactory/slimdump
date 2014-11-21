@@ -12,12 +12,15 @@
         }
     ],
     "bin": [
-        "php/slimdump.php"
+        "bin/slimdump",
+        "bin/slimdump.php"
     ],
     "require": {
         "zendframework/zendframework1": "~1.11"
     },
     "autoload": {
-        "files": ["php/util.php"]
+        "files": [
+            "php/util.php"
+        ]
     }
 }
