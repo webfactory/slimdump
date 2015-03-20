@@ -7,7 +7,8 @@ slimdump is a little tool to help you creating configurable dumps of large MySQL
 First off - if you just need a full dump of your database you will be better off with mysqldump. But if you regularly need complex dumps like e. g. full dumps of all your content tables, only the schema of log tables or tables containing user details, and your media tables without BLOBs (just in case you're storing BLOBs in the database): welcome to slimdump!
 
 ## Installation
-To install slimdump systemwide, just run `composer global require webfactory/slimdump`.
+To install slimdump systemwide, just run `composer global require webfactory/slimdump`. To use slimdump as a regular Unix command, just add it to the PATH in your `~/.profile`:
+`export PATH=~/.composer/vendor/bin:$PATH`
 
 ## Usage
 slimdump needs two pieces of information: the source database as DSN and a config-file:
