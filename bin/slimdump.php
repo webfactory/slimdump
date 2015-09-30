@@ -1,6 +1,7 @@
 <?php
 
-use  \Webfactory\Slimdump\Config\Config;
+use \Webfactory\Slimdump\Config\Config;
+use \Webfactory\Slimdump\Config\Table;
 
 $possibleAutoloadFiles = array(
     __DIR__ . '/../vendor/autoload.php',
@@ -36,8 +37,8 @@ processConfig($config, $db);
  */
 function processConfig(Config $config, $db)
 {
-    foreach ($db->listTables() as $table) {
-        $tableConfig = $config->findTable($table);
+    foreach ($db->listTables() as $tableName) {
+        $tableConfig = $config->findTable($tableName);
 
         if (null === $tableConfig) {
             continue;
@@ -46,11 +47,11 @@ function processConfig(Config $config, $db)
         $dumpType = $tableConfig->getDump();
 
         if ($dumpType >= Config::SCHEMA) {
-            dumpSchema($table, $db);
+            dumpSchema($tableName, $tableConfig, $db);
         }
 
         if ($dumpType >= Config::NOBLOB) {
-            dumpData($table, $db, $dumpType == Config::NOBLOB);
+            dumpData($tableName, $tableConfig, $db);
         }
     }
 }
@@ -59,7 +60,7 @@ function processConfig(Config $config, $db)
  * @param string $table
  * @param Zend_Db_Adapter_Abstract $db
  */
-function dumpSchema($table, $db)
+function dumpSchema($table, Table $tableConfig, $db)
 {
     print "-- BEGIN STRUCTURE $table \n";
     print "DROP TABLE IF EXISTS `$table`;\n";
@@ -109,26 +110,22 @@ function rowLengthEstimate($row)
  * @param Zend_Db_Adapter_Abstract $db
  * @param bool $nullBlob
  */
-function dumpData($table, $db, $nullBlob = false)
+function dumpData($table, Table $tableConfig, $db)
 {
     $cols = cols($table, $db);
 
     $s = "SELECT ";
     $first = true;
     foreach (array_keys($cols) as $name) {
+        $isBlobColumn = isBlob($name, $cols);
+
         if (!$first) {
             $s .= ', ';
         }
-        if (isBlob($name, $cols)) {
-            if ($nullBlob) {
-                $s .= "NULL";
-            } else {
-                $s .= "IF(ISNULL(`$name`), 'NULL', IF(`$name`='', '\"\"', CONCAT('0x', HEX(`$name`))))";
-            }
-            $s .= " AS `$name`";
-        } else {
-            $s .= "`$name`";
-        }
+
+        $s .= $tableConfig->getSelectExpression($name, $isBlobColumn);
+        $s .= " AS `$name`";
+
         $first = false;
     }
     $s .= " FROM `$table`";
@@ -164,18 +161,13 @@ function dumpData($table, $db, $nullBlob = false)
         print "\n(";
 
         foreach ($row as $name => $value) {
+            $isBlobColumn = isBlob($name, $cols);
+
             if (!$firstCol) {
                 print ", ";
             }
-            if ($value === null) {
-                print "NULL";
-            } else {
-                if (isBlob($name, $cols)) {
-                    print $value;
-                } else {
-                    print $db->quote($value);
-                }
-            }
+
+            print $tableConfig->getStringForInsertStatement($name, $value, $isBlobColumn, $db);
             $firstCol = false;
         }
         print ")";

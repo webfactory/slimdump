@@ -39,4 +39,30 @@ class Table
     {
         return $this->dump;
     }
+
+    public function getSelectExpression($columnName, $isBlobColumn)
+    {
+        if ($isBlobColumn) {
+            if ($this->dump == Config::NOBLOB) {
+                return 'NULL';
+            } else {
+                return "IF(ISNULL(`$columnName`), NULL, IF(`$columnName`='', '', CONCAT('0x', HEX(`$columnName`))))";
+            }
+        } else {
+            return $columnName;
+        }
+    }
+
+    public function getStringForInsertStatement($columnName, $value, $isBlobColumn, $db)
+    {
+        if ($value === null) {
+            return 'NULL';
+        } else if ($value === '') {
+            return '""';
+        } else if ($isBlobColumn) {
+            return $value;
+        } else {
+            return $db->quote($value);
+        }
+    }
 }
