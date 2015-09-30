@@ -21,6 +21,7 @@ class Config
         }
     }
 
+    /** @return Table */
     public function findTable($tableName)
     {
         krsort($this->tables);

@@ -44,14 +44,12 @@ function processConfig(Config $config, $db)
             continue;
         }
 
-        $dumpType = $tableConfig->getDump();
-
-        if ($dumpType >= Config::SCHEMA) {
+        if ($tableConfig->isSchemaDumpRequired()) {
             dumpSchema($tableName, $tableConfig, $db);
-        }
 
-        if ($dumpType >= Config::NOBLOB) {
-            dumpData($tableName, $tableConfig, $db);
+            if ($tableConfig->isDataDumpRequired()) {
+                dumpData($tableName, $tableConfig, $db);
+            }
         }
     }
 }

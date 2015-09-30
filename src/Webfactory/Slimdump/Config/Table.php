@@ -32,12 +32,14 @@ class Table
         return $this->name;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getDump()
+    public function isSchemaDumpRequired()
     {
-        return $this->dump;
+        return $this->dump >= Config::SCHEMA;
+    }
+
+    public function isDataDumpRequired()
+    {
+        return $this->dump >= Config::NOBLOB;
     }
 
     public function getSelectExpression($columnName, $isBlobColumn)
