@@ -3,7 +3,7 @@ namespace Webfactory\Slimdump\Config;
 
 class Table
 {
-    private $name;
+    private $selector;
     private $dump;
 
     private $columns = array();
@@ -11,25 +11,25 @@ class Table
     public function __construct($config)
     {
         $attr = $config->attributes();
-        $this->name = (string) $attr->name;
+        $this->selector = (string) $attr->name;
 
         $const = 'Webfactory\Slimdump\Config\Config::' . strtoupper((string)$attr->dump);
 
         if (defined($const)) {
             $this->dump = constant($const);
         } else {
-            throw new \RuntimeException(sprintf("Invalid dump type %s for table %s.", $this->dump, $this->name));
+            throw new \RuntimeException(sprintf("Invalid dump type %s for table %s.", $this->dump, $this->selector));
         }
 
         foreach ($config->column as $columnConfig) {
             $column = new Column($columnConfig);
-            $this->columns[$column->getName()] = $column;
+            $this->columns[$column->getSelector()] = $column;
         }
     }
 
-    public function getName()
+    public function getSelector()
     {
-        return $this->name;
+        return $this->selector;
     }
 
     public function isSchemaDumpRequired()

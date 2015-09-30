@@ -16,19 +16,19 @@ class Config
 
         foreach ($xml->table as $tableConfig) {
             $table = new Table($tableConfig);
-            $pattern = str_replace(array('*', '?'), array('(.*)', '.'), $table->getName());
-            $this->tables[$pattern] = $table;
+            $this->tables[$table->getSelector()] = $table;
         }
     }
 
     /** @return Table */
-    public function findTable($tableName)
+    public function find($tableName)
     {
         krsort($this->tables);
 
-        foreach ($this->tables as $pattern => $table) {
+        foreach ($this->tables as $selector => $config) {
+            $pattern = str_replace(array('*', '?'), array('(.*)', '.'), $selector);
             if (preg_match("/^$pattern$/i", $tableName)) {
-                return $table;
+                return $config;
             }
         }
     }
