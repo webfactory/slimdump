@@ -1,5 +1,7 @@
 <?php
 
+use  \Webfactory\Slimdump\Config\Config;
+
 $possibleAutoloadFiles = array(
     __DIR__ . '/../vendor/autoload.php',
     __DIR__ . '/../../../autoload.php'
@@ -21,28 +23,34 @@ $db = connect(array_shift($_SERVER['argv']));
 print "SET NAMES utf8;\n";
 print "SET FOREIGN_KEY_CHECKS = 0;\n\n";
 
-while ($config = array_shift($_SERVER['argv'])) {
-    processConfig($config, $db);
+$config = new Config();
+
+while ($argv = array_shift($_SERVER['argv'])) {
+    $config->load($argv);
 }
 
+processConfig($config, $db);
 /**
  * @param string $file
  * @param Zend_Db_Adapter_Abstract $db
  */
-function processConfig($file, $db)
+function processConfig(Config $config, $db)
 {
-    $modes = array('none' => 0, 'schema' => 1, 'noblob' => 2, 'full' => 3);
-    $config = parseConfig($file);
-
     foreach ($db->listTables() as $table) {
-        $m = $modes[findMode($table, $config)];
+        $tableConfig = $config->findTable($table);
 
-        if ($m >= $modes['schema']) {
+        if (null === $tableConfig) {
+            continue;
+        }
+
+        $dumpType = $tableConfig->getDump();
+
+        if ($dumpType >= Config::SCHEMA) {
             dumpSchema($table, $db);
         }
 
-        if ($m >= $modes['noblob']) {
-            dumpData($table, $db, $m == $modes['noblob']);
+        if ($dumpType >= Config::NOBLOB) {
+            dumpData($table, $db, $dumpType == Config::NOBLOB);
         }
     }
 }
@@ -56,31 +64,6 @@ function dumpSchema($table, $db)
     print "-- BEGIN STRUCTURE $table \n";
     print "DROP TABLE IF EXISTS `$table`;\n";
     print $db->query("SHOW CREATE TABLE `$table`")->fetchColumn(1) . ";\n\n";
-}
-
-function parseConfig($file)
-{
-    $config = array();
-    $xml = simplexml_load_file($file);
-
-    foreach ($xml->table as $t) {
-        $a = $t->attributes();
-        $n = $a->name->__toString();
-        $config[str_replace(array('*', '?'), array('(.*)', '.'), $n)] = $a->dump->__toString();
-    }
-
-    krsort($config);
-    return $config;
-}
-
-function findMode($table, $config)
-{
-    foreach ($config as $pattern => $type) {
-        if (preg_match("/^$pattern$/i", $table)) {
-            return $type;
-        }
-    }
-    return 'none';
 }
 
 /**
@@ -211,3 +194,4 @@ function dumpData($table, $db, $nullBlob = false)
 }
 
 print "\nSET FOREIGN_KEY_CHECKS = 1;\n";
+
