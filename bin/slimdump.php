@@ -38,7 +38,7 @@ processConfig($config, $db);
 function processConfig(Config $config, $db)
 {
     foreach ($db->listTables() as $tableName) {
-        $tableConfig = $config->find($tableName);
+        $tableConfig = $config->findTable($tableName);
 
         if (null === $tableConfig) {
             continue;

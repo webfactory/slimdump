@@ -44,8 +44,14 @@ class Table
 
     public function getSelectExpression($columnName, $isBlobColumn)
     {
+        $dump = $this->dump;
+
+        if ($column = $this->findColumn($columnName)) {
+            $dump = $column->getDump();
+        }
+
         if ($isBlobColumn) {
-            if ($this->dump == Config::NOBLOB) {
+            if ($dump == Config::NOBLOB) {
                 return 'NULL';
             } else {
                 return "IF(ISNULL(`$columnName`), NULL, IF(`$columnName`='', '', CONCAT('0x', HEX(`$columnName`))))";
@@ -61,10 +67,23 @@ class Table
             return 'NULL';
         } else if ($value === '') {
             return '""';
-        } else if ($isBlobColumn) {
-            return $value;
         } else {
+            if ($column = $this->findColumn($columnName)) {
+                return $db->quote($column->processRowValue($value));
+            }
+
+            if ($isBlobColumn) {
+                return $value;
+            }
+
             return $db->quote($value);
         }
     }
+
+    /** @return Column */
+    private function findColumn($columnName)
+    {
+        return Config::findBySelector($this->columns, $columnName);
+    }
+
 }

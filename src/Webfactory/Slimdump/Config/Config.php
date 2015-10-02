@@ -6,7 +6,9 @@ class Config
     const NONE = 1;
     const SCHEMA = 2;
     const NOBLOB = 3;
-    const FULL = 4;
+    const MASKED = 4;
+    const FULL = 5;
+    const BLANK = 6;
 
     private $tables = array();
 
@@ -21,13 +23,18 @@ class Config
     }
 
     /** @return Table */
-    public function find($tableName)
+    public function findTable($tableName)
     {
-        krsort($this->tables);
+        return self::findBySelector($this->tables, $tableName);
+    }
 
-        foreach ($this->tables as $selector => $config) {
+    public static function findBySelector($haystack, $needle)
+    {
+        krsort($haystack);
+
+        foreach ($haystack as $selector => $config) {
             $pattern = str_replace(array('*', '?'), array('(.*)', '.'), $selector);
-            if (preg_match("/^$pattern$/i", $tableName)) {
+            if (preg_match("/^$pattern$/i", $needle)) {
                 return $config;
             }
         }
