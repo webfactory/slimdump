@@ -11,6 +11,9 @@
             "role": "Developer"
         }
     ],
+    "config": {
+        "php": "~5.3"
+    },
     "bin": [
         "bin/slimdump",
         "bin/slimdump.php"
