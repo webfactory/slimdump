@@ -12,6 +12,9 @@ class Config
 
     private $tables = array();
 
+    /**
+     * @param string $file
+     */
     public function load($file)
     {
         $xml = simplexml_load_file($file);
@@ -22,13 +25,21 @@ class Config
         }
     }
 
-    /** @return Table */
+    /**
+     * @param string $tableName
+     * @return Table
+     */
     public function findTable($tableName)
     {
         return self::findBySelector($this->tables, $tableName);
     }
 
-    public static function findBySelector($haystack, $needle)
+    /**
+     * @param array $haystack
+     * @param string $needle
+     * @return mixed
+     */
+    public static function findBySelector(array $haystack, $needle)
     {
         krsort($haystack);
 

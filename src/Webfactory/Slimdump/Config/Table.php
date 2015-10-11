@@ -8,7 +8,11 @@ class Table
 
     private $columns = array();
 
-    public function __construct($config)
+    /**
+     * Table constructor.
+     * @param \SimpleXMLElement $config
+     */
+    public function __construct(\SimpleXMLElement $config)
     {
         $attr = $config->attributes();
         $this->selector = (string) $attr->name;
@@ -27,21 +31,35 @@ class Table
         }
     }
 
+    /**
+     * @return string
+     */
     public function getSelector()
     {
         return $this->selector;
     }
 
+    /**
+     * @return boolean
+     */
     public function isSchemaDumpRequired()
     {
         return $this->dump >= Config::SCHEMA;
     }
 
+    /**
+     * @return boolean
+     */
     public function isDataDumpRequired()
     {
         return $this->dump >= Config::NOBLOB;
     }
 
+    /**
+     * @param string $columnName
+     * @param boolean $isBlobColumn
+     * @return string
+     */
     public function getSelectExpression($columnName, $isBlobColumn)
     {
         $dump = $this->dump;
@@ -61,6 +79,13 @@ class Table
         }
     }
 
+    /**
+     * @param string $columnName
+     * @param string|null $value
+     * @param boolean $isBlobColumn
+     * @param \Zend_Db_Adapter_Abstract $db
+     * @return string
+     */
     public function getStringForInsertStatement($columnName, $value, $isBlobColumn, $db)
     {
         if ($value === null) {
@@ -80,7 +105,10 @@ class Table
         }
     }
 
-    /** @return Column */
+    /**
+     * @param string $columnName
+     * @return Column
+     */
     private function findColumn($columnName)
     {
         return Config::findBySelector($this->columns, $columnName);
