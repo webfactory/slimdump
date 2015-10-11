@@ -1,23 +1,24 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "1a209eb881c3720400512cba3f0910f2",
+    "hash": "4af6428c86ec135b86867813b090b221",
+    "content-hash": "25542794f8395bff2a79623b171eef74",
     "packages": [
         {
             "name": "zendframework/zendframework1",
-            "version": "1.12.9",
+            "version": "1.12.16",
             "source": {
                 "type": "git",
                 "url": "https://github.com/zendframework/zf1.git",
-                "reference": "5faa0abbd371bebb76f2208c389e4d7e15c11f81"
+                "reference": "8a3c471ef0a337d303cd5ae578e64c2ba1d2c025"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zendframework/zf1/zipball/5faa0abbd371bebb76f2208c389e4d7e15c11f81",
-                "reference": "5faa0abbd371bebb76f2208c389e4d7e15c11f81",
+                "url": "https://api.github.com/repos/zendframework/zf1/zipball/8a3c471ef0a337d303cd5ae578e64c2ba1d2c025",
+                "reference": "8a3c471ef0a337d303cd5ae578e64c2ba1d2c025",
                 "shasum": ""
             },
             "require": {
@@ -51,7 +52,7 @@
                 "ZF1",
                 "framework"
             ],
-            "time": "2014-09-16 20:47:34"
+            "time": "2015-09-15 15:49:51"
         }
     ],
     "packages-dev": [],
@@ -59,6 +60,7 @@
     "minimum-stability": "stable",
     "stability-flags": [],
     "prefer-stable": false,
+    "prefer-lowest": false,
     "platform": [],
     "platform-dev": []
 }
