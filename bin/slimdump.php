@@ -31,9 +31,11 @@ while ($argv = array_shift($_SERVER['argv'])) {
 }
 
 processConfig($config, $db);
+
 /**
- * @param string $file
+ * @param Config $config
  * @param Zend_Db_Adapter_Abstract $db
+ * @internal param string $file
  */
 function processConfig(Config $config, $db)
 {
@@ -45,7 +47,7 @@ function processConfig(Config $config, $db)
         }
 
         if ($tableConfig->isSchemaDumpRequired()) {
-            dumpSchema($tableName, $tableConfig, $db);
+            dumpSchema($tableName, $db);
 
             if ($tableConfig->isDataDumpRequired()) {
                 dumpData($tableName, $tableConfig, $db);
@@ -58,7 +60,7 @@ function processConfig(Config $config, $db)
  * @param string $table
  * @param Zend_Db_Adapter_Abstract $db
  */
-function dumpSchema($table, Table $tableConfig, $db)
+function dumpSchema($table, $db)
 {
     print "-- BEGIN STRUCTURE $table \n";
     print "DROP TABLE IF EXISTS `$table`;\n";
@@ -89,12 +91,21 @@ function insertValuesStatement($table, $cols)
     return "INSERT INTO `$table` (`" . implode(array_keys($cols), '`, `') . "`) VALUES ";
 }
 
-function isBlob($col, $definitions)
+/**
+ * @param string $col
+ * @param array $definitions
+ * @return bool
+ */
+function isBlob($col, array $definitions)
 {
     return stripos($definitions[$col], 'blob') !== false;
 }
 
-function rowLengthEstimate($row)
+/**
+ * @param array $row
+ * @return int
+ */
+function rowLengthEstimate(array $row)
 {
     $l = 0;
     foreach ($row as $value) {
@@ -105,8 +116,9 @@ function rowLengthEstimate($row)
 
 /**
  * @param string $table
+ * @param Table $tableConfig
  * @param Zend_Db_Adapter_Abstract $db
- * @param bool $nullBlob
+ * @internal param bool $nullBlob
  */
 function dumpData($table, Table $tableConfig, $db)
 {
