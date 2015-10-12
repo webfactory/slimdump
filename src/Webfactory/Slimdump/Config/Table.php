@@ -26,7 +26,7 @@ class Table
         if (defined($const)) {
             $this->dump = constant($const);
         } else {
-            throw new InvalidDumpTypeException(sprintf("Invalid dump type %s for table %s.", $this->dump, $this->selector));
+            throw new InvalidDumpTypeException(sprintf("Invalid dump type %s for table %s.", $attr->dump, $this->selector));
         }
 
         foreach ($config->column as $columnConfig) {
