@@ -52,10 +52,21 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
                     <table name="test" dump="XXX" />
                 </slimdump>';
 
-        $xmlElement = new \SimpleXMLElement($xml);
+        $config = new Config();
+        $config->parseXmlString($xml);
+    }
+
+    /**
+     * @expectedException \RuntimeException
+     */
+    public function testInvalidXML()
+    {
+        $xml = '<?xml version="1.0"
+            st" dump="XXX"
+                slimdump>';
 
         $config = new Config();
-        $config->parseXml($xmlElement);
+        $config->parseXmlString($xml);
     }
 
 }

@@ -17,9 +17,24 @@ class Config
      */
     public function load($file)
     {
-        $xml = simplexml_load_file($file);
+        $xml = file_get_contents($file);
 
-        $this->parseXml($xml);
+        $this->parseXmlString($xml);
+    }
+
+    /**
+     * @param string $xmlString
+     */
+    public function parseXmlString($xmlString) {
+        libxml_use_internal_errors(true);
+        $xmlElement = simplexml_load_string($xmlString);
+
+        foreach(libxml_get_errors() as $error) {
+            /** @var \LibXMLError $error */
+            throw new \RuntimeException("Invalid XML!");
+        }
+
+        $this->parseXml($xmlElement);
     }
 
     /**
