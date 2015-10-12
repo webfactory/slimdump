@@ -1,5 +1,8 @@
 <?php
+
 namespace Webfactory\Slimdump\Config;
+
+use Webfactory\Slimdump\Exception\InvalidXmlException;
 
 class Config
 {
@@ -24,6 +27,7 @@ class Config
 
     /**
      * @param string $xmlString
+     * @throws InvalidXmlException
      */
     public function parseXmlString($xmlString) {
         libxml_use_internal_errors(true);
@@ -31,7 +35,7 @@ class Config
 
         foreach(libxml_get_errors() as $error) {
             /** @var \LibXMLError $error */
-            throw new \RuntimeException("Invalid XML!");
+            throw new InvalidXmlException("Invalid XML!");
         }
 
         $this->parseXml($xmlElement);

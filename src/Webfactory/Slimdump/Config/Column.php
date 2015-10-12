@@ -1,5 +1,8 @@
 <?php
+
 namespace Webfactory\Slimdump\Config;
+
+use Webfactory\Slimdump\Exception\InvalidDumpTypeException;
 
 class Column
 {
@@ -7,6 +10,7 @@ class Column
     /**
      * Column constructor.
      * @param \SimpleXMLElement $config
+     * @throws InvalidDumpTypeException
      */
     public function __construct(\SimpleXMLElement $config)
     {
@@ -18,7 +22,7 @@ class Column
         if (defined($const)) {
             $this->dump = constant($const);
         } else {
-            throw new \RuntimeException(sprintf("Invalid dump type %s for column %s.", $this->dump, $this->selector));
+            throw new InvalidDumpTypeException(sprintf("Invalid dump type %s for column %s.", $this->dump, $this->selector));
         }
     }
 

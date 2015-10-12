@@ -43,7 +43,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException \RuntimeException
+     * @expectedException \Webfactory\Slimdump\Exception\InvalidDumpTypeException
      */
     public function testInvalidConfiguration()
     {
@@ -57,7 +57,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException \RuntimeException
+     * @expectedException \Webfactory\Slimdump\Exception\InvalidXmlException
      */
     public function testInvalidXML()
     {
