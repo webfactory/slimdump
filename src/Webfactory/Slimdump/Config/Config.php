@@ -19,7 +19,16 @@ class Config
     {
         $xml = simplexml_load_file($file);
 
+        $this->parseXml($xml);
+    }
+
+    /**
+     * @param \SimpleXMLElement $xml
+     */
+    public function parseXml(\SimpleXMLElement $xml)
+    {
         foreach ($xml->table as $tableConfig) {
+            /** @var \SimpleXMLElement $tableConfig */
             $table = new Table($tableConfig);
             $this->tables[$table->getSelector()] = $table;
         }
@@ -50,4 +59,5 @@ class Config
             }
         }
     }
+
 }
