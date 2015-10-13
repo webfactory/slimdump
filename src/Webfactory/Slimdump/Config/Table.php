@@ -4,6 +4,13 @@ namespace Webfactory\Slimdump\Config;
 
 use Webfactory\Slimdump\Exception\InvalidDumpTypeException;
 
+/**
+ * Class Table
+ * @package Webfactory\Slimdump\Config
+ *
+ * This is a class representation of a configured table.
+ * This is _not_ a representation of a database table.
+ */
 class Table
 {
     private $selector;

@@ -4,6 +4,13 @@ namespace Webfactory\Slimdump\Config;
 
 use Webfactory\Slimdump\Exception\InvalidDumpTypeException;
 
+/**
+ * Class Column
+ * @package Webfactory\Slimdump\Config
+ *
+ * This is a class representation of a configured column.
+ * This is _not_ a representation of a database column.
+ */
 class Column
 {
 

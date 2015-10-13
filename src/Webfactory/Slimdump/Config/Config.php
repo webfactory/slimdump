@@ -4,6 +4,12 @@ namespace Webfactory\Slimdump\Config;
 
 use Webfactory\Slimdump\Exception\InvalidXmlException;
 
+/**
+ * Class Config.
+ * @package Webfactory\Slimdump\Config
+ *
+ * This is a class representation of the configuration file(s) given.
+ */
 class Config
 {
     const NONE = 1;
