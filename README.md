@@ -83,6 +83,10 @@ Start the Phar build:
 Use slimdump as Phar:
 
     ./slimdump.phar {DSN} {config-file}
+    
+### Tests
+
+You can execute the phpunit-tests by calling `vendor/bin/phpunit`. 
 
 ## Credits, Copyright and License
 This tool was started at webfactory GmbH, Bonn. It was started by [mpdude](https://github.com/mpdude).
