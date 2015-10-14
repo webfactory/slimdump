@@ -22,41 +22,28 @@ class Config
     private $tables = array();
 
     /**
-     * @param string $file
-     */
-    public function load($file)
-    {
-        $xml = file_get_contents($file);
-
-        $this->parseXmlString($xml);
-    }
-
-    /**
-     * @param string $xmlString
-     * @throws InvalidXmlException
-     */
-    public function parseXmlString($xmlString) {
-        libxml_use_internal_errors(true);
-        $xmlElement = simplexml_load_string($xmlString);
-
-        foreach(libxml_get_errors() as $error) {
-            /** @var \LibXMLError $error */
-            throw new InvalidXmlException("Invalid XML!");
-        }
-
-        $this->parseXml($xmlElement);
-    }
-
-    /**
+     * Config constructor.
      * @param \SimpleXMLElement $xml
      */
-    public function parseXml(\SimpleXMLElement $xml)
+    public function __construct(\SimpleXMLElement $xml)
     {
         foreach ($xml->table as $tableConfig) {
             /** @var \SimpleXMLElement $tableConfig */
             $table = new Table($tableConfig);
             $this->tables[$table->getSelector()] = $table;
         }
+    }
+
+    /**
+     * Merge two configurations together.
+     * If two configurations specify the same table,
+     * the last one wins.
+     *
+     * @param Config $other
+     */
+    public function merge(Config $other)
+    {
+        $this->tables = array_merge($this->tables, $other->getTables());
     }
 
     /**
@@ -83,6 +70,11 @@ class Config
                 return $config;
             }
         }
+    }
+
+    public function getTables()
+    {
+        return $this->tables;
     }
 
 }

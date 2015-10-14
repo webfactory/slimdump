@@ -1,6 +1,7 @@
 <?php
 
 use \Webfactory\Slimdump\Config\Config;
+use \Webfactory\Slimdump\Config\ConfigBuilder;
 use \Webfactory\Slimdump\Config\Table;
 
 $possibleAutoloadFiles = array(
@@ -24,11 +25,7 @@ $db = connect(array_shift($_SERVER['argv']));
 print "SET NAMES utf8;\n";
 print "SET FOREIGN_KEY_CHECKS = 0;\n\n";
 
-$config = new Config();
-
-while ($argv = array_shift($_SERVER['argv'])) {
-    $config->load($argv);
-}
+$config = ConfigBuilder::createConfigurationFromConsecutiveFiles($_SERVER['argv']);
 
 processConfig($config, $db);
 

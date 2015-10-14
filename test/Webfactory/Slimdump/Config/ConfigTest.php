@@ -16,8 +16,7 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 
         $xmlElement = new \SimpleXMLElement($xml);
 
-        $config = new Config();
-        $config->parseXml($xmlElement);
+        $config = new Config($xmlElement);
 
         $table = $config->findTable('dichtikowski');
         $this->assertEquals('dicht*', $table->getSelector());
@@ -32,14 +31,35 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
 
         $xmlElement = new \SimpleXMLElement($xml);
 
-        $config = new Config();
-        $config->parseXml($xmlElement);
+        $config = new Config($xmlElement);
 
         $table = $config->findTable('dichtikowski');
         $this->assertNull($table, "One-Char-Wildcard selector should not match 'dichtikowski'!");
 
         $table2 = $config->findTable('dichta');
         $this->assertEquals('dicht?', $table2->getSelector());
+    }
+
+    public function testMerge()
+    {
+        $xml1 = '<?xml version="1.0" ?>
+                <slimdump>
+                    <table name="dicht*" dump="full" />
+                </slimdump>';
+
+        $config1 = new Config(new \SimpleXMLElement($xml1));
+
+        $xml2 = '<?xml version="1.0" ?>
+                <slimdump>
+                    <table name="dicht*" dump="noblob" />
+                </slimdump>';
+
+        $config2 = new Config(new \SimpleXMLElement($xml2));
+
+        $config1->merge($config2);
+
+        $table = $config1->findTable('dichtikowski');
+        $this->assertEquals('NULL', $table->getSelectExpression('testColumnName', true));
     }
 
     /**
@@ -52,21 +72,9 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
                     <table name="test" dump="XXX" />
                 </slimdump>';
 
-        $config = new Config();
-        $config->parseXmlString($xml);
-    }
+        $xmlElement = new \SimpleXMLElement($xml);
 
-    /**
-     * @expectedException \Webfactory\Slimdump\Exception\InvalidXmlException
-     */
-    public function testInvalidXML()
-    {
-        $xml = '<?xml version="1.0"
-            st" dump="XXX"
-                slimdump>';
-
-        $config = new Config();
-        $config->parseXmlString($xml);
+        new Config($xmlElement);
     }
 
 }
