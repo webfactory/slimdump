@@ -15,6 +15,8 @@ class Slimdump
     public function dump(Config $config, $db)
     {
         $dumper = new Dumper();
+        $dumper->exportAsUTF8();
+        $dumper->disableForeignKeys();
 
         foreach ($db->listTables() as $tableName) {
             $tableConfig = $config->findTable($tableName);
@@ -31,6 +33,7 @@ class Slimdump
                 }
             }
         }
+        $dumper->enableForeignKeys();
     }
 
 }

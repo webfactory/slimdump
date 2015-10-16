@@ -7,13 +7,27 @@ use Webfactory\Slimdump\Config\Table;
 class Dumper
 {
 
+    public function exportAsUTF8()
+    {
+        print "SET NAMES utf8;\n";
+    }
+
+    public function disableForeignKeys()
+    {
+        print "SET FOREIGN_KEY_CHECKS = 0;\n\n";
+    }
+
+    public function enableForeignKeys()
+    {
+        print "\nSET FOREIGN_KEY_CHECKS = 1;\n";
+    }
+
     /**
      * @param string $table
      * @param \Zend_Db_Adapter_Abstract $db
      */
     public function dumpSchema($table, $db)
     {
-        print "SET NAMES utf8;\n";
         print "-- BEGIN STRUCTURE $table \n";
         print "DROP TABLE IF EXISTS `$table`;\n";
         print $db->query("SHOW CREATE TABLE `$table`")->fetchColumn(1) . ";\n\n";
@@ -26,9 +40,6 @@ class Dumper
      */
     public function dumpData($table, Table $tableConfig, $db)
     {
-        print "SET NAMES utf8;\n";
-        print "SET FOREIGN_KEY_CHECKS = 0;\n\n";
-
         $cols = $this->cols($table, $db);
 
         $s = "SELECT ";
@@ -100,7 +111,6 @@ class Dumper
         fputs(STDERR, "\n");
 
         print "\n";
-        print "\nSET FOREIGN_KEY_CHECKS = 1;\n";
     }
 
     /**
