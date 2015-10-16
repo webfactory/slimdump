@@ -4,22 +4,6 @@ use \Webfactory\Slimdump\Config\Config;
 use \Webfactory\Slimdump\Config\ConfigBuilder;
 use \Webfactory\Slimdump\Config\Table;
 
-$possibleAutoloadFiles = array(
-    __DIR__ . '/../vendor/autoload.php',
-    __DIR__ . '/../../../autoload.php'
-);
-foreach ($possibleAutoloadFiles as $autoloadFile) {
-    if (file_exists($autoloadFile)) {
-        require_once $autoloadFile;
-    }
-}
-
-array_shift($_SERVER['argv']);
-
-if (!$_SERVER['argv']) {
-    fail("Usage: slimdump {DSN} {config.xml ...}");
-}
-
 $db = connect(array_shift($_SERVER['argv']));
 
 print "SET NAMES utf8;\n";
@@ -193,4 +177,3 @@ function dumpData($table, Table $tableConfig, $db)
 }
 
 print "\nSET FOREIGN_KEY_CHECKS = 1;\n";
-
