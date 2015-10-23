@@ -1,8 +1,6 @@
 <?php
 
-namespace test\Webfactory\Slimdump\Config;
-
-use Webfactory\Slimdump\Config\Config;
+namespace Webfactory\Slimdump\Config;
 
 class ConfigTest extends \PHPUnit_Framework_TestCase
 {
