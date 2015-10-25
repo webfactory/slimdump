@@ -19,7 +19,8 @@
         "bin/slimdump.php"
     ],
     "require": {
-        "zendframework/zendframework1": "~1.11"
+        "zendframework/zendframework1": "~1.11",
+        "symfony/console": "^2.7"
     },
     "autoload": {
         "files": [

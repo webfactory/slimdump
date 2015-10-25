@@ -2,24 +2,34 @@
 
 namespace Webfactory\Slimdump\Database;
 
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Helper\ProgressBar;
 use Webfactory\Slimdump\Config\Table;
 
 class Dumper
 {
+    
+    /** @var OutputInterface */
+    protected $output;
+    
+    public function __construct(OutputInterface $output)
+    {
+        $this->output = $output;
+    }
 
     public function exportAsUTF8()
     {
-        print "SET NAMES utf8;\n";
+        $this->output->writeln("SET NAMES utf8;");
     }
 
     public function disableForeignKeys()
     {
-        print "SET FOREIGN_KEY_CHECKS = 0;\n\n";
+        $this->output->writeln("SET FOREIGN_KEY_CHECKS = 0;\n");
     }
 
     public function enableForeignKeys()
     {
-        print "\nSET FOREIGN_KEY_CHECKS = 1;\n";
+        $this->output->writeln("\nSET FOREIGN_KEY_CHECKS = 1;");
     }
 
     /**
@@ -28,9 +38,9 @@ class Dumper
      */
     public function dumpSchema($table, $db)
     {
-        print "-- BEGIN STRUCTURE $table \n";
-        print "DROP TABLE IF EXISTS `$table`;\n";
-        print $db->query("SHOW CREATE TABLE `$table`")->fetchColumn(1) . ";\n\n";
+        $this->output->writeln("-- BEGIN STRUCTURE $table");
+        $this->output->writeln("DROP TABLE IF EXISTS `$table`;");
+        $this->output->writeln($db->query("SHOW CREATE TABLE `$table`")->fetchColumn(1) . ";\n");
     }
 
     /**
@@ -58,59 +68,66 @@ class Dumper
         }
         $s .= " FROM `$table`";
 
-        print "-- BEGIN DATA $table \n";
+        $this->output->writeln("-- BEGIN DATA $table");
 
         $bufferSize = 0;
         $max = 100 * 1024 * 1024; // 100 MB
         $numRows = $db->fetchOne("SELECT COUNT(*) FROM $table");
-        $count = 0;
+        
+        $progress = new ProgressBar($this->output, $numRows);
+        $progress->setFormat("Dumping <fg=cyan>$table</>: <fg=yellow>%percent:3s%%</> %remaining%/%estimated%");
+        $progress->setOverwrite(true);
+        $progress->setRedrawFrequency(1);
+        $progress->start();
 
         $db->getConnection()->setAttribute(\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
 
         foreach ($db->query($s) as $row) {
 
-            fprintf(STDERR, "\rDumping $table: %3u%%", (100 * ++$count) / $numRows);
-
             $b = $this->rowLengthEstimate($row);
 
             // Start a new statement to ensure that the line does not get too long.
             if ($bufferSize && $bufferSize + $b > $max) {
-                print ";\n";
+                $this->output->writeln(";");
                 $bufferSize = 0;
             }
 
             if ($bufferSize == 0) {
-                print $this->insertValuesStatement($table, $cols);
+                $this->output->write($this->insertValuesStatement($table, $cols));
             } else {
-                print ",";
+                $this->output->write(",");
             }
 
             $firstCol = true;
-            print "\n(";
+            $this->output->write("\n(");
 
             foreach ($row as $name => $value) {
                 $isBlobColumn = $this->isBlob($name, $cols);
 
                 if (!$firstCol) {
-                    print ", ";
+                    $this->output->write(", ");
                 }
 
-                print $tableConfig->getStringForInsertStatement($name, $value, $isBlobColumn, $db);
+                $this->output->write($tableConfig->getStringForInsertStatement($name, $value, $isBlobColumn, $db));
                 $firstCol = false;
             }
-            print ")";
+            $this->output->write(")");
             $bufferSize += $b;
+            $progress->advance();
+        }
+        $progress->setFormat("Dumping <fg=green>$table</>: <fg=green>%percent:3s%%</> Took: %elapsed%");
+        $progress->finish();
+        if ($this->output instanceof \Symfony\Component\Console\Output\ConsoleOutput) {
+            $this->output->getErrorOutput()->write("\n"); // write a newline after the progressbar.
         }
 
         $db->getConnection()->setAttribute(\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
 
         if ($bufferSize) {
-            print ";\n";
+            $this->output->writeln(";");
         }
 
-        fputs(STDERR, "\n");
-
-        print "\n";
+        $this->output->writeln('');
     }
 
     /**

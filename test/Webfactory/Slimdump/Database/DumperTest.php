@@ -2,6 +2,7 @@
 
 namespace Webfactory\Slimdump\Database;
 
+use Symfony\Component\Console\Output\BufferedOutput;
 use Webfactory\Slimdump\Config\Table;
 
 class DumperTest extends \PHPUnit_Framework_TestCase
@@ -22,7 +23,8 @@ class DumperTest extends \PHPUnit_Framework_TestCase
 
     public function testDumpSchemaWithNormalConfiguration()
     {
-        $dumper = new Dumper();
+        $outputBuffer = new BufferedOutput();
+        $dumper = new Dumper($outputBuffer);
 
         $statementMock = $this->getMock('\Zend_Db_Statement_Interface');
         $statementMock->expects($this->any())
@@ -30,9 +32,8 @@ class DumperTest extends \PHPUnit_Framework_TestCase
             ->willReturn('CREATE TABLE statement');
         $this->dbMock->expects($this->any())->method('query')->willReturn($statementMock);
 
-        ob_start();
         $dumper->dumpSchema('test', $this->dbMock);
-        $output = ob_get_clean();
+        $output = $outputBuffer->fetch();
 
         $this->assertContains('DROP TABLE IF EXISTS', $output);
         $this->assertContains('CREATE TABLE statement', $output);
@@ -40,7 +41,8 @@ class DumperTest extends \PHPUnit_Framework_TestCase
 
     public function testDumpDataWithFullConfiguration()
     {
-        $dumper = new Dumper();
+        $outputBuffer = new BufferedOutput();
+        $dumper = new Dumper($outputBuffer);
 
         $pdoMock = $this->getMock('\stdClass', array('setAttribute'));
 
@@ -86,9 +88,8 @@ class DumperTest extends \PHPUnit_Framework_TestCase
 
         $table = new Table(new \SimpleXMLElement('<table name="test" dump="full" />'));
 
-        ob_start();
         $dumper->dumpData('test', $table, $this->dbMock);
-        $output = ob_get_clean();
+        $output = $outputBuffer->fetch();
 
         $this->assertContains('INSERT INTO', $output);
     }

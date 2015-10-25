@@ -1,12 +1,6 @@
 #!/usr/bin/env php
 <?php
 
-array_shift($_SERVER['argv']);
-
-if (!$_SERVER['argv']) {
-    fail("Usage: slimdump {DSN} {config.xml ...}");
-}
-
 $possibleAutoloadFiles = array(
     __DIR__ . '/../vendor/autoload.php',
     __DIR__ . '/../../../autoload.php'
@@ -18,11 +12,7 @@ foreach ($possibleAutoloadFiles as $autoloadFile) {
 }
 
 
-use \Webfactory\Slimdump\Config\ConfigBuilder;
-use \Webfactory\Slimdump\Slimdump;
+use \Webfactory\Slimdump\SlimdumpApplication;
 
-$db = connect(array_shift($_SERVER['argv']));
-
-$config = ConfigBuilder::createConfigurationFromConsecutiveFiles($_SERVER['argv']);
-$slimdump = new Slimdump();
-$slimdump->dump($config, $db);
+$application = new SlimdumpApplication();
+$application->run();
