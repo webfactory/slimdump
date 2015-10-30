@@ -41,6 +41,18 @@ class Dumper
         $this->output->writeln("-- BEGIN STRUCTURE $table");
         $this->output->writeln("DROP TABLE IF EXISTS `$table`;");
         $this->output->writeln($db->query("SHOW CREATE TABLE `$table`")->fetchColumn(1) . ";\n");
+
+        $progress = new ProgressBar($this->output, 1);
+        $format = "Dumping schema <fg=cyan>$table</>: <fg=yellow>%percent:3s%%</>";
+        $progress->setFormat($format);
+        $progress->setOverwrite(true);
+        $progress->setRedrawFrequency(1);
+        $progress->start();
+        $progress->setFormat("Dumping schema <fg=green>$table</>: <fg=green>%percent:3s%%</> Took: %elapsed%");
+        $progress->finish();
+        if ($this->output instanceof \Symfony\Component\Console\Output\ConsoleOutput) {
+            $this->output->getErrorOutput()->write("\n"); // write a newline after the progressbar.
+        }
     }
 
     /**
@@ -75,7 +87,7 @@ class Dumper
         $numRows = $db->fetchOne("SELECT COUNT(*) FROM $table");
         
         $progress = new ProgressBar($this->output, $numRows);
-        $progress->setFormat("Dumping <fg=cyan>$table</>: <fg=yellow>%percent:3s%%</> %remaining%/%estimated%");
+        $progress->setFormat("Dumping data <fg=cyan>$table</>: <fg=yellow>%percent:3s%%</> %remaining%/%estimated%");
         $progress->setOverwrite(true);
         $progress->setRedrawFrequency(1);
         $progress->start();
@@ -115,7 +127,7 @@ class Dumper
             $bufferSize += $b;
             $progress->advance();
         }
-        $progress->setFormat("Dumping <fg=green>$table</>: <fg=green>%percent:3s%%</> Took: %elapsed%");
+        $progress->setFormat("Dumping data <fg=green>$table</>: <fg=green>%percent:3s%%</> Took: %elapsed%");
         $progress->finish();
         if ($this->output instanceof \Symfony\Component\Console\Output\ConsoleOutput) {
             $this->output->getErrorOutput()->write("\n"); // write a newline after the progressbar.
