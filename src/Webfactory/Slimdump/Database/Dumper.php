@@ -85,6 +85,11 @@ class Dumper
         $bufferSize = 0;
         $max = 100 * 1024 * 1024; // 100 MB
         $numRows = $db->fetchOne("SELECT COUNT(*) FROM $table");
+
+        if ($numRows == 0) {
+            // Fail fast: No data to dump.
+            return;
+        }
         
         $progress = new ProgressBar($this->output, $numRows);
         $progress->setFormat("Dumping data <fg=cyan>$table</>: <fg=yellow>%percent:3s%%</> %remaining%/%estimated%");
