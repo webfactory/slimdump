@@ -39,7 +39,7 @@ class DumperTest extends \PHPUnit_Framework_TestCase
         $outputBuffer = new BufferedOutput();
         $dumper = new Dumper($outputBuffer);
 
-        $pdoMock = $this->getMock('\stdClass', ['setAttribute']);
+        $pdoMock = $this->getMock('\stdClass', array('setAttribute'));
 
         $this->dbMock->expects($this->any())->method('getConnection')->willReturn($pdoMock);
 
@@ -50,16 +50,16 @@ class DumperTest extends \PHPUnit_Framework_TestCase
             ->method('fetchAll')
             ->willReturnCallback(function ($query) {
                 if (strpos($query, 'SHOW COLUMNS') !== false) {
-                    return [
-                        [
+                    return array(
+                        array(
                             'Field' => 'col1',
                             'Type'  => 'varchar',
-                        ],
-                        [
+                        ),
+                        array(
                             'Field' => 'col2',
                             'Type'  => 'blob',
-                        ],
-                    ];
+                        ),
+                    );
                 }
 
                 throw new \RuntimeException('Unexpected fetchAll-call: ' . $query);
@@ -70,16 +70,16 @@ class DumperTest extends \PHPUnit_Framework_TestCase
                 return $value;
             });
 
-        $this->dbMock->expects($this->any())->method('query')->willReturn([
-            [
+        $this->dbMock->expects($this->any())->method('query')->willReturn(array(
+            array(
                 'col1' => 'value1.1',
                 'col2' => 'value1.2',
-            ],
-            [
+            ),
+            array(
                 'col1' => 'value2.1',
                 'col2' => 'value2.2',
-            ],
-        ]);
+            ),
+        ));
 
         $table = new Table(new \SimpleXMLElement('<table name="test" dump="full" />'));
 
