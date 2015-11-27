@@ -1,4 +1,18 @@
 #!/usr/bin/env php
 <?php
 
-include('slimdump.php');
+$possibleAutoloadFiles = array(
+    __DIR__ . '/../vendor/autoload.php',
+    __DIR__ . '/../../../autoload.php'
+);
+foreach ($possibleAutoloadFiles as $autoloadFile) {
+    if (file_exists($autoloadFile)) {
+        require_once $autoloadFile;
+    }
+}
+
+
+use \Webfactory\Slimdump\SlimdumpApplication;
+
+$application = new SlimdumpApplication();
+$application->run();

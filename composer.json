@@ -11,16 +11,26 @@
             "role": "Developer"
         }
     ],
+    "config": {
+        "php": "~5.3"
+    },
     "bin": [
         "bin/slimdump",
         "bin/slimdump.php"
     ],
     "require": {
-        "zendframework/zendframework1": "~1.11"
+        "zendframework/zendframework1": "~1.11",
+        "symfony/console": "^2.7"
     },
     "autoload": {
         "files": [
             "php/util.php"
-        ]
+        ],
+        "psr-0": {
+            "Webfactory": "src/"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^4.8"
     }
 }
