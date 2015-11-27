@@ -4,11 +4,18 @@ slimdump
 `slimdump` is a little tool to help you creating configurable dumps of large MySQL-databases. It works off one or several configuration files. For every table you specify, it can dump only the schema (`CREATE TABLE ...` statement), full table data, data without blobs and more.
 
 ## Why?
-First off - if you just need a full dump of your database you will be better off with mysqldump. But if you regularly need complex dumps like e. g. full dumps of all your content tables, only the schema of log tables or tables containing user details, and your media tables without BLOBs (just in case you're storing BLOBs in the database): welcome to slimdump!
+
+We created `slimdump` because we often need to dump parts of MySQL databases in a convenient and reproducible way. Also, when you need to analyze problems with data from your production databases, you might want to pull only relevant parts of data and also hide personal data (user names, for example).
+
+`mysqldump` is a great tool, probably much more proven when it comes to edge cases and with a lot of switches. But there is no easy way to create a simple configuration file that describes a particular type of dump (e. g. a subset of your tables) and share it with your co-workers. Let alone dumping tables and omitting BLOB type columns. 
 
 ## Installation
-To install slimdump systemwide, just run `composer global require webfactory/slimdump`. To use slimdump as a regular Unix command, just add it to the PATH in your `~/.profile`:
-`export PATH=~/.composer/vendor/bin:$PATH`
+
+When PHP is your everyday programming language, you probably have [Composer](https://getcomposer.org) installed. You can then easily install `slimdump` as a [global package](https://getcomposer.org/doc/03-cli.md#global). Just run `composer global require webfactory/slimdump`. In order to use it like any other Unix command, make sure `$COMPOSER_HOME/vendor/bin` is in your `$PATH`.
+
+Of course, you can also add `slimdump` as a local (per-project) Composer dependency.
+
+We're also working on providing a `.phar` package of `slimdump` for those not using PHP regularly. With that solution, all you need is to have the PHP interpreter installed and to download a single archive file to use `slimdump`. You can help us and open a pull request for that :-)!
 
 ## Usage
 `slimdump` needs the DSN for the database to dump and one or more config files:
