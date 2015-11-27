@@ -19,10 +19,16 @@ We're also working on providing a `.phar` package of `slimdump` for those not us
 
 ## Usage
 `slimdump` needs the DSN for the database to dump and one or more config files:
+
 `slimdump {DSN} {config-file} [...more config files...]`
 
 `slimdump` writes to STDOUT. If you want your dump written to a file, just redirect the output:
+
 `slimdump {DSN} {config-file} > dump.sql`
+
+The DSN has to be in the following format:
+
+`mysql://[user[:password]@]host[:port]/dbname`
 
 ## Configuration
 Configuration is stored in XML format somewhere in your filesystem. As a benefit, you could add the configuration to your repository to share a quickstart to your database dump with your coworkers.
