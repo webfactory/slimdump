@@ -1,4 +1,4 @@
-slimdump
+![webfactory Logo](https://www.webfactory.de/bundles/webfactorytwiglayout/img/logo.png) slimdump
 ========
 
 `slimdump` is a little tool to help you creating configurable dumps of large MySQL-databases. It works off one or several configuration files. For every table you specify, it can dump only the schema (`CREATE TABLE ...` statement), full table data, data without blobs and more.
