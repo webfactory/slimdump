@@ -1,7 +1,7 @@
 slimdump
 ========
 
-slimdump is a little tool to help you creating configurable dumps of large MySQL-databases.
+`slimdump` is a little tool to help you creating configurable dumps of large MySQL-databases. It works off one or several configuration files. For every table you specify, it can dump only the schema (`CREATE TABLE ...` statement), full table data, data without blobs and more.
 
 ## Why?
 First off - if you just need a full dump of your database you will be better off with mysqldump. But if you regularly need complex dumps like e. g. full dumps of all your content tables, only the schema of log tables or tables containing user details, and your media tables without BLOBs (just in case you're storing BLOBs in the database): welcome to slimdump!
@@ -11,10 +11,10 @@ To install slimdump systemwide, just run `composer global require webfactory/sli
 `export PATH=~/.composer/vendor/bin:$PATH`
 
 ## Usage
-slimdump needs two pieces of information: the source database as DSN and a config-file:
-`slimdump {DSN} {config-file}`
+`slimdump` needs the DSN for the database to dump and one or more config files:
+`slimdump {DSN} {config-file} [...more config files...]`
 
-slimdump writes to STDOUT. If you want your dump written to a file, just redirect the output:
+`slimdump` writes to STDOUT. If you want your dump written to a file, just redirect the output:
 `slimdump {DSN} {config-file} > dump.sql`
 
 ## Configuration
@@ -24,16 +24,29 @@ Example:
 ```xml
 <?xml version="1.0" ?>
 <slimdump>
-  <table name="name-of-table" dump="type-of-dump" />
+  <!-- Create a full dump (schema + data) of "some_table" -->
+  <table name="some_table" dump="full" />
+  
+  <!-- Dump the "media" table, omit BLOB fields. -->
+  <table name="media" dump="noblob" />
+  
+  <!-- Dump the "users" table, hide names and email addresses. -->
+  <table name="user" dump="full">
+      <column name="username" dump="masked" />
+      <column name="email" dump="masked" />
+  </table>
+  
 </slimdump>
 ```
 
-### Extends for dumping
-There are four possible extends for dumping tables:
-* `none` - Table is not dumped at all
+### Dump modes
+
+The following modes are supported for the `dump` attribute:
+* `none` - Table is not dumped at all. Makes sense if you use broad wildcards (see below) and then want to exclude a specific table.
 * `schema` - Only the table schema will be dumped
-* `noblob` - Only all non BLOB fields will be dumped
+* `noblob` - Will dump a `NULL` value for BLOB fields
 * `full` - Whole table will be dumped
+* `masked` - Replaces all chars with "x". Mostly makes sense when applied on the column level, for example for email addresses or user names.
 
 ### Wildcards
 Of course you can use wildcards for table names (* for multiple characters, ? for a single character).
@@ -56,10 +69,6 @@ Example:
 </slimdump>
 ```
 This is a valid configuration. If more than one instruction matches a specific table name, the most specific one will be used. E. g. if you have definitions for blog_* and blog_author, the latter will be used for your author table, independent of their sequence order in the config.
-
-### Splitting configuration files
-You can even split your configuration in separate files. Just provide slimdump with a list of configuration files:
-`slimdump {DSN} file1.xml fileN.xml`
 
 ## Other databases
 Currently only MySQL is supported. But feel free to port it to the database of your needs.
@@ -94,4 +103,4 @@ This tool was started at webfactory GmbH in Bonn by [mpdude](https://github.com/
 - <http://www.webfactory.de>
 - <http://twitter.com/webfactory>
 
-Copyright 2014 webfactory GmbH, Bonn. Code released under [the MIT license](LICENSE).
+Copyright 2014-2015 webfactory GmbH, Bonn. Code released under [the MIT license](LICENSE).
