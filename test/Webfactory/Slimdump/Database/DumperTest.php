@@ -41,10 +41,10 @@ class DumperTest extends \PHPUnit_Framework_TestCase
 
         $pdoMock = $this->getMock('\stdClass', array('setAttribute'));
 
-        $this->dbMock->expects($this->any())->method('getConnection')->willReturn($pdoMock);
+        $this->dbMock->expects($this->any())->method('getWrappedConnection')->willReturn($pdoMock);
 
         $this->dbMock->expects($this->any())
-            ->method('fetchOne')
+            ->method('fetchColumn')
             ->willReturn(2);
         $this->dbMock->expects($this->any())
             ->method('fetchAll')
