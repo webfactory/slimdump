@@ -104,7 +104,6 @@ class Dumper
 
         /** @var PDOConnection $wrappedConnection */
         $wrappedConnection = $db->getWrappedConnection();
-        assert($wrappedConnection instanceof PDOConnection);
         $wrappedConnection->setAttribute(\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
 
         foreach ($db->query($s) as $row) {
