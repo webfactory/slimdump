@@ -85,7 +85,7 @@ Use slimdump as Phar:
     ./slimdump.phar {DSN} {config-file}
 
 ## Credits, Copyright and License
-This tool was started at webfactory GmbH, Bonn. It was started by [mpdude](https://github.com/mpdude).
+This tool was started at webfactory GmbH in Bonn by [mpdude](https://github.com/mpdude).
 
 - <http://www.webfactory.de>
 - <http://twitter.com/webfactory>
