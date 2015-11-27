@@ -70,7 +70,7 @@ Currently only MySQL is supported. But feel free to port it to the database of y
 
 Download [Box](https://github.com/box-project/box2) into the project root:
 
-    curl -LSs http://box-project.org/installer.php | php
+    curl -LSs https://box-project.github.io/box2/installer.php | php
     
 Install dependencies via Composer:
 
