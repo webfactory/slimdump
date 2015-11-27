@@ -25,7 +25,7 @@ class DumperTest extends \PHPUnit_Framework_TestCase
         $outputBuffer = new BufferedOutput();
         $dumper = new Dumper($outputBuffer);
 
-        $this->dbMock->method('fetchColumn')->willReturn('CREATE TABLE statement');
+        $this->dbMock->expects($this->any())->method('fetchColumn')->willReturn('CREATE TABLE statement');
 
         $dumper->dumpSchema('test', $this->dbMock);
         $output = $outputBuffer->fetch();
