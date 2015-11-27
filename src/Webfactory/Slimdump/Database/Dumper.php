@@ -2,8 +2,10 @@
 
 namespace Webfactory\Slimdump\Database;
 
-use Symfony\Component\Console\Output\OutputInterface;
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Driver\PDOConnection;
 use Symfony\Component\Console\Helper\ProgressBar;
+use Symfony\Component\Console\Output\OutputInterface;
 use Webfactory\Slimdump\Config\Table;
 
 class Dumper
@@ -33,14 +35,15 @@ class Dumper
     }
 
     /**
-     * @param string $table
-     * @param \Zend_Db_Adapter_Abstract $db
+     * @param            $table
+     * @param Connection $db
      */
-    public function dumpSchema($table, $db)
+    public function dumpSchema($table, Connection $db)
     {
         $this->output->writeln("-- BEGIN STRUCTURE $table");
         $this->output->writeln("DROP TABLE IF EXISTS `$table`;");
-        $this->output->writeln($db->query("SHOW CREATE TABLE `$table`")->fetchColumn(1) . ";\n");
+
+        $this->output->writeln($db->fetchColumn("SHOW CREATE TABLE `$table`", array(), 1).";\n");
 
         $progress = new ProgressBar($this->output, 1);
         $format = "Dumping schema <fg=cyan>$table</>: <fg=yellow>%percent:3s%%</>";
@@ -56,11 +59,13 @@ class Dumper
     }
 
     /**
-     * @param string $table
-     * @param Table $tableConfig
-     * @param \Zend_Db_Adapter_Abstract $db
+     * @param            $table
+     * @param Table      $tableConfig
+     * @param Connection $db
+     *
+     * @throws \Doctrine\DBAL\DBALException
      */
-    public function dumpData($table, Table $tableConfig, $db)
+    public function dumpData($table, Table $tableConfig, Connection $db)
     {
         $cols = $this->cols($table, $db);
 
@@ -84,20 +89,23 @@ class Dumper
 
         $bufferSize = 0;
         $max = 100 * 1024 * 1024; // 100 MB
-        $numRows = $db->fetchOne("SELECT COUNT(*) FROM $table");
+        $numRows = $db->fetchColumn("SELECT COUNT(*) FROM $table");
 
         if ($numRows == 0) {
             // Fail fast: No data to dump.
             return;
         }
-        
+
         $progress = new ProgressBar($this->output, $numRows);
         $progress->setFormat("Dumping data <fg=cyan>$table</>: <fg=yellow>%percent:3s%%</> %remaining%/%estimated%");
         $progress->setOverwrite(true);
         $progress->setRedrawFrequency(max($numRows / 100, 1));
         $progress->start();
 
-        $db->getConnection()->setAttribute(\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
+        /** @var PDOConnection $wrappedConnection */
+        $wrappedConnection = $db->getWrappedConnection();
+        assert($wrappedConnection instanceof PDOConnection);
+        $wrappedConnection->setAttribute(\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
 
         foreach ($db->query($s) as $row) {
 
@@ -138,7 +146,7 @@ class Dumper
             $this->output->getErrorOutput()->write("\n"); // write a newline after the progressbar.
         }
 
-        $db->getConnection()->setAttribute(\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
+        $wrappedConnection->setAttribute(\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
 
         if ($bufferSize) {
             $this->output->writeln(";");
@@ -148,11 +156,12 @@ class Dumper
     }
 
     /**
-     * @param string $table
-     * @param \Zend_Db_Adapter_Abstract $db
+     * @param string     $table
+     * @param Connection $db
+     *
      * @return array
      */
-    protected function cols($table, $db)
+    protected function cols($table, Connection $db)
     {
         $c = array();
         foreach ($db->fetchAll("SHOW COLUMNS FROM `$table`") as $row) {

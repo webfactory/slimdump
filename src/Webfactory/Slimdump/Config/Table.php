@@ -2,6 +2,7 @@
 
 namespace Webfactory\Slimdump\Config;
 
+use Doctrine\DBAL\Connection;
 use Webfactory\Slimdump\Exception\InvalidDumpTypeException;
 
 /**
@@ -91,13 +92,14 @@ class Table
     }
 
     /**
-     * @param string $columnName
+     * @param string      $columnName
      * @param string|null $value
-     * @param boolean $isBlobColumn
-     * @param \Zend_Db_Adapter_Abstract $db
+     * @param boolean     $isBlobColumn
+     * @param Connection  $db
+     *
      * @return string
      */
-    public function getStringForInsertStatement($columnName, $value, $isBlobColumn, $db)
+    public function getStringForInsertStatement($columnName, $value, $isBlobColumn, Connection $db)
     {
         if ($value === null) {
             return 'NULL';
@@ -118,6 +120,7 @@ class Table
 
     /**
      * @param string $columnName
+     *
      * @return Column
      */
     private function findColumn($columnName)

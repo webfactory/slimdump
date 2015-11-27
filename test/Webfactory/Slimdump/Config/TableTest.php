@@ -15,7 +15,7 @@ class TableTest extends \PHPUnit_Framework_TestCase
         $table = new Table($xmlElement);
 
         $this->assertTrue($table->isDataDumpRequired());
-        $this->assertEquals('testColumnName', $table->getSelectExpression('testColumnName', false));
+        $this->assertEquals('`testColumnName`', $table->getSelectExpression('testColumnName', false));
     }
 
     public function testGetSelectExpressionWithNoBlobConfiguration()
