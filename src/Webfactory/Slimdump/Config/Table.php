@@ -86,7 +86,7 @@ class Table
                 return "IF(ISNULL(`$columnName`), NULL, IF(`$columnName`='', '', CONCAT('0x', HEX(`$columnName`))))";
             }
         } else {
-            return $columnName;
+            return "`$columnName`";
         }
     }
 
