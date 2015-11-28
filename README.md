@@ -30,6 +30,8 @@ The DSN has to be in the following format:
 
 `mysql://[user[:password]@]host[:port]/dbname`
 
+For further explanations have a look at the [Doctrine documentation](http://doctrine-orm.readthedocs.org/projects/doctrine-dbal/en/latest/reference/configuration.html#connecting-using-a-url).
+
 ## Configuration
 Configuration is stored in XML format somewhere in your filesystem. As a benefit, you could add the configuration to your repository to share a quickstart to your database dump with your coworkers.
 
