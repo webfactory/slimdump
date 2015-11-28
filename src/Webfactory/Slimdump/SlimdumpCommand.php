@@ -2,6 +2,7 @@
 
 namespace Webfactory\Slimdump;
 
+use Doctrine\DBAL\Connection;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -42,15 +43,19 @@ class SlimdumpCommand extends Command
 
     /**
      * @param Config $config
-     * @param \Zend_Db_Adapter_Abstract $db
+     * @param Connection $db
      */
-    public function dump(Config $config, $db, OutputInterface $output)
+    public function dump(Config $config, Connection $db, OutputInterface $output)
     {
         $dumper = new Dumper($output);
         $dumper->exportAsUTF8();
         $dumper->disableForeignKeys();
 
-        foreach ($db->listTables() as $tableName) {
+        $platform = $db->getDatabasePlatform();
+
+        $fetchTablesResult = $db->query($platform->getListTablesSQL());
+
+        while ($tableName = $fetchTablesResult->fetchColumn(0)) {
             $tableConfig = $config->findTable($tableName);
 
             if (null === $tableConfig) {
