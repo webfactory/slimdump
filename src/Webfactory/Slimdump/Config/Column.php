@@ -14,6 +14,8 @@ use Webfactory\Slimdump\Exception\InvalidDumpTypeException;
 class Column
 {
 
+    private $config = null;
+
     /**
      * Column constructor.
      * @param \SimpleXMLElement $config
@@ -21,6 +23,8 @@ class Column
      */
     public function __construct(\SimpleXMLElement $config)
     {
+        $this->config = $config;
+
         $attr = $config->attributes();
         $this->selector = (string) $attr->name;
 
@@ -55,6 +59,10 @@ class Column
     public function processRowValue($value) {
         if ($this->dump == Config::MASKED) {
             return preg_replace('/[a-z0-9]/i', 'x', $value);
+        }
+
+        if ($this->dump == Config::REPLACE) {
+            return $this->config->attributes()->replacement;
         }
 
         if ($this->dump == Config::BLANK) {

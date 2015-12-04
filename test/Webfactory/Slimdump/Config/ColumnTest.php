@@ -51,4 +51,26 @@ class ColumnTest extends \PHPUnit_Framework_TestCase
         new Column($xmlElement);
     }
 
+    public function testReplaceColumn()
+    {
+        $xml = '<?xml version="1.0" ?>
+                <column name="test" dump="replace" replacement="xxx" />';
+
+        $xmlElement = new \SimpleXMLElement($xml);
+
+        $columnConfig = new Column($xmlElement);
+        $this->assertEquals('xxx', $columnConfig->processRowValue('test value'));
+    }
+
+    public function testReplaceColumnWithoutReplacement()
+    {
+        $xml = '<?xml version="1.0" ?>
+                <column name="test" dump="replace" />';
+
+        $xmlElement = new \SimpleXMLElement($xml);
+
+        $columnConfig = new Column($xmlElement);
+        $this->assertEquals('', $columnConfig->processRowValue('test value'));
+    }
+
 }

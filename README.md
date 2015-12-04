@@ -52,6 +52,7 @@ Example:
   <table name="user" dump="full">
       <column name="username" dump="masked" />
       <column name="email" dump="masked" />
+      <column name="password" dump="replace" replacement="test" />
   </table>
   
 </slimdump>
@@ -65,6 +66,7 @@ The following modes are supported for the `dump` attribute:
 * `noblob` - Will dump a `NULL` value for BLOB fields
 * `full` - Whole table will be dumped
 * `masked` - Replaces all chars with "x". Mostly makes sense when applied on the column level, for example for email addresses or user names.
+* `replace` - Replace a column with a static value. Useful e.g. to replace passwords with a static one.
 
 ### Wildcards
 Of course you can use wildcards for table names (* for multiple characters, ? for a single character).

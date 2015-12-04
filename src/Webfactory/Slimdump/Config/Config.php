@@ -18,6 +18,7 @@ class Config
     const MASKED = 4;
     const FULL = 5;
     const BLANK = 6;
+    const REPLACE = 7;
 
     private $tables = array();
 
