@@ -58,6 +58,19 @@ Example:
 </slimdump>
 ```
 
+### Conditions
+
+You may want to select only some rows. In that case you can define a condition on a table.
+
+Example:
+```xml
+<?xml version="1.0" ?>
+<slimdump>
+  <!-- Dump all users whose usernames begin with foo -->
+  <table name="user" dump="full" condition="`username` LIKE 'foo%'" />
+</slimdump>
+```
+
 ### Dump modes
 
 The following modes are supported for the `dump` attribute:

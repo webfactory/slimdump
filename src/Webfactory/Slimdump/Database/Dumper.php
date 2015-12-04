@@ -85,6 +85,8 @@ class Dumper
         }
         $s .= " FROM `$table`";
 
+        $s .= $tableConfig->getCondition();
+
         $this->output->writeln("-- BEGIN DATA $table");
 
         $bufferSize = 0;
