@@ -70,4 +70,30 @@ class TableTest extends \PHPUnit_Framework_TestCase
         new Table($xmlElement);
     }
 
+    public function testSelectCondition()
+    {
+        $xml = '<?xml version="1.0" ?>
+                <table name="dicht*" dump="full" condition="`first_name` LIKE \'foo%\'" />';
+
+        $xmlElement = new \SimpleXMLElement($xml);
+
+        $table = new Table($xmlElement);
+
+        $this->assertTrue($table->isDataDumpRequired());
+        $this->assertEquals(' WHERE `first_name` LIKE \'foo%\'', $table->getCondition());
+    }
+
+    public function testSelectConditionWhenConditionIsEmpty()
+    {
+        $xml = '<?xml version="1.0" ?>
+                <table name="dicht*" dump="full" condition="   " />';
+
+        $xmlElement = new \SimpleXMLElement($xml);
+
+        $table = new Table($xmlElement);
+
+        $this->assertTrue($table->isDataDumpRequired());
+        $this->assertEquals('', $table->getCondition());
+    }
+
 }

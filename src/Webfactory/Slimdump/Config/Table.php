@@ -16,6 +16,8 @@ class Table
 {
     private $selector;
     private $dump;
+    /** @var \SimpleXMLElement */
+    private $config;
 
     private $columns = array();
 
@@ -26,6 +28,8 @@ class Table
      */
     public function __construct(\SimpleXMLElement $config)
     {
+        $this->config = $config;
+
         $attr = $config->attributes();
         $this->selector = (string) $attr->name;
 
@@ -115,6 +119,18 @@ class Table
             }
 
             return $db->quote($value);
+        }
+    }
+
+    /**
+     * @return string - The WHERE condition.
+     */
+    public function getCondition()
+    {
+        $condition = (string)$this->config->attributes()->condition;
+
+        if (trim($condition) !== '') {
+            return ' WHERE ' . $condition;
         }
     }
 
