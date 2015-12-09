@@ -8,7 +8,7 @@ function connect($dsn)
 {
     try {
         return \Doctrine\DBAL\DriverManager::getConnection(
-            array('url' => $dsn, 'charset' => 'utf8', 'driver' => 'pdo_mysql')
+            array('url' => $dsn, 'charset' => 'utf8', 'driverClass' => 'Doctrine\DBAL\Driver\PDOMySql\Driver')
         );
     } catch (Exception $e) {
         fail("Database error: " . $e->getMessage());
