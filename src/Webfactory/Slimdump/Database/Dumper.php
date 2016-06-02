@@ -39,7 +39,7 @@ class Dumper
      * @param Connection $db
      * @param boolean $noAutoIncrement
      */
-    public function dumpSchema($table, Connection $db, $noAutoIncrement)
+    public function dumpSchema($table, Connection $db, $noAutoIncrement = false)
     {
         $this->output->writeln("-- BEGIN STRUCTURE $table");
         $this->output->writeln("DROP TABLE IF EXISTS `$table`;");
