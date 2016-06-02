@@ -29,23 +29,33 @@ class SlimdumpCommand extends Command
                 InputArgument::IS_ARRAY | InputArgument::REQUIRED,
                 'Configuration files (at least one).'
             )
+            ->addOption(
+                'no-auto-increment',
+                'nai',
+                InputArgument::OPTIONAL,
+                'Turn off auto increment from the last id of the existing database'
+            )
         ;
     }
     
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $dsn = $input->getArgument('dsn');
+        $noAutoIncrement = $input->getOption('no-auto-increment');
         $db = connect($dsn);
 
         $config = ConfigBuilder::createConfigurationFromConsecutiveFiles($input->getArgument('config'));
-        $this->dump($config, $db, $output);
+        $this->dump($config, $db, $output, $noAutoIncrement);
     }
 
     /**
      * @param Config $config
      * @param Connection $db
+     * @param OutputInterface $output
+     * @param boolean $noAutoIncrement
+     * @throws \Doctrine\DBAL\DBALException
      */
-    public function dump(Config $config, Connection $db, OutputInterface $output)
+    public function dump(Config $config, Connection $db, OutputInterface $output, $noAutoIncrement)
     {
         $dumper = new Dumper($output);
         $dumper->exportAsUTF8();
@@ -63,7 +73,7 @@ class SlimdumpCommand extends Command
             }
 
             if ($tableConfig->isSchemaDumpRequired()) {
-                $dumper->dumpSchema($tableName, $db);
+                $dumper->dumpSchema($tableName, $db, $noAutoIncrement);
 
                 if ($tableConfig->isDataDumpRequired()) {
                     $dumper->dumpData($tableName, $tableConfig, $db);
