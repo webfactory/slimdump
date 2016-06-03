@@ -21,17 +21,17 @@ class Dumper
 
     public function exportAsUTF8()
     {
-        $this->output->writeln("SET NAMES utf8;");
+        $this->output->writeln("SET NAMES utf8;", OutputInterface::OUTPUT_RAW);
     }
 
     public function disableForeignKeys()
     {
-        $this->output->writeln("SET FOREIGN_KEY_CHECKS = 0;\n");
+        $this->output->writeln("SET FOREIGN_KEY_CHECKS = 0;\n", OutputInterface::OUTPUT_RAW);
     }
 
     public function enableForeignKeys()
     {
-        $this->output->writeln("\nSET FOREIGN_KEY_CHECKS = 1;");
+        $this->output->writeln("\nSET FOREIGN_KEY_CHECKS = 1;", OutputInterface::OUTPUT_RAW);
     }
 
     /**
@@ -41,10 +41,10 @@ class Dumper
     public function dumpSchema($table, Connection $db)
     {
         $this->keepalive($db);
-        $this->output->writeln("-- BEGIN STRUCTURE $table");
-        $this->output->writeln("DROP TABLE IF EXISTS `$table`;");
+        $this->output->writeln("-- BEGIN STRUCTURE $table", OutputInterface::OUTPUT_RAW);
+        $this->output->writeln("DROP TABLE IF EXISTS `$table`;", OutputInterface::OUTPUT_RAW);
 
-        $this->output->writeln($db->fetchColumn("SHOW CREATE TABLE `$table`", array(), 1).";\n");
+        $this->output->writeln($db->fetchColumn("SHOW CREATE TABLE `$table`", array(), 1).";\n", OutputInterface::OUTPUT_RAW);
 
         $progress = new ProgressBar($this->output, 1);
         $format = "Dumping schema <fg=cyan>$table</>: <fg=yellow>%percent:3s%%</>";
@@ -89,7 +89,7 @@ class Dumper
 
         $s .= $tableConfig->getCondition();
 
-        $this->output->writeln("-- BEGIN DATA $table");
+        $this->output->writeln("-- BEGIN DATA $table", OutputInterface::OUTPUT_RAW);
 
         $bufferSize = 0;
         $max = 100 * 1024 * 1024; // 100 MB
@@ -116,30 +116,30 @@ class Dumper
 
             // Start a new statement to ensure that the line does not get too long.
             if ($bufferSize && $bufferSize + $b > $max) {
-                $this->output->writeln(";");
+                $this->output->writeln(";", OutputInterface::OUTPUT_RAW);
                 $bufferSize = 0;
             }
 
             if ($bufferSize == 0) {
-                $this->output->write($this->insertValuesStatement($table, $cols));
+                $this->output->write($this->insertValuesStatement($table, $cols), false, OutputInterface::OUTPUT_RAW);
             } else {
-                $this->output->write(",");
+                $this->output->write(",", false, OutputInterface::OUTPUT_RAW);
             }
 
             $firstCol = true;
-            $this->output->write("\n(");
+            $this->output->write("\n(", false, OutputInterface::OUTPUT_RAW);
 
             foreach ($row as $name => $value) {
                 $isBlobColumn = $this->isBlob($name, $cols);
 
                 if (!$firstCol) {
-                    $this->output->write(", ");
+                    $this->output->write(", ", false, OutputInterface::OUTPUT_RAW);
                 }
 
-                $this->output->write($tableConfig->getStringForInsertStatement($name, $value, $isBlobColumn, $db));
+                $this->output->write($tableConfig->getStringForInsertStatement($name, $value, $isBlobColumn, $db), false, OutputInterface::OUTPUT_RAW);
                 $firstCol = false;
             }
-            $this->output->write(")");
+            $this->output->write(")", false, OutputInterface::OUTPUT_RAW);
             $bufferSize += $b;
             $progress->advance();
         }
@@ -152,10 +152,10 @@ class Dumper
         $wrappedConnection->setAttribute(\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
 
         if ($bufferSize) {
-            $this->output->writeln(";");
+            $this->output->writeln(";", OutputInterface::OUTPUT_RAW);
         }
 
-        $this->output->writeln('');
+        $this->output->writeln('', OutputInterface::OUTPUT_RAW);
     }
 
     /**
