@@ -40,6 +40,7 @@ class Dumper
      */
     public function dumpSchema($table, Connection $db)
     {
+        $this->keepalive($db);
         $this->output->writeln("-- BEGIN STRUCTURE $table");
         $this->output->writeln("DROP TABLE IF EXISTS `$table`;");
 
@@ -67,6 +68,7 @@ class Dumper
      */
     public function dumpData($table, Table $tableConfig, Connection $db)
     {
+        $this->keepalive($db);
         $cols = $this->cols($table, $db);
 
         $s = "SELECT ";
@@ -203,5 +205,12 @@ class Dumper
         }
         return $l;
     }
-
+    
+    private function keepalive(Connection $db) 
+    {
+        if (false === $db->ping()) {
+            $db->close();
+            $db->connect();
+        }
+    }
 }
