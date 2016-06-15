@@ -35,23 +35,22 @@ class Dumper
     }
 
     /**
-     * @param            $table
-     * @param Connection $db
-     * @param boolean $noAutoIncrement
+     * @param               $table
+     * @param Table         $tableConfig
+     * @param Connection    $db
      */
-    public function dumpSchema($table, Connection $db, $noAutoIncrement = false)
+    public function dumpSchema($table, Table $tableConfig, Connection $db)
     {
         $this->output->writeln("-- BEGIN STRUCTURE $table");
         $this->output->writeln("DROP TABLE IF EXISTS `$table`;");
 
         $tableCreationCommand = $db->fetchColumn("SHOW CREATE TABLE `$table`", array(), 1);
 
-        if ($noAutoIncrement) {
+        if (!$tableConfig->isAutoIncrement()) {
             $tableCreationCommand = preg_replace('/ AUTO_INCREMENT=[0-9]*/', '', $tableCreationCommand);
         }
 
         $this->output->writeln($tableCreationCommand.";\n", OutputInterface::OUTPUT_RAW);
-        $this->output->writeln($db->fetchColumn("SHOW CREATE TABLE `$table`", array(), 1).";\n");
 
         $progress = new ProgressBar($this->output, 1);
         $format = "Dumping schema <fg=cyan>$table</>: <fg=yellow>%percent:3s%%</>";

@@ -29,12 +29,6 @@ class SlimdumpCommand extends Command
                 InputArgument::IS_ARRAY | InputArgument::REQUIRED,
                 'Configuration files (at least one).'
             )
-            ->addOption(
-                'no-auto-increment',
-                'nai',
-                InputArgument::OPTIONAL,
-                'Turn off auto increment from the last id of the existing database'
-            )
         ;
     }
     
@@ -73,7 +67,7 @@ class SlimdumpCommand extends Command
             }
 
             if ($tableConfig->isSchemaDumpRequired()) {
-                $dumper->dumpSchema($tableName, $db, $noAutoIncrement);
+                $dumper->dumpSchema($tableName, $tableConfig, $db);
 
                 if ($tableConfig->isDataDumpRequired()) {
                     $dumper->dumpData($tableName, $tableConfig, $db);

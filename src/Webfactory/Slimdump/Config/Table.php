@@ -16,6 +16,10 @@ class Table
 {
     private $selector;
     private $dump;
+
+    /** @var boolean */
+    private $autoIncrement;
+
     /** @var \SimpleXMLElement */
     private $config;
 
@@ -41,10 +45,24 @@ class Table
             throw new InvalidDumpTypeException(sprintf("Invalid dump type %s for table %s.", $attr->dump, $this->selector));
         }
 
+        $this->autoIncrement = self::attributeToBoolean($attr->{'auto-increment'}, true);
+
         foreach ($config->column as $columnConfig) {
             $column = new Column($columnConfig);
             $this->columns[$column->getSelector()] = $column;
         }
+    }
+
+    /**
+     * @param \SimpleXMLElement[]|null $attribute
+     * @param boolean $defaultValue
+     * @return boolean
+     */
+    private static function attributeToBoolean($attribute, $defaultValue) {
+        if ($attribute == null) {
+            return $defaultValue;
+        }
+        return ($attribute == 'true') ? true : false;
     }
 
     /**
@@ -69,6 +87,14 @@ class Table
     public function isDataDumpRequired()
     {
         return $this->dump >= Config::NOBLOB;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isAutoIncrement()
+    {
+        return $this->autoIncrement;
     }
 
     /**
