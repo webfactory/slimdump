@@ -44,6 +44,8 @@ class SlimdumpCommand extends Command
     /**
      * @param Config $config
      * @param Connection $db
+     * @param OutputInterface $output
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function dump(Config $config, Connection $db, OutputInterface $output)
     {
@@ -63,7 +65,7 @@ class SlimdumpCommand extends Command
             }
 
             if ($tableConfig->isSchemaDumpRequired()) {
-                $dumper->dumpSchema($tableName, $db);
+                $dumper->dumpSchema($tableName, $db, $tableConfig->keepAutoIncrement());
 
                 if ($tableConfig->isDataDumpRequired()) {
                     $dumper->dumpData($tableName, $tableConfig, $db);

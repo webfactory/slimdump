@@ -48,13 +48,16 @@ Example:
   <!-- Dump the "media" table, omit BLOB fields. -->
   <table name="media" dump="noblob" />
   
-  <!-- Dump the "users" table, hide names and email addresses. -->
+  <!-- Dump the "user" table, hide names and email addresses. -->
   <table name="user" dump="full">
       <column name="username" dump="masked" />
       <column name="email" dump="masked" />
       <column name="password" dump="replace" replacement="test" />
   </table>
   
+  <!-- Dump the "document" table but do not pass the "AUTO_INCREMENT" parameter to the SQL query.
+       Instead start to increment from the beginning -->
+  <table name="document" dump="full" keep-auto-increment="false" />
 </slimdump>
 ```
 
