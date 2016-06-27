@@ -18,7 +18,7 @@ class Table
     private $dump;
 
     /** @var boolean */
-    private $autoIncrement;
+    private $keepAutoIncrement;
 
     /** @var \SimpleXMLElement */
     private $config;
@@ -45,7 +45,7 @@ class Table
             throw new InvalidDumpTypeException(sprintf("Invalid dump type %s for table %s.", $attr->dump, $this->selector));
         }
 
-        $this->autoIncrement = self::attributeToBoolean($attr->{'auto-increment'}, true);
+        $this->keepAutoIncrement = self::attributeToBoolean($attr->{'keep-auto-increment'}, true);
 
         foreach ($config->column as $columnConfig) {
             $column = new Column($columnConfig);
@@ -92,9 +92,9 @@ class Table
     /**
      * @return boolean
      */
-    public function isAutoIncrement()
+    public function keepAutoIncrement()
     {
-        return $this->autoIncrement;
+        return $this->keepAutoIncrement;
     }
 
     /**

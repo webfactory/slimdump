@@ -46,7 +46,7 @@ class Dumper
 
         $tableCreationCommand = $db->fetchColumn("SHOW CREATE TABLE `$table`", array(), 1);
 
-        if (!$tableConfig->isAutoIncrement()) {
+        if (!$tableConfig->keepAutoIncrement()) {
             $tableCreationCommand = preg_replace('/ AUTO_INCREMENT=[0-9]*/', '', $tableCreationCommand);
         }
 

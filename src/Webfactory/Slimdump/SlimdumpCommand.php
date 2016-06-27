@@ -35,21 +35,19 @@ class SlimdumpCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $dsn = $input->getArgument('dsn');
-        $noAutoIncrement = $input->getOption('no-auto-increment');
         $db = connect($dsn);
 
         $config = ConfigBuilder::createConfigurationFromConsecutiveFiles($input->getArgument('config'));
-        $this->dump($config, $db, $output, $noAutoIncrement);
+        $this->dump($config, $db, $output);
     }
 
     /**
      * @param Config $config
      * @param Connection $db
      * @param OutputInterface $output
-     * @param boolean $noAutoIncrement
      * @throws \Doctrine\DBAL\DBALException
      */
-    public function dump(Config $config, Connection $db, OutputInterface $output, $noAutoIncrement)
+    public function dump(Config $config, Connection $db, OutputInterface $output)
     {
         $dumper = new Dumper($output);
         $dumper->exportAsUTF8();
