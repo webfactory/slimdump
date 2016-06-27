@@ -96,4 +96,27 @@ class TableTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('', $table->getCondition());
     }
 
+    public function testKeepAutoIncrementWhenNotSet()
+    {
+        $xml = '<?xml version="1.0" ?>
+                <table name="dicht*" dump="full" />';
+
+        $xmlElement = new \SimpleXMLElement($xml);
+
+        $table = new Table($xmlElement);
+
+        $this->assertTrue($table->keepAutoIncrement());
+    }
+
+    public function testKeepAutoIncrementWhenSet()
+    {
+        $xml = '<?xml version="1.0" ?>
+                <table name="dicht*" dump="full" keep-auto-increment="false" />';
+
+        $xmlElement = new \SimpleXMLElement($xml);
+
+        $table = new Table($xmlElement);
+
+        $this->assertFalse($table->keepAutoIncrement());
+    }
 }

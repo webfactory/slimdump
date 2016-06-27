@@ -65,7 +65,7 @@ class SlimdumpCommand extends Command
             }
 
             if ($tableConfig->isSchemaDumpRequired()) {
-                $dumper->dumpSchema($tableName, $tableConfig, $db);
+                $dumper->dumpSchema($tableName, $db, $tableConfig->keepAutoIncrement());
 
                 if ($tableConfig->isDataDumpRequired()) {
                     $dumper->dumpData($tableName, $tableConfig, $db);

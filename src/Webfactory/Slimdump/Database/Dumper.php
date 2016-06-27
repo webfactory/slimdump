@@ -39,14 +39,14 @@ class Dumper
      * @param Table         $tableConfig
      * @param Connection    $db
      */
-    public function dumpSchema($table, Table $tableConfig, Connection $db)
+    public function dumpSchema($table, Connection $db, $keepAutoIncrement = true)
     {
         $this->output->writeln("-- BEGIN STRUCTURE $table");
         $this->output->writeln("DROP TABLE IF EXISTS `$table`;");
 
         $tableCreationCommand = $db->fetchColumn("SHOW CREATE TABLE `$table`", array(), 1);
 
-        if (!$tableConfig->keepAutoIncrement()) {
+        if (!$keepAutoIncrement) {
             $tableCreationCommand = preg_replace('/ AUTO_INCREMENT=[0-9]*/', '', $tableCreationCommand);
         }
 
