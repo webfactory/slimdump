@@ -136,7 +136,7 @@ You can execute the phpunit-tests by calling `vendor/bin/phpunit`.
 ## Credits, Copyright and License
 This tool was started at webfactory GmbH in Bonn by [mpdude](https://github.com/mpdude).
 
-- <http://www.webfactory.de>
-- <http://twitter.com/webfactory>
+- <https://www.webfactory.de>
+- <https://twitter.com/webfactory>
 
-Copyright 2014-2015 webfactory GmbH, Bonn. Code released under [the MIT license](LICENSE).
+Copyright 2014-2016 webfactory GmbH, Bonn. Code released under [the MIT license](LICENSE).
