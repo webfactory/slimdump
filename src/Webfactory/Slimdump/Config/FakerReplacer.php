@@ -19,10 +19,12 @@ class FakerReplacer
     /** @var \Faker\Generator */
     private $faker;
 
+    /**
+     * configuration for method which are not part of faker itself
+     * @var array
+     */
     private $replacementOptions = [
-        self::PREFIX . 'NAME' => 'generateFullNameReplacement',
-        self::PREFIX . 'FIRSTNAME' => 'generateFirstNameReplacement',
-        self::PREFIX . 'LASTNAME' => 'generateLastNameReplacement',
+        'name' => 'generateFullNameReplacement',
     ];
 
     /**
@@ -56,31 +58,47 @@ class FakerReplacer
      */
     public function generateReplacement($replacementId)
     {
-        $this->validateReplacementConfigured($replacementId);
-        return $this->getReplacementById($replacementId);
+        $replacementMethodName = str_replace(self::PREFIX, '', $replacementId);
+        $this->validateReplacementConfigured($replacementMethodName);
+        return $this->getReplacementById($replacementMethodName);
     }
 
     /**
      * validates if this type of replacement was configured
      *
-     * @param string $replacementId
+     * @param string $replacementName
      * @throws \Webfactory\Slimdump\Exception\InvalidReplacementOptionException if not configured in $this->replacementOptions
      */
-    private function validateReplacementConfigured($replacementId)
+    private function validateReplacementConfigured($replacementName)
     {
-        if (!array_key_exists($replacementId, $this->replacementOptions)) {
-            throw new InvalidReplacementOptionException($replacementId . ' is no valid faker replacement');
+        $isConfiguredReplacement = array_key_exists($replacementName, $this->replacementOptions);
+        $isFakerProperty = true;
+
+        try {
+            $this->faker->__get($replacementName);
+        } catch (\InvalidArgumentException $exception) {
+            $isFakerProperty = false;
+        }
+
+        if (!$isFakerProperty && !$isConfiguredReplacement) {
+            throw new InvalidReplacementOptionException($replacementName . ' is no valid faker replacement');
         }
     }
 
     /**
-     * @param $replacementId
+     * @param string $replacementName
      * @return string
      */
-    private function getReplacementById($replacementId)
+    private function getReplacementById($replacementName)
     {
-        $methodName = $this->replacementOptions[$replacementId];
-        return $this->$methodName();
+        if (array_key_exists($replacementName, $this->replacementOptions)) {
+            // internal function
+            $methodName = $this->replacementOptions[$replacementName];
+            return $this->$methodName();
+        }
+
+        // default faker property
+        return $this->faker->$replacementName;
     }
 
     /**
@@ -92,27 +110,5 @@ class FakerReplacer
     private function generateFullNameReplacement()
     {
         return $this->faker->firstName() . ' ' . $this->faker->lastName();
-    }
-
-    /**
-     * returns random first name
-     * Please note: This method might be marked as unused in your IDE.
-     * Method is called by wrapper method getReplacementById
-     * @return string
-     */
-    private function generateFirstNameReplacement()
-    {
-        return $this->faker->firstName();
-    }
-
-    /**
-     * returns random last name
-     * Please note: This method might be marked as unused in your IDE.
-     * Method is called by wrapper method getReplacementById
-     * @return string
-     */
-    private function generateLastNameReplacement()
-    {
-        return $this->faker->lastName();
     }
 }

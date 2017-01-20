@@ -12,7 +12,7 @@ class FakerReplacerTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @param string $replacementId
-     * @dataProvider provideValidReplacementOptions
+     * @dataProvider provideValidReplacementIds
      */
     public function testIsFakerColumnSuccess($replacementId)
     {
@@ -27,7 +27,7 @@ class FakerReplacerTest extends \PHPUnit_Framework_TestCase
     /**
      * no assertion because we only expect that no exception is thrown
      * @param string $replacementId
-     * @dataProvider provideValidReplacementOptions
+     * @dataProvider provideValidReplacementIds
      */
     public function testValidateReplacementConfiguredExisting($replacementId)
     {
@@ -35,17 +35,23 @@ class FakerReplacerTest extends \PHPUnit_Framework_TestCase
         $fakerReplacer->generateReplacement($replacementId);
     }
 
+    /**
+     * @covers FakerReplacer::generateReplacement
+     */
     public function testValidateReplacementConfiguredNotExisting()
     {
         $fakerReplacer = new FakerReplacer();
 
-        $this->setExpectedException(InvalidReplacementOptionException::class, 'FAKER_FOOBAR is no valid faker replacement');
+        $this->setExpectedException(InvalidReplacementOptionException::class, 'FOOBAR is no valid faker replacement');
+
+        // neither individual property nor faker property
         $fakerReplacer->generateReplacement('FAKER_FOOBAR');
     }
 
     /**
      * @param string $replacementId
-     * @dataProvider provideValidReplacementOptions
+     * @dataProvider provideValidReplacementNames
+     * @covers FakerReplacer::getReplacementById
      */
     public function testGetReplacementByIdSuccess($replacementId)
     {
@@ -57,6 +63,9 @@ class FakerReplacerTest extends \PHPUnit_Framework_TestCase
         $this->assertNotEmpty($replacedValue);
     }
 
+    /**
+     * @covers FakerReplacer::generateFullNameReplacement
+     */
     public function testGenerateFullNameReplacementContainsSpace()
     {
         $fakerReplacer = new \ReflectionClass(FakerReplacer::class);
@@ -71,12 +80,25 @@ class FakerReplacerTest extends \PHPUnit_Framework_TestCase
      * provides valid faker replacement ids
      * @return array
      */
-    public function provideValidReplacementOptions()
+    public function provideValidReplacementIds()
     {
         return [
-            [FakerReplacer::PREFIX . 'NAME'],
-            [FakerReplacer::PREFIX . 'FIRSTNAME'],
-            [FakerReplacer::PREFIX . 'LASTNAME'],
+            [FakerReplacer::PREFIX . 'name'], // slimdump personalized faker property
+            [FakerReplacer::PREFIX . 'firstname'], // original faker property
+            [FakerReplacer::PREFIX . 'lastname'], // original faker property
+        ];
+    }
+
+    /**
+     * provides valid faker replacement ids
+     * @return array
+     */
+    public function provideValidReplacementNames()
+    {
+        return [
+            ['name'], // slimdump personalized faker property
+            ['firstname'], // original faker property
+            ['lastname'], // original faker property
         ];
     }
 }
