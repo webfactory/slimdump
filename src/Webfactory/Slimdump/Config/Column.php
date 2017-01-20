@@ -62,6 +62,14 @@ class Column
         }
 
         if ($this->dump == Config::REPLACE) {
+            /** @var \SimpleXMLElement $replacement */
+            $replacementName = (string)$this->config->attributes()->replacement;
+
+            if (FakerReplacer::isFakerColumn($replacementName)) {
+                $fakerReplacer = new FakerReplacer();
+                return $fakerReplacer->generateReplacement($replacementName);
+            }
+
             return $this->config->attributes()->replacement;
         }
 
