@@ -57,7 +57,7 @@ class FakerReplacerTest extends \PHPUnit_Framework_TestCase
         $this->assertNotEmpty($replacedValue);
     }
 
-    public function generateFullNameReplacementContainsSpace()
+    public function testGenerateFullNameReplacementContainsSpace()
     {
         $fakerReplacer = new \ReflectionClass(FakerReplacer::class);
         $replacementMethod = $fakerReplacer->getMethod('generateFullNameReplacement');
