@@ -36,7 +36,7 @@ class FakerReplacerTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers FakerReplacer::generateReplacement
+     *
      */
     public function testValidateReplacementConfiguredNotExisting()
     {
@@ -51,7 +51,6 @@ class FakerReplacerTest extends \PHPUnit_Framework_TestCase
     /**
      * @param string $replacementId
      * @dataProvider provideValidReplacementNames
-     * @covers FakerReplacer::getReplacementById
      */
     public function testGetReplacementByIdSuccess($replacementId)
     {
@@ -64,7 +63,7 @@ class FakerReplacerTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers FakerReplacer::generateFullNameReplacement
+     *
      */
     public function testGenerateFullNameReplacementContainsSpace()
     {
