@@ -38,6 +38,31 @@ class ColumnTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('xxxx@xxxx.xxx', $columnConfig->processRowValue('test@fest.com'));
     }
 
+    public function testProcessRowValueFakerReplacement()
+    {
+        $xml = '<?xml version="1.0" ?>
+                <column name="test" dump="replace" replacement="FAKER_NAME" />';
+        $xmlElement = new \SimpleXMLElement($xml);
+
+        $columnConfig = new Column($xmlElement);
+
+        $fakedName = $columnConfig->processRowValue('original user name');
+        $this->assertNotSame('original user name', $fakedName);
+    }
+
+    public function testProcessRowValueStandardReplacement()
+    {
+        $xml = '<?xml version="1.0" ?>
+                <column name="test" dump="replace" replacement="ANON" />';
+        $xmlElement = new \SimpleXMLElement($xml);
+
+        $columnConfig = new Column($xmlElement);
+
+        $replacedName = $columnConfig->processRowValue('original user name');
+        // note: default replacement returns \SimpleXMLElement - just checking content here using assertEquals
+        $this->assertEquals('ANON', $replacedName);
+    }
+
     /**
      * @expectedException \Webfactory\Slimdump\Exception\InvalidDumpTypeException
      */

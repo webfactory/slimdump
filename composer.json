@@ -17,7 +17,8 @@
     "require": {
         "php": ">=5.3.9",
         "doctrine/dbal": "^2.5.2",
-        "symfony/console": "^2.8.7"
+        "symfony/console": "^2.8.7",
+        "fzaninotto/faker": "^1.6"
     },
     "autoload": {
         "files": [
