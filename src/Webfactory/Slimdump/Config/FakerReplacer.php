@@ -20,11 +20,12 @@ class FakerReplacer
     private $faker;
 
     /**
-     * configuration for method which are not part of faker itself
+     * configuration for method which are not part of faker itself.
+     * You can implement a new method "methodName" which returns for example a
+     * format: 'suffix' => 'methodName',
      * @var array
      */
     private $replacementOptions = [
-        'name' => 'generateFullNameReplacement',
     ];
 
     /**
@@ -99,16 +100,5 @@ class FakerReplacer
 
         // default faker property
         return $this->faker->$replacementName;
-    }
-
-    /**
-     * returns first and lastname separated by space
-     * Please note: This method might be marked as unused in your IDE.
-     * Method is called by wrapper method getReplacementById
-     * @return string
-     */
-    private function generateFullNameReplacement()
-    {
-        return $this->faker->firstName() . ' ' . $this->faker->lastName();
     }
 }
