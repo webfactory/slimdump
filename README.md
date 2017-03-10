@@ -106,6 +106,19 @@ Example:
 ```
 This is a valid configuration. If more than one instruction matches a specific table name, the most specific one will be used. E. g. if you have definitions for blog_* and blog_author, the latter will be used for your author table, independent of their sequence order in the config.
 
+### Faker replacements
+Slimdump allows basic Faker options when using dump mode `replace`. 
+You can use every Faker option which needs no arguments. Of course you can still use static replacements.
+```xml
+<?xml version="1.0" ?>
+<slimdump>
+    <table name="users" dump="full" keep-auto-increment="false" condition="`timestamp` >= '2017-01-20 00:00:00' LIMIT 1">
+        <column name="password" dump="replace" replacement="XXXXX" />
+        <column name="username" dump="replace" replacement="FAKER_word" />
+    </table>
+</slimdump>
+```
+
 ## Other databases
 Currently only MySQL is supported. But feel free to port it to the database of your needs.
 
