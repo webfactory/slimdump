@@ -49,40 +49,12 @@ class FakerReplacerTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @param string $replacementId
-     * @dataProvider provideValidReplacementNames
-     */
-    public function testGetReplacementByIdSuccess($replacementId)
-    {
-        $fakerReplacer = new \ReflectionClass(FakerReplacer::class);
-        $replacementMethod = $fakerReplacer->getMethod('getReplacementById');
-        $replacementMethod->setAccessible(true);
-
-        $replacedValue = $replacementMethod->invokeArgs(new FakerReplacer(), [$replacementId]);
-        $this->assertNotEmpty($replacedValue);
-    }
-
-    /**
-     *
-     */
-    public function testGenerateFullNameReplacementContainsSpace()
-    {
-        $fakerReplacer = new \ReflectionClass(FakerReplacer::class);
-        $replacementMethod = $fakerReplacer->getMethod('generateFullNameReplacement');
-        $replacementMethod->setAccessible(true);
-
-        $replacedValue = $replacementMethod->invoke(new FakerReplacer());
-        $this->assertContains(' ', $replacedValue);
-    }
-
-    /**
      * provides valid faker replacement ids
      * @return array
      */
     public function provideValidReplacementIds()
     {
         return [
-            [FakerReplacer::PREFIX . 'name'], // slimdump personalized faker property
             [FakerReplacer::PREFIX . 'firstname'], // original faker property
             [FakerReplacer::PREFIX . 'lastname'], // original faker property
         ];
@@ -95,7 +67,6 @@ class FakerReplacerTest extends \PHPUnit_Framework_TestCase
     public function provideValidReplacementNames()
     {
         return [
-            ['name'], // slimdump personalized faker property
             ['firstname'], // original faker property
             ['lastname'], // original faker property
         ];
