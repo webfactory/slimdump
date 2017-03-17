@@ -20,15 +20,6 @@ class FakerReplacer
     private $faker;
 
     /**
-     * configuration for method which are not part of faker itself.
-     * You can implement a new method "methodName" which returns for example a
-     * format: 'suffix' => 'methodName',
-     * @var array
-     */
-    private $replacementOptions = [
-    ];
-
-    /**
      * FakerReplacer constructor.
      * TODO: Add functionality which makes locale configurable
      */
@@ -53,7 +44,7 @@ class FakerReplacer
     }
 
     /**
-     * wrapper method which calls the method configured in $this->replacementOptions
+     * wrapper method which removes the prefix calls the defined faker method
      * @param string $replacementId
      * @return string
      */
@@ -61,44 +52,21 @@ class FakerReplacer
     {
         $replacementMethodName = str_replace(self::PREFIX, '', $replacementId);
         $this->validateReplacementConfigured($replacementMethodName);
-        return $this->getReplacementById($replacementMethodName);
+        return $this->faker->$replacementMethodName;
     }
 
     /**
      * validates if this type of replacement was configured
      *
      * @param string $replacementName
-     * @throws \Webfactory\Slimdump\Exception\InvalidReplacementOptionException if not configured in $this->replacementOptions
+     * @throws \Webfactory\Slimdump\Exception\InvalidReplacementOptionException if not a faker method
      */
     private function validateReplacementConfigured($replacementName)
     {
-        $isConfiguredReplacement = array_key_exists($replacementName, $this->replacementOptions);
-        $isFakerProperty = true;
-
         try {
             $this->faker->__get($replacementName);
         } catch (\InvalidArgumentException $exception) {
-            $isFakerProperty = false;
-        }
-
-        if (!$isFakerProperty && !$isConfiguredReplacement) {
             throw new InvalidReplacementOptionException($replacementName . ' is no valid faker replacement');
         }
-    }
-
-    /**
-     * @param string $replacementName
-     * @return string
-     */
-    private function getReplacementById($replacementName)
-    {
-        if (array_key_exists($replacementName, $this->replacementOptions)) {
-            // internal function
-            $methodName = $this->replacementOptions[$replacementName];
-            return $this->$methodName();
-        }
-
-        // default faker property
-        return $this->faker->$replacementName;
     }
 }

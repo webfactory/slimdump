@@ -49,20 +49,6 @@ class FakerReplacerTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @param string $replacementId
-     * @dataProvider provideValidReplacementNames
-     */
-    public function testGetReplacementByIdSuccess($replacementId)
-    {
-        $fakerReplacer = new \ReflectionClass(FakerReplacer::class);
-        $replacementMethod = $fakerReplacer->getMethod('getReplacementById');
-        $replacementMethod->setAccessible(true);
-
-        $replacedValue = $replacementMethod->invokeArgs(new FakerReplacer(), [$replacementId]);
-        $this->assertNotEmpty($replacedValue);
-    }
-
-    /**
      * provides valid faker replacement ids
      * @return array
      */
