@@ -58,6 +58,11 @@ Example:
   <!-- Dump the "document" table but do not pass the "AUTO_INCREMENT" parameter to the SQL query.
        Instead start to increment from the beginning -->
   <table name="document" dump="full" keep-auto-increment="false" />
+  
+  <!-- Omit dumping CREATE TRIGGER statements for the "events" table.
+       By default, triggers will be included whenever the table is dumped
+       as schema or otherwise. -->
+  <table name="events" dump="schema" dump-triggers="false" />
 </slimdump>
 ```
 
@@ -147,9 +152,10 @@ Use slimdump as Phar:
 You can execute the phpunit-tests by calling `vendor/bin/phpunit`. 
 
 ## Credits, Copyright and License
+
 This tool was started at webfactory GmbH in Bonn by [mpdude](https://github.com/mpdude).
 
 - <https://www.webfactory.de>
 - <https://twitter.com/webfactory>
 
-Copyright 2014-2016 webfactory GmbH, Bonn. Code released under [the MIT license](LICENSE).
+Copyright 2014-2017 webfactory GmbH, Bonn. Code released under [the MIT license](LICENSE).
