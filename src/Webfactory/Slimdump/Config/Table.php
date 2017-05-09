@@ -20,6 +20,9 @@ class Table
     /** @var boolean */
     private $keepAutoIncrement;
 
+    /** @var boolean */
+    private $dumpTriggers;
+
     /** @var \SimpleXMLElement */
     private $config;
 
@@ -46,6 +49,7 @@ class Table
         }
 
         $this->keepAutoIncrement = self::attributeToBoolean($attr->{'keep-auto-increment'}, true);
+        $this->dumpTriggers = self::attributeToBoolean($attr->{'dump-triggers'}, true);
 
         foreach ($config->column as $columnConfig) {
             $column = new Column($columnConfig);
@@ -87,6 +91,14 @@ class Table
     public function isDataDumpRequired()
     {
         return $this->dump >= Config::NOBLOB;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isTriggerDumpRequired()
+    {
+        return $this->dumpTriggers;
     }
 
     /**
