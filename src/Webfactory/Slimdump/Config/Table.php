@@ -14,11 +14,18 @@ use Webfactory\Slimdump\Exception\InvalidDumpTypeException;
  */
 class Table
 {
+    const TRIGGER_SKIP = 0;
+    const TRIGGER_NO_DEFINER = 1;
+    const TRIGGER_KEEP_DEFINER = 2;
+
     private $selector;
     private $dump;
 
     /** @var boolean */
     private $keepAutoIncrement;
+
+    /** @var integer */
+    private $dumpTriggers;
 
     /** @var \SimpleXMLElement */
     private $config;
@@ -46,6 +53,7 @@ class Table
         }
 
         $this->keepAutoIncrement = self::attributeToBoolean($attr->{'keep-auto-increment'}, true);
+        $this->dumpTriggers = self::parseDumpTriggerAttribute($attr->{'dump-triggers'});
 
         foreach ($config->column as $columnConfig) {
             $column = new Column($columnConfig);
@@ -63,6 +71,25 @@ class Table
             return $defaultValue;
         }
         return ($attribute == 'true') ? true : false;
+    }
+
+    private static function parseDumpTriggerAttribute($value)
+    {
+        if ($value === null) {
+            return self::TRIGGER_NO_DEFINER; // default
+        } else if ($value == 'true') {
+            return self::TRIGGER_NO_DEFINER; // BC
+        } else if ($value == 'false') {
+            return self::TRIGGER_SKIP;
+        } else if ($value == 'none') {
+            return self::TRIGGER_SKIP;
+        } else if ($value == 'no-definer') {
+            return self::TRIGGER_NO_DEFINER;
+        } else if ($value == 'keep-definer') {
+            return self::TRIGGER_KEEP_DEFINER;
+        } else {
+            throw new \RuntimeException("Unsupported value '$value' for the 'dump-triggers' setting.");
+        }
     }
 
     /**
@@ -87,6 +114,22 @@ class Table
     public function isDataDumpRequired()
     {
         return $this->dump >= Config::NOBLOB;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isTriggerDumpRequired()
+    {
+        return $this->dumpTriggers > self::TRIGGER_SKIP;
+    }
+
+    /**
+     * @return int
+     */
+    public function getDumpTriggersLevel()
+    {
+        return $this->dumpTriggers;
     }
 
     /**

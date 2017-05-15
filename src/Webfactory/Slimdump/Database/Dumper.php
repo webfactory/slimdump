@@ -67,6 +67,32 @@ class Dumper
     }
 
     /**
+     * @param Connection $db
+     * @param string     $tableName
+     * @param integer    $level One of the Table::TRIGGER_* constants
+     */
+    public function dumpTriggers(Connection $db, $tableName, $level = Table::TRIGGER_NO_DEFINER)
+    {
+        $triggers = $db->fetchAll("SHOW TRIGGERS LIKE ?", [$tableName]);
+
+        if (!$triggers) {
+            return;
+        }
+
+        $this->output->writeln("-- BEGIN TRIGGERS $tableName", OutputInterface::OUTPUT_RAW);
+
+        foreach ($triggers as $row) {
+            $createTriggerCommand = $db->fetchColumn("SHOW CREATE TRIGGER `{$row['Trigger']}`", [], 2);
+
+            if ($level == Table::TRIGGER_NO_DEFINER) {
+                $createTriggerCommand = preg_replace('/DEFINER=`[^`]*`@`[^`]*` /', '', $createTriggerCommand);
+            }
+
+            $this->output->writeln($createTriggerCommand.";\n", OutputInterface::OUTPUT_RAW);
+        }
+    }
+
+    /**
      * @param            $table
      * @param Table      $tableConfig
      * @param Connection $db

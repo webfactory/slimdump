@@ -70,6 +70,10 @@ class SlimdumpCommand extends Command
                 if ($tableConfig->isDataDumpRequired()) {
                     $dumper->dumpData($tableName, $tableConfig, $db);
                 }
+
+                if ($tableConfig->isTriggerDumpRequired()) {
+                    $dumper->dumpTriggers($db, $tableName, $tableConfig->getDumpTriggersLevel());
+                }
             }
         }
         $dumper->enableForeignKeys();
