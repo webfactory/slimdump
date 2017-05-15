@@ -95,9 +95,6 @@ class DumperTest extends \PHPUnit_Framework_TestCase
 
     public function testDumpTriggers()
     {
-        $t1 = 'CREATE DEFINER=`somebody`@`myhost` TRIGGER trigger1 ...';
-        $t2 = 'CREATE DEFINER=`somebody`@`myhost` TRIGGER trigger2 ...';
-
         $this->dbMock->expects($this->at(0))
             ->method('fetchAll')
             ->with('SHOW TRIGGERS LIKE ?', ['test'])
