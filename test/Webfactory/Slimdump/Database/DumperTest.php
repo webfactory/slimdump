@@ -93,7 +93,7 @@ class DumperTest extends \PHPUnit_Framework_TestCase
         $this->assertContains('INSERT INTO', $output);
     }
 
-    public function testDumpTriggers()
+    public function testQueriesAllTriggers()
     {
         $this->dbMock->expects($this->at(0))
             ->method('fetchAll')
@@ -102,18 +102,48 @@ class DumperTest extends \PHPUnit_Framework_TestCase
 
         $this->dbMock->expects($this->at(1))
             ->method('fetchColumn')
-            ->with('SHOW CREATE TRIGGER `trigger1`')
-            ->willReturn('CREATE DEFINER=`somebody`@`myhost` TRIGGER trigger1 ...');
+            ->with('SHOW CREATE TRIGGER `trigger1`');
 
         $this->dbMock->expects($this->at(2))
             ->method('fetchColumn')
-            ->with('SHOW CREATE TRIGGER `trigger2`')
-            ->willReturn('CREATE DEFINER=`somebody`@`myhost` TRIGGER trigger2 ...');
+            ->with('SHOW CREATE TRIGGER `trigger2`');
 
         $this->dumper->dumpTriggers($this->dbMock, 'test');
+    }
+
+    public function testDumpsTriggerWithDefiner()
+    {
+        $this->dbMock->expects($this->at(0))
+            ->method('fetchAll')
+            ->with('SHOW TRIGGERS LIKE ?', ['test'])
+            ->willReturn([['Trigger' => 'trigger1']]);
+
+        $this->dbMock->expects($this->at(1))
+            ->method('fetchColumn')
+            ->with('SHOW CREATE TRIGGER `trigger1`')
+            ->willReturn('CREATE DEFINER=`somebody`@`myhost` TRIGGER trigger1 ...');
+
+        $this->dumper->dumpTriggers($this->dbMock, 'test', Table::TRIGGER_KEEP_DEFINER);
 
         $output = $this->outputBuffer->fetch();
-        $this->assertContains("CREATE TRIGGER trigger1 ...;", $output);
-        $this->assertContains("CREATE TRIGGER trigger2 ...;", $output);
+        $this->assertContains('CREATE DEFINER=`somebody`@`myhost` TRIGGER trigger1 ...;', $output);
+    }
+
+    public function testDumpsTriggerWithoutDefiner()
+    {
+        $this->dbMock->expects($this->at(0))
+            ->method('fetchAll')
+            ->with('SHOW TRIGGERS LIKE ?', ['test'])
+            ->willReturn([['Trigger' => 'trigger1']]);
+
+        $this->dbMock->expects($this->at(1))
+            ->method('fetchColumn')
+            ->with('SHOW CREATE TRIGGER `trigger1`')
+            ->willReturn('CREATE DEFINER=`somebody`@`myhost` TRIGGER trigger1 ...');
+
+        $this->dumper->dumpTriggers($this->dbMock, 'test', Table::TRIGGER_NO_DEFINER);
+
+        $output = $this->outputBuffer->fetch();
+        $this->assertContains('CREATE TRIGGER trigger1 ...;', $output);
     }
 }

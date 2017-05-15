@@ -72,7 +72,7 @@ class SlimdumpCommand extends Command
                 }
 
                 if ($tableConfig->isTriggerDumpRequired()) {
-                    $dumper->dumpTriggers($db, $tableName);
+                    $dumper->dumpTriggers($db, $tableName, $tableConfig->getDumpTriggersLevel());
                 }
             }
         }

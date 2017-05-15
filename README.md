@@ -59,9 +59,18 @@ Example:
        Instead start to increment from the beginning -->
   <table name="document" dump="full" keep-auto-increment="false" />
   
-  <!-- Omit dumping CREATE TRIGGER statements for the "events" table.
-       By default, triggers will be included whenever the table is dumped
-       as schema or otherwise. -->
+  <!-- 
+    Trigger handling: 
+    
+    By default, CREATE TRIGGER statements will be dumped for all tables, but the "DEFINER=..."
+    clause will be removed to make it easier to re-import the database e. g. in development
+    environments. 
+    
+    You can change this by setting 'dump-triggers' to one of:
+        - 'false' or 'none': Do not dump triggers at all
+        - 'true' or 'no-definer': Dump trigger creation statement but remove DEFINER=... clause
+        - 'keep-definer': Keep the DEFINER=... clause
+  -->
   <table name="events" dump="schema" dump-triggers="false" />
 </slimdump>
 ```

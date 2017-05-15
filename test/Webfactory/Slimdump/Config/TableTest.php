@@ -119,4 +119,41 @@ class TableTest extends \PHPUnit_Framework_TestCase
 
         $this->assertFalse($table->keepAutoIncrement());
     }
+
+    public function testDumpTriggerDefaultSetting()
+    {
+        $xml = '<?xml version="1.0" ?>
+                <table name="*" dump="full" />';
+
+        $xmlElement = new \SimpleXMLElement($xml);
+        $table = new Table($xmlElement);
+
+        $this->assertEquals($table->getDumpTriggersLevel(), Table::TRIGGER_NO_DEFINER);
+        $this->assertTrue($table->isTriggerDumpRequired());
+    }
+    
+    /** @dataProvider  dumpTriggerAttributeValues */
+    public function testDumpTriggerAttribute($value, $expected)
+    {
+        $xml = '<?xml version="1.0" ?>
+                <table name="*" dump="full" dump-triggers="'.$value.'" />';
+
+        $xmlElement = new \SimpleXMLElement($xml);
+        $table = new Table($xmlElement);
+
+        $this->assertEquals($table->getDumpTriggersLevel(), $expected);
+        $this->assertEquals($table->isTriggerDumpRequired(), $expected !== Table::TRIGGER_SKIP);
+    }
+
+    public function dumpTriggerAttributeValues()
+    {
+        return [
+            ['true', Table::TRIGGER_NO_DEFINER],
+            ['false', Table::TRIGGER_SKIP],
+            ['none', Table::TRIGGER_SKIP],
+            ['no-definer', Table::TRIGGER_NO_DEFINER],
+            ['keep-definer', Table::TRIGGER_KEEP_DEFINER],
+        ];
+    }
+
 }
