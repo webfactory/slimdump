@@ -1,8 +1,9 @@
 {
     "chmod": "0755",
-    "main": "bin/slimdump.php",
+    "main": "bin/slimdump",
     "directories-bin": [
-        "php"
+        "php",
+        "src"
     ],
     "finder-bin": [
         {
