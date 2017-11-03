@@ -2,6 +2,8 @@
 
 namespace Webfactory\Slimdump\Config;
 
+use phpDocumentor\Reflection\Types\Array_;
+
 class ColumnTest extends \PHPUnit_Framework_TestCase
 {
 
@@ -105,8 +107,23 @@ class ColumnTest extends \PHPUnit_Framework_TestCase
         $xmlElement = new \SimpleXMLElement($xml);
 
         $columnConfig = new Column($xmlElement);
-        $this->assertRegExp('/[0-9a-zA-Z]*/', $columnConfig->processRowValue('test value'));
-        $this->assertNotEquals($columnConfig->processRowValue('test value'),$columnConfig->processRowValue('test value'),$columnConfig->processRowValue('test value'),$columnConfig->processRowValue('test value'));
+
+        $rowValues = array(
+            $columnConfig->processRowValue('test value'),
+            $columnConfig->processRowValue('test value'),
+            $columnConfig->processRowValue('test value'),
+            $columnConfig->processRowValue('test value'),
+            $columnConfig->processRowValue('test value')
+        );
+
+        $this->assertRegExp('/[0-9]/', $rowValues[0]);
+
+        $unique = false;
+
+        if(count($rowValues) === count(array_unique($rowValues)))
+            $unique = true;
+
+        $this->assertTrue($unique);
     }
 
 }

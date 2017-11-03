@@ -59,11 +59,10 @@ class FakerReplacer
             $modifierName = $modifierAndMethod[0];
             $replacementMethodName = $modifierAndMethod[1];
 
-            $this->validateReplacementConfiguredModifier($modifierName,$replacementMethodName);
+            $this->validateReplacementConfiguredModifier($modifierName, $replacementMethodName);
 
             return (string)$this->faker->$modifierName->$replacementMethodName;
-        }
-        else{
+        } else {
             $this->validateReplacementConfigured($replacementMethodName);
             return (string)$this->faker->$replacementMethodName;
         }
