@@ -97,5 +97,16 @@ class ColumnTest extends \PHPUnit_Framework_TestCase
         $columnConfig = new Column($xmlElement);
         $this->assertEquals('', $columnConfig->processRowValue('test value'));
     }
+    public function testReplaceColumnWithUniqId()
+    {
+        $xml = '<?xml version="1.0" ?>
+                <column name="test" dump="replace" replacement="FAKER_unique->randomDigit" />';
+
+        $xmlElement = new \SimpleXMLElement($xml);
+
+        $columnConfig = new Column($xmlElement);
+        $this->assertRegExp('/[0-9a-zA-Z]*/', $columnConfig->processRowValue('test value'));
+        $this->assertNotEquals($columnConfig->processRowValue('test value'),$columnConfig->processRowValue('test value'),$columnConfig->processRowValue('test value'),$columnConfig->processRowValue('test value'));
+    }
 
 }

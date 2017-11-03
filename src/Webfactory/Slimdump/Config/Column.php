@@ -15,6 +15,7 @@ class Column
 {
 
     private $config = null;
+    private $fakerReplacer;
 
     /**
      * Column constructor.
@@ -35,6 +36,8 @@ class Column
         } else {
             throw new InvalidDumpTypeException(sprintf("Invalid dump type %s for column %s.", $attr->dump, $this->selector));
         }
+
+        $this->fakerReplacer = new FakerReplacer();
     }
 
     /**
@@ -65,9 +68,11 @@ class Column
             /** @var \SimpleXMLElement $replacement */
             $replacementName = (string)$this->config->attributes()->replacement;
 
-            if (FakerReplacer::isFakerColumn($replacementName)) {
-                $fakerReplacer = new FakerReplacer();
-                return $fakerReplacer->generateReplacement($replacementName);
+
+
+            if ($this->fakerReplacer->isFakerColumn($replacementName)) {
+
+                return $this->fakerReplacer->generateReplacement($replacementName);
             }
 
             return $this->config->attributes()->replacement;
