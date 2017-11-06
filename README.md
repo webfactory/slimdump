@@ -132,7 +132,16 @@ You can use every Faker option which needs no arguments. Of course you can still
     </table>
 </slimdump>
 ```
+You can also use modifiers, such as `unique`. Just seperate the modifier with an object operator (`->`), as you would do in PHP.
 
+```xml
+<?xml version="1.0" ?>
+<slimdump>
+    <table name="users" dump="full" keep-auto-increment="false" condition="`timestamp` >= '2017-01-20 00:00:00' LIMIT 1">
+        <column name="email" dump="replace" replacement="FAKER_unique->email" />
+    </table>
+</slimdump>
+```
 ## Other databases
 Currently only MySQL is supported. But feel free to port it to the database of your needs.
 

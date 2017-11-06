@@ -2,6 +2,8 @@
 
 namespace Webfactory\Slimdump\Config;
 
+use phpDocumentor\Reflection\Types\Array_;
+
 class ColumnTest extends \PHPUnit_Framework_TestCase
 {
 
@@ -96,6 +98,32 @@ class ColumnTest extends \PHPUnit_Framework_TestCase
 
         $columnConfig = new Column($xmlElement);
         $this->assertEquals('', $columnConfig->processRowValue('test value'));
+    }
+    public function testReplaceColumnWithUniqId()
+    {
+        $xml = '<?xml version="1.0" ?>
+                <column name="test" dump="replace" replacement="FAKER_unique->randomDigit" />';
+
+        $xmlElement = new \SimpleXMLElement($xml);
+
+        $columnConfig = new Column($xmlElement);
+
+        $rowValues = array(
+            $columnConfig->processRowValue('test value'),
+            $columnConfig->processRowValue('test value'),
+            $columnConfig->processRowValue('test value'),
+            $columnConfig->processRowValue('test value'),
+            $columnConfig->processRowValue('test value')
+        );
+
+        $this->assertRegExp('/[0-9]/', $rowValues[0]);
+
+        $unique = false;
+
+        if(count($rowValues) === count(array_unique($rowValues)))
+            $unique = true;
+
+        $this->assertTrue($unique);
     }
 
 }

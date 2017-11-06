@@ -5,6 +5,7 @@ namespace Webfactory\Slimdump\Config;
 use Faker;
 use Webfactory\Slimdump\Exception\InvalidReplacementOptionException;
 
+
 /**
  * This class handles column configurations which have a "replacement" option
  * @see https://github.com/webfactory/slimdump#configuration for configuration tutorial
@@ -51,8 +52,20 @@ class FakerReplacer
     public function generateReplacement($replacementId)
     {
         $replacementMethodName = str_replace(self::PREFIX, '', $replacementId);
-        $this->validateReplacementConfigured($replacementMethodName);
-        return $this->faker->$replacementMethodName;
+
+        if (strpos($replacementMethodName,'->') !== false) {
+
+            $modifierAndMethod = explode('->',$replacementMethodName);
+            $modifierName = $modifierAndMethod[0];
+            $replacementMethodName = $modifierAndMethod[1];
+
+            $this->validateReplacementConfiguredModifier($modifierName, $replacementMethodName);
+
+            return (string)$this->faker->$modifierName->$replacementMethodName;
+        } else {
+            $this->validateReplacementConfigured($replacementMethodName);
+            return (string)$this->faker->$replacementMethodName;
+        }
     }
 
     /**
@@ -67,6 +80,14 @@ class FakerReplacer
             $this->faker->__get($replacementName);
         } catch (\InvalidArgumentException $exception) {
             throw new InvalidReplacementOptionException($replacementName . ' is no valid faker replacement');
+        }
+    }
+    private function validateReplacementConfiguredModifier($replacementModifier,$replacementName)
+    {
+        try {
+            $this->faker->__get($replacementModifier)->__get($replacementName);
+        } catch (\InvalidArgumentException $exception) {
+            throw new InvalidReplacementOptionException($replacementModifier . "->" . $replacementName . ' is no valid faker replacement');
         }
     }
 }
