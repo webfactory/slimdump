@@ -99,31 +99,21 @@ class ColumnTest extends \PHPUnit_Framework_TestCase
         $columnConfig = new Column($xmlElement);
         $this->assertEquals('', $columnConfig->processRowValue('test value'));
     }
-    public function testReplaceColumnWithUniqId()
+
+    public function testReplaceColumnWithUniqeValue()
     {
         $xml = '<?xml version="1.0" ?>
                 <column name="test" dump="replace" replacement="FAKER_unique->randomDigit" />';
-
         $xmlElement = new \SimpleXMLElement($xml);
-
         $columnConfig = new Column($xmlElement);
 
-        $rowValues = array(
-            $columnConfig->processRowValue('test value'),
-            $columnConfig->processRowValue('test value'),
-            $columnConfig->processRowValue('test value'),
-            $columnConfig->processRowValue('test value'),
-            $columnConfig->processRowValue('test value')
+        $firstGeneratedValue = $columnConfig->processRowValue('test value');
+        $secondGeneratedValue = $columnConfig->processRowValue('test value');
+
+        $this->assertNotEquals(
+            $firstGeneratedValue,
+            $secondGeneratedValue,
+            'FAKER_unique->randomDigit generated the same value: "' . $firstGeneratedValue . '" twice'
         );
-
-        $this->assertRegExp('/[0-9]/', $rowValues[0]);
-
-        $unique = false;
-
-        if(count($rowValues) === count(array_unique($rowValues)))
-            $unique = true;
-
-        $this->assertTrue($unique);
     }
-
 }
