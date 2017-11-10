@@ -29,6 +29,11 @@ We're also working on providing a `.phar` package of `slimdump` for those not us
 
 `slimdump {DSN} {config-file} > dump.sql`
 
+
+If you want to use an environment variable for the DSN, replace the first parameter with `-`:
+
+`MYSQL_DSN={DSN} slimdump - {config file(s)}`
+
 The DSN has to be in the following format:
 
 `mysql://[user[:password]@]host[:port]/dbname`
