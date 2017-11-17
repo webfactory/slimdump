@@ -36,7 +36,7 @@ class SlimdumpCommand extends Command
     {
         $dsn = $input->getArgument('dsn');
 
-        if ($dsn === '-'){
+        if ($dsn === '-') {
             $dsn = getenv("MYSQL_DSN");
         }
 
