@@ -35,6 +35,11 @@ class SlimdumpCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $dsn = $input->getArgument('dsn');
+
+        if ($dsn === '-') {
+            $dsn = getenv("MYSQL_DSN");
+        }
+
         $db = connect($dsn);
 
         $config = ConfigBuilder::createConfigurationFromConsecutiveFiles($input->getArgument('config'));
