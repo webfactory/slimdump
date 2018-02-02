@@ -1,5 +1,6 @@
 <?php
 
+namespace Webfactory\Slimdump;
 /**
  * @param string $dsn
  * @return \Doctrine\DBAL\Driver
