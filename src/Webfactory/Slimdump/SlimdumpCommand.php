@@ -53,7 +53,7 @@ class SlimdumpCommand extends Command
             $dsn = getenv("MYSQL_DSN");
         }
 
-        $db = connect($dsn);
+        $db = $this->connect($dsn);
 
         $config = ConfigBuilder::createConfigurationFromConsecutiveFiles($input->getArgument('config'));
         $this->dump($config, $db, $output);
