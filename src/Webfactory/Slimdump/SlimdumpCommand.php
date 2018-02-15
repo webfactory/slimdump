@@ -31,6 +31,19 @@ class SlimdumpCommand extends Command
             )
         ;
     }
+
+    protected function connect($dsn)
+    {
+        try {
+            return \Doctrine\DBAL\DriverManager::getConnection(
+                array('url' => $dsn, 'charset' => 'utf8', 'driverClass' => 'Doctrine\DBAL\Driver\PDOMySql\Driver')
+            );
+        } catch (Exception $e) {
+            $msg = "Database error: " . $e->getMessage();
+            fwrite(STDERR, "$msg\n");
+            exit(1);
+        }
+    }
     
     protected function execute(InputInterface $input, OutputInterface $output)
     {
