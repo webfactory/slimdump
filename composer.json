@@ -21,9 +21,6 @@
         "fzaninotto/faker": "^1.6"
     },
     "autoload": {
-        "files": [
-            "php/util.php"
-        ],
         "psr-0": {
             "Webfactory": "src/"
         }

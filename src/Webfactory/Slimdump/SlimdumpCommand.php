@@ -31,7 +31,7 @@ class SlimdumpCommand extends Command
             )
         ;
     }
-    
+
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $dsn = $input->getArgument('dsn');
@@ -40,10 +40,23 @@ class SlimdumpCommand extends Command
             $dsn = getenv("MYSQL_DSN");
         }
 
-        $db = connect($dsn);
+        $db = $this->connect($dsn);
 
         $config = ConfigBuilder::createConfigurationFromConsecutiveFiles($input->getArgument('config'));
         $this->dump($config, $db, $output);
+    }
+
+    private function connect($dsn)
+    {
+        try {
+            return \Doctrine\DBAL\DriverManager::getConnection(
+                array('url' => $dsn, 'charset' => 'utf8', 'driverClass' => 'Doctrine\DBAL\Driver\PDOMySql\Driver')
+            );
+        } catch (Exception $e) {
+            $msg = "Database error: " . $e->getMessage();
+            fwrite(STDERR, "$msg\n");
+            exit(1);
+        }
     }
 
     /**
