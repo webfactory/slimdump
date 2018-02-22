@@ -16,7 +16,6 @@ class Task
         $config = ConfigBuilder::createConfigurationFromConsecutiveFiles($configFile);
         $db = $this->connect($dsn);
 
-
         $this->dump($config, $db, $output);
     }
 
