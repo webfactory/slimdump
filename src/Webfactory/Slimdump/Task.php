@@ -10,9 +10,8 @@ use Doctrine\DBAL\Connection;
 
 class Task
 {
-    public function __construct($dsn, $configFile, OutputInterface $output){
-
-
+    public function __construct($dsn, $configFile, OutputInterface $output)
+    {
         $config = ConfigBuilder::createConfigurationFromConsecutiveFiles($configFile);
         $db = $this->connect($dsn);
 
