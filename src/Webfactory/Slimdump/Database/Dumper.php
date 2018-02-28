@@ -125,7 +125,7 @@ class Dumper
         $this->output->writeln("-- BEGIN DATA $table", OutputInterface::OUTPUT_RAW);
 
         $bufferSize = 0;
-        $max = 100 * 1024 * 1024; // 100 MB
+        $max = $tableConfig->getBufferSize();
         $numRows = $db->fetchColumn("SELECT COUNT(*) FROM `$table`");
 
         if ($numRows == 0) {
