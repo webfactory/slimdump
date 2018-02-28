@@ -204,6 +204,34 @@ class Table
     }
 
     /**
+     * @return int
+     */
+    public function getBufferSize()
+    {
+        $bufferSize = $this->config->attributes()->{'buffer-size'};
+
+        if ($bufferSize !== null) {
+            preg_match('/^(\d+)(KB|MB|GB)?$/', $bufferSize, $matches);
+            $bufferSize = (int)$matches[1];
+            $bufferFactor = 1;
+
+            switch ($matches[2]) {
+                case 'GB':
+                    $bufferFactor *= 1024;
+                case 'MB':
+                    $bufferFactor *= 1024;
+                case 'KB':
+                    $bufferFactor *= 1024;
+            }
+
+            return $bufferSize * $bufferFactor;
+        } else {
+            // Default 100MB
+            return 100 * 1024 * 1024;
+        }
+    }
+
+    /**
      * @param string $columnName
      *
      * @return Column

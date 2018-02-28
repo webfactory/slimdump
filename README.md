@@ -93,6 +93,20 @@ Example:
 </slimdump>
 ```
 
+### Buffer sizes
+
+You may are not able to fully administrate your MySQL database. Often you run into problems with the buffer size on really
+big tables. You can set the buffer size per table. Add a suffix (KB, MB or GB) to the value.
+
+Example:
+```xml
+<?xml version="1.0" ?>
+<slimdump>
+  <!-- Limit the buffer size to 12MB -->
+  <table name="*" dump="full" buffer-size="12MB" />
+</slimdump>
+```
+
 ### Dump modes
 
 The following modes are supported for the `dump` attribute:
