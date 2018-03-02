@@ -40,6 +40,11 @@ The DSN has to be in the following format:
 
 For further explanations have a look at the [Doctrine documentation](http://doctrine-orm.readthedocs.org/projects/doctrine-dbal/en/latest/reference/configuration.html#connecting-using-a-url).
 
+You can also specify the buffer size with an option. Add a suffix (KB, MB or GB) to the value for better readability.
+
+Example:
+`slimdump --buffer-size 16MB {DSN} {config-file}`
+
 ## Configuration
 Configuration is stored in XML format somewhere in your filesystem. As a benefit, you could add the configuration to your repository to share a quickstart to your database dump with your coworkers.
 
@@ -90,20 +95,6 @@ Example:
 <slimdump>
   <!-- Dump all users whose usernames begin with foo -->
   <table name="user" dump="full" condition="`username` LIKE 'foo%'" />
-</slimdump>
-```
-
-### Buffer sizes
-
-You may are not able to fully administrate your MySQL database. Often you run into problems with the buffer size on really
-big tables. You can set the buffer size per table. Add a suffix (KB, MB or GB) to the value.
-
-Example:
-```xml
-<?xml version="1.0" ?>
-<slimdump>
-  <!-- Limit the buffer size to 12MB -->
-  <table name="*" dump="full" buffer-size="12MB" />
 </slimdump>
 ```
 
