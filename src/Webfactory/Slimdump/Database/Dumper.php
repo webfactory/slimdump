@@ -6,6 +6,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\PDOConnection;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Output\OutputInterface;
+use Webfactory\Slimdump\Config\Config;
 use Webfactory\Slimdump\Config\Table;
 
 class Dumper
@@ -13,10 +14,19 @@ class Dumper
     
     /** @var OutputInterface */
     protected $output;
-    
-    public function __construct(OutputInterface $output)
+
+    /** @var integer */
+    protected $bufferSize;
+
+    /**
+     * Dumper constructor.
+     * @param OutputInterface $output
+     * @param int $bufferSize Default buffer size is 100MB
+     */
+    public function __construct(OutputInterface $output, $bufferSize = 104857600)
     {
         $this->output = $output;
+        $this->bufferSize = $bufferSize;
     }
 
     public function exportAsUTF8()
@@ -125,7 +135,7 @@ class Dumper
         $this->output->writeln("-- BEGIN DATA $table", OutputInterface::OUTPUT_RAW);
 
         $bufferSize = 0;
-        $max = $tableConfig->getBufferSize();
+        $max = $this->bufferSize;
         $numRows = $db->fetchColumn("SELECT COUNT(*) FROM `$table`");
 
         if ($numRows == 0) {
