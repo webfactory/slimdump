@@ -33,7 +33,7 @@ class SlimdumpCommand extends Command
             ->addOption(
                 'buffer-size',
                 'b',
-                InputOption::VALUE_OPTIONAL,
+                InputOption::VALUE_REQUIRED,
                 'Maximum length of a single SQL statement generated.',
                 '100MB'
             )
