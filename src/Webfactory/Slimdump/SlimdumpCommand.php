@@ -75,7 +75,10 @@ class SlimdumpCommand extends Command
         $bufferSize = $size;
 
         if ($bufferSize !== null) {
-            preg_match('/^(\d+)(KB|MB|GB)?$/', $bufferSize, $matches);
+            $match = preg_match('/^(\d+)(KB|MB|GB)?$/', $bufferSize, $matches);
+            if ($match === false) {
+                throw new \RuntimeException('The buffer size must be an unsigned integer ending with KB, MB or GB.');
+            }
             $bufferSize = (int)$matches[1];
             $bufferFactor = 1;
 
