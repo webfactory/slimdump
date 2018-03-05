@@ -40,10 +40,10 @@ The DSN has to be in the following format:
 
 For further explanations have a look at the [Doctrine documentation](http://doctrine-orm.readthedocs.org/projects/doctrine-dbal/en/latest/reference/configuration.html#connecting-using-a-url).
 
-You can also specify the buffer size with an option. Add a suffix (KB, MB or GB) to the value for better readability.
+You can also specify the buffer size with an optional cli-option. Add a suffix (KB, MB or GB) to the value for better readability.
 
 Example:
-`slimdump --buffer-size 16MB {DSN} {config-file}`
+`slimdump --buffer-size=16MB {DSN} {config-file}`
 
 ## Configuration
 Configuration is stored in XML format somewhere in your filesystem. As a benefit, you could add the configuration to your repository to share a quickstart to your database dump with your coworkers.
