@@ -51,7 +51,7 @@ class SlimdumpCommand extends Command
         $db = $this->connect($dsn);
 
         $config = ConfigBuilder::createConfigurationFromConsecutiveFiles($input->getArgument('config'));
-        $this->dump($config, $db, $output, $this->reformatBufferSize($input->getOption('buffer-size')));
+        $this->dump($config, $db, $output, $this->parseBufferSize($input->getOption('buffer-size')));
     }
 
     private function connect($dsn)
@@ -70,7 +70,7 @@ class SlimdumpCommand extends Command
     /**
      * @return int
      */
-    protected function reformatBufferSize($size)
+    protected function parseBufferSize($size)
     {
         $bufferSize = $size;
 
