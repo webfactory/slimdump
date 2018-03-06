@@ -92,9 +92,6 @@ class SlimdumpCommand extends Command
             }
 
             return $bufferSize * $bufferFactor;
-        } else {
-            // Default 100MB
-            return 100 * 1024 * 1024;
         }
     }
 
