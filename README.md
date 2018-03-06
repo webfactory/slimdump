@@ -40,7 +40,8 @@ The DSN has to be in the following format:
 
 For further explanations have a look at the [Doctrine documentation](http://doctrine-orm.readthedocs.org/projects/doctrine-dbal/en/latest/reference/configuration.html#connecting-using-a-url).
 
-You can also specify the buffer size with an optional cli-option. Add a suffix (KB, MB or GB) to the value for better readability.
+You can also specify the buffer size, which can be useful on shared environments where your `max_allowed_packet` is low.
+Do this by using the optional cli-option `buffer-size`. Add a suffix (KB, MB or GB) to the value for better readability.
 
 Example:
 `slimdump --buffer-size=16MB {DSN} {config-file}`
