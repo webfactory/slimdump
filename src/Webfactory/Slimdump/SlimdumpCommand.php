@@ -33,9 +33,8 @@ class SlimdumpCommand extends Command
             ->addOption(
                 'buffer-size',
                 'b',
-                InputOption::VALUE_REQUIRED,
-                'Maximum length of a single SQL statement generated.',
-                '100MB'
+                InputOption::VALUE_OPTIONAL,
+                'Maximum length of a single SQL statement generated. Defaults to 100MB.'
             )
         ;
     }
@@ -68,7 +67,7 @@ class SlimdumpCommand extends Command
     }
 
     /**
-     * @return int
+     * @return int|null
      */
     protected function parseBufferSize($size)
     {
@@ -93,6 +92,8 @@ class SlimdumpCommand extends Command
 
             return $bufferSize * $bufferFactor;
         }
+
+        return null;
     }
 
     /**
