@@ -21,12 +21,12 @@ class Dumper
     /**
      * Dumper constructor.
      * @param OutputInterface $output
-     * @param int $bufferSize Default buffer size is 100MB
+     * @param int|null $bufferSize Default buffer size is 100MB
      */
-    public function __construct(OutputInterface $output, $bufferSize = 104857600)
+    public function __construct(OutputInterface $output, $bufferSize = null)
     {
         $this->output = $output;
-        $this->bufferSize = $bufferSize;
+        $this->bufferSize = $bufferSize ? : 104857600;
     }
 
     public function exportAsUTF8()
