@@ -96,15 +96,20 @@ class DumperTest extends \PHPUnit_Framework_TestCase
     public function testQueriesAllTriggers()
     {
         $this->dbMock->expects($this->at(0))
-            ->method('fetchAll')
-            ->with('SHOW TRIGGERS LIKE ?', ['test'])
-            ->willReturn([['Trigger' => 'trigger1'], ['Trigger' => 'trigger2']]);
+            ->method('quote')
+            ->with('test')
+            ->willReturn("'test'");
 
         $this->dbMock->expects($this->at(1))
+            ->method('fetchAll')
+            ->with("SHOW TRIGGERS LIKE 'test'")
+            ->willReturn([['Trigger' => 'trigger1'], ['Trigger' => 'trigger2']]);
+
+        $this->dbMock->expects($this->at(2))
             ->method('fetchColumn')
             ->with('SHOW CREATE TRIGGER `trigger1`');
 
-        $this->dbMock->expects($this->at(2))
+        $this->dbMock->expects($this->at(3))
             ->method('fetchColumn')
             ->with('SHOW CREATE TRIGGER `trigger2`');
 
@@ -114,11 +119,16 @@ class DumperTest extends \PHPUnit_Framework_TestCase
     public function testDumpsTriggerWithDefiner()
     {
         $this->dbMock->expects($this->at(0))
-            ->method('fetchAll')
-            ->with('SHOW TRIGGERS LIKE ?', ['test'])
-            ->willReturn([['Trigger' => 'trigger1']]);
+            ->method('quote')
+            ->with('test')
+            ->willReturn("'test'");
 
         $this->dbMock->expects($this->at(1))
+            ->method('fetchAll')
+            ->with("SHOW TRIGGERS LIKE 'test'")
+            ->willReturn([['Trigger' => 'trigger1']]);
+
+        $this->dbMock->expects($this->at(2))
             ->method('fetchColumn')
             ->with('SHOW CREATE TRIGGER `trigger1`')
             ->willReturn('CREATE DEFINER=`somebody`@`myhost` TRIGGER trigger1 ...');
@@ -132,11 +142,16 @@ class DumperTest extends \PHPUnit_Framework_TestCase
     public function testDumpsTriggerWithoutDefiner()
     {
         $this->dbMock->expects($this->at(0))
-            ->method('fetchAll')
-            ->with('SHOW TRIGGERS LIKE ?', ['test'])
-            ->willReturn([['Trigger' => 'trigger1']]);
+            ->method('quote')
+            ->with('test')
+            ->willReturn("'test'");
 
         $this->dbMock->expects($this->at(1))
+            ->method('fetchAll')
+            ->with("SHOW TRIGGERS LIKE 'test'")
+            ->willReturn([['Trigger' => 'trigger1']]);
+
+        $this->dbMock->expects($this->at(2))
             ->method('fetchColumn')
             ->with('SHOW CREATE TRIGGER `trigger1`')
             ->willReturn('CREATE DEFINER=`somebody`@`myhost` TRIGGER trigger1 ...');

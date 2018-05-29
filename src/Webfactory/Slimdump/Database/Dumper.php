@@ -83,7 +83,7 @@ class Dumper
      */
     public function dumpTriggers(Connection $db, $tableName, $level = Table::TRIGGER_NO_DEFINER)
     {
-        $triggers = $db->fetchAll("SHOW TRIGGERS LIKE ?", [$tableName]);
+        $triggers = $db->fetchAll(sprintf('SHOW TRIGGERS LIKE %s', $db->quote($tableName)));
 
         if (!$triggers) {
             return;
