@@ -105,7 +105,7 @@ A simple way to export roughly a percentage of the users is this:
 <?xml version="1.0" ?>
 <slimdump>
   <!-- Dump all users whose usernames begin with foo -->
-  <table name="user" dump="full" condition="`id % 10 = 0" />
+  <table name="user" dump="full" condition="id % 10 = 0" />
 </slimdump>
 ```
 
@@ -118,7 +118,7 @@ If you want to keep referential integrity, you might have to configure a more co
 <?xml version="1.0" ?>
 <slimdump>
   <!-- Dump all users whose usernames begin with foo -->
-  <table name="user" dump="full" condition="`id id IN (SELECT author_id FROM blog_posts UNION SELECT author_id from comments" />
+  <table name="user" dump="full" condition="id IN (SELECT author_id FROM blog_posts UNION SELECT author_id from comments)" />
 </slimdump>
 ```
 
