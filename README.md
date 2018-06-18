@@ -90,7 +90,6 @@ Example:
 
 You may want to select only some rows. In that case you can define a condition on a table.
 
-Example:
 ```xml
 <?xml version="1.0" ?>
 <slimdump>
@@ -98,6 +97,33 @@ Example:
   <table name="user" dump="full" condition="`username` LIKE 'foo%'" />
 </slimdump>
 ```
+
+In this example, only users with a username starting with 'foo' are exported:
+A simple way to export roughly a percentage of the users is this:
+
+```xml
+<?xml version="1.0" ?>
+<slimdump>
+  <!-- Dump all users whose usernames begin with foo -->
+  <table name="user" dump="full" condition="`id % 10 = 0" />
+</slimdump>
+```
+
+This will export only the users with a id divisible by ten without remainder, e.g. about 1/10th of the user rows (given
+the ids are evenly distributed).
+
+If you want to keep referential integrity, you might have to configure a more complex condition like this:
+
+```xml
+<?xml version="1.0" ?>
+<slimdump>
+  <!-- Dump all users whose usernames begin with foo -->
+  <table name="user" dump="full" condition="`id id IN (SELECT author_id FROM blog_posts UNION SELECT author_id from comments" />
+</slimdump>
+```
+
+In this case, we export only users that are referenced in other tables, e.g. that are authors of blog posts or comments.
+
 
 ### Dump modes
 
