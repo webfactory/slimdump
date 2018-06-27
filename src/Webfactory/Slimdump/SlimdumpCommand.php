@@ -3,6 +3,8 @@
 namespace Webfactory\Slimdump;
 
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\DriverManager;
+use Doctrine\DBAL\DBALException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -56,10 +58,16 @@ class SlimdumpCommand extends Command
     private function connect($dsn)
     {
         try {
-            return \Doctrine\DBAL\DriverManager::getConnection(
-                array('url' => $dsn, 'charset' => 'utf8', 'driverClass' => 'Doctrine\DBAL\Driver\PDOMySql\Driver')
+            /**
+             * a dsn string containing mysqli will result in the DriverManager creating a MysqliConnection but we need PDO
+             * @see DriverManager::parseDatabaseUrlScheme()
+             */
+            $mysqliIndependentDsn = preg_replace('_^mysqli://_', 'mysql:', $dsn);
+
+            return DriverManager::getConnection(
+                array('url' => $mysqliIndependentDsn, 'charset' => 'utf8', 'driverClass' => 'Doctrine\DBAL\Driver\PDOMySql\Driver')
             );
-        } catch (Exception $e) {
+        } catch (DBALException $e) {
             $msg = "Database error: " . $e->getMessage();
             fwrite(STDERR, "$msg\n");
             exit(1);
