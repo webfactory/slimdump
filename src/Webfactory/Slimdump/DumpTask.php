@@ -10,6 +10,13 @@ use Doctrine\DBAL\Connection;
 
 class DumpTask
 {
+    /**
+     * DumpTask constructor.
+     * @param string $dsn
+     * @param string[] $configFiles
+     * @param OutputInterface $output
+     * @throws \Doctrine\DBAL\DBALException
+     */
     public function __construct($dsn, $configFiles, OutputInterface $output)
     {
         $config = ConfigBuilder::createConfigurationFromConsecutiveFiles($configFiles);
