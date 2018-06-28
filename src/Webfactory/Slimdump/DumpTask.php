@@ -8,7 +8,7 @@ use Webfactory\Slimdump\Config\ConfigBuilder;
 use Webfactory\Slimdump\Database\Dumper;
 use Doctrine\DBAL\Connection;
 
-class Task
+class DumpTask
 {
     public function __construct($dsn, $configFile, OutputInterface $output)
     {

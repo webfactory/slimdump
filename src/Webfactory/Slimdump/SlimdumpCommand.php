@@ -43,6 +43,6 @@ class SlimdumpCommand extends Command
             $dsn = getenv("MYSQL_DSN");
         }
 
-        $task = new Task($dsn, $config, $output);
+        $task = new DumpTask($dsn, $config, $output);
     }
 }
