@@ -18,7 +18,7 @@
         "php": ">=5.3.9",
         "ext-SimpleXML": "*",
         "doctrine/dbal": "^2.5.2",
-        "symfony/console": "^3.0.0 || ^2.8.7",
+        "symfony/console": "^4.0.0 || ^3.0.0 || ^2.8.7",
         "fzaninotto/faker": "^1.6"
     },
     "autoload": {
