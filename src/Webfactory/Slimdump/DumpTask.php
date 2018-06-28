@@ -10,9 +10,9 @@ use Doctrine\DBAL\Connection;
 
 class DumpTask
 {
-    public function __construct($dsn, $configFile, OutputInterface $output)
+    public function __construct($dsn, $configFiles, OutputInterface $output)
     {
-        $config = ConfigBuilder::createConfigurationFromConsecutiveFiles($configFile);
+        $config = ConfigBuilder::createConfigurationFromConsecutiveFiles($configFiles);
         $db = $this->connect($dsn);
 
         $this->dump($config, $db, $output);

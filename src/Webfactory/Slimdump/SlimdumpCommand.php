@@ -37,12 +37,12 @@ class SlimdumpCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $dsn = $input->getArgument('dsn');
-        $config = $input->getArgument('config');
+        $configFiles = $input->getArgument('config');
 
         if ($dsn === '-') {
             $dsn = getenv("MYSQL_DSN");
         }
 
-        $task = new DumpTask($dsn, $config, $output);
+        $task = new DumpTask($dsn, $configFiles, $output);
     }
 }
