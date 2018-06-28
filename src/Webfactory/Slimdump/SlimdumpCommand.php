@@ -62,7 +62,7 @@ class SlimdumpCommand extends Command
              * a dsn string containing mysqli will result in the DriverManager creating a MysqliConnection but we need PDO
              * @see DriverManager::parseDatabaseUrlScheme()
              */
-            $mysqliIndependentDsn = preg_replace('_^mysqli://_', 'mysql:', $dsn);
+            $mysqliIndependentDsn = preg_replace('_^mysqli:_', 'mysql:', $dsn);
 
             return DriverManager::getConnection(
                 array('url' => $mysqliIndependentDsn, 'charset' => 'utf8', 'driverClass' => 'Doctrine\DBAL\Driver\PDOMySql\Driver')
