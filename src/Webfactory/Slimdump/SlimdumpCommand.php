@@ -33,6 +33,7 @@ class SlimdumpCommand extends Command
      * @param InputInterface $input
      * @param OutputInterface $output
      * @return int|null|void
+     * @throws \Doctrine\DBAL\DBALException
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {

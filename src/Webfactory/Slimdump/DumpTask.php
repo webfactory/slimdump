@@ -20,22 +20,11 @@ class DumpTask
     public function __construct($dsn, $configFiles, OutputInterface $output)
     {
         $config = ConfigBuilder::createConfigurationFromConsecutiveFiles($configFiles);
-        $db = $this->connect($dsn);
+        $db = \Doctrine\DBAL\DriverManager::getConnection(
+            array('url' => $dsn, 'charset' => 'utf8', 'driverClass' => 'Doctrine\DBAL\Driver\PDOMySql\Driver')
+        );
 
         $this->dump($config, $db, $output);
-    }
-
-    private function connect($dsn)
-    {
-        try {
-            return \Doctrine\DBAL\DriverManager::getConnection(
-                array('url' => $dsn, 'charset' => 'utf8', 'driverClass' => 'Doctrine\DBAL\Driver\PDOMySql\Driver')
-            );
-        } catch (Exception $e) {
-            $msg = "Database error: " . $e->getMessage();
-            fwrite(STDERR, "$msg\n");
-            exit(1);
-        }
     }
 
     /**
