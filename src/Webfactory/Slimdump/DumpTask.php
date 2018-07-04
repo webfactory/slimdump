@@ -62,22 +62,21 @@ final class DumpTask
         while ($tableName = $fetchTablesResult->fetchColumn(0)) {
             $tableConfig = $this->config->findTable($tableName);
 
-            if (null === $tableConfig) {
+            if (null === $tableConfig || !$tableConfig->isSchemaDumpRequired()) {
                 continue;
             }
 
-            if ($tableConfig->isSchemaDumpRequired()) {
-                $dumper->dumpSchema($tableName, $db, $tableConfig->keepAutoIncrement());
+            $dumper->dumpSchema($tableName, $db, $tableConfig->keepAutoIncrement());
 
-                if ($tableConfig->isDataDumpRequired()) {
-                    $dumper->dumpData($tableName, $tableConfig, $db);
-                }
+            if ($tableConfig->isDataDumpRequired()) {
+                $dumper->dumpData($tableName, $tableConfig, $db);
+            }
 
-                if ($tableConfig->isTriggerDumpRequired()) {
-                    $dumper->dumpTriggers($db, $tableName, $tableConfig->getDumpTriggersLevel());
-                }
+            if ($tableConfig->isTriggerDumpRequired()) {
+                $dumper->dumpTriggers($db, $tableName, $tableConfig->getDumpTriggersLevel());
             }
         }
+
         $dumper->enableForeignKeys();
     }
 }
