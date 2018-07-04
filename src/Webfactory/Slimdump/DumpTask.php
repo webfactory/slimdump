@@ -35,10 +35,10 @@ final class DumpTask
     public function __construct($dsn, array $configFiles, OutputInterface $output)
     {
         $mysqliIndependentDsn = preg_replace('_^mysqli:_', 'mysql:', $dsn);
-        
+
         $this->output = $output;
-        $this->config = ConfigBuilder::class::createConfigurationFromConsecutiveFiles($configFiles);
-        $this->db = DriverManager::class::getConnection(
+        $this->config = ConfigBuilder::createConfigurationFromConsecutiveFiles($configFiles);
+        $this->db = DriverManager::getConnection(
             array('url' => $mysqliIndependentDsn, 'charset' => 'utf8', 'driverClass' => 'Doctrine\DBAL\Driver\PDOMySql\Driver')
         );
     }
