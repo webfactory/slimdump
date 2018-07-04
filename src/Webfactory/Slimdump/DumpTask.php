@@ -32,12 +32,14 @@ final class DumpTask
      * @param OutputInterface $output
      * @throws \Doctrine\DBAL\DBALException
      */
-    public function __construct($dsn, $configFiles, OutputInterface $output)
+    public function __construct($dsn, array $configFiles, OutputInterface $output)
     {
+        $mysqliIndependentDsn = preg_replace('_^mysqli:_', 'mysql:', $dsn);
+        
         $this->output = $output;
         $this->config = ConfigBuilder::class::createConfigurationFromConsecutiveFiles($configFiles);
         $this->db = DriverManager::class::getConnection(
-            array('url' => $dsn, 'charset' => 'utf8', 'driverClass' => 'Doctrine\DBAL\Driver\PDOMySql\Driver')
+            array('url' => $mysqliIndependentDsn, 'charset' => 'utf8', 'driverClass' => 'Doctrine\DBAL\Driver\PDOMySql\Driver')
         );
     }
 
