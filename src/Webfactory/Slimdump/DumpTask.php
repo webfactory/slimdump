@@ -39,7 +39,7 @@ final class DumpTask
         $this->output = $output;
         $this->config = ConfigBuilder::createConfigurationFromConsecutiveFiles($configFiles);
         $this->db = DriverManager::getConnection(
-            array('url' => $mysqliIndependentDsn, 'charset' => 'utf8', 'driverClass' => 'Doctrine\DBAL\Driver\PDOMySql\Driver')
+            array('url' => $mysqliIndependentDsn, 'charset' => 'utf8', 'driverClass' => \Doctrine\DBAL\Driver\PDOMySql\Driver::class)
         );
     }
 
