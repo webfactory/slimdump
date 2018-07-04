@@ -11,7 +11,6 @@ use Doctrine\DBAL\Connection;
 final class DumpTask
 {
     /**
-     * DumpTask constructor.
      * @param string $dsn
      * @param string[] $configFiles
      * @param OutputInterface $output
