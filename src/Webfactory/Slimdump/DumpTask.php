@@ -7,9 +7,25 @@ use Webfactory\Slimdump\Config\Config;
 use Webfactory\Slimdump\Config\ConfigBuilder;
 use Webfactory\Slimdump\Database\Dumper;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\DriverManager;
 
 final class DumpTask
 {
+    /**
+     * @var Config
+     */
+    private $config;
+
+    /**
+     * @var Connection
+     */
+    private $db;
+
+    /**
+     * @var OutputInterface
+     */
+    private $output;
+
     /**
      * @param string $dsn
      * @param string[] $configFiles
@@ -18,12 +34,11 @@ final class DumpTask
      */
     public function __construct($dsn, $configFiles, OutputInterface $output)
     {
-        $config = ConfigBuilder::createConfigurationFromConsecutiveFiles($configFiles);
-        $db = \Doctrine\DBAL\DriverManager::getConnection(
+        $this->output = $output;
+        $this->config = ConfigBuilder::class::createConfigurationFromConsecutiveFiles($configFiles);
+        $this->db = DriverManager::class::getConnection(
             array('url' => $dsn, 'charset' => 'utf8', 'driverClass' => 'Doctrine\DBAL\Driver\PDOMySql\Driver')
         );
-
-        $this->dump($config, $db, $output);
     }
 
     /**
@@ -32,18 +47,20 @@ final class DumpTask
      * @param OutputInterface $output
      * @throws \Doctrine\DBAL\DBALException
      */
-    private function dump(Config $config, Connection $db, OutputInterface $output)
+    public function dump()
     {
-        $dumper = new Dumper($output);
+        $dumper = new Dumper($this->output);
         $dumper->exportAsUTF8();
         $dumper->disableForeignKeys();
+
+        $db = $this->db;
 
         $platform = $db->getDatabasePlatform();
 
         $fetchTablesResult = $db->query($platform->getListTablesSQL());
 
         while ($tableName = $fetchTablesResult->fetchColumn(0)) {
-            $tableConfig = $config->findTable($tableName);
+            $tableConfig = $this->config->findTable($tableName);
 
             if (null === $tableConfig) {
                 continue;
