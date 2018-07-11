@@ -8,6 +8,7 @@ use Webfactory\Slimdump\Config\ConfigBuilder;
 use Webfactory\Slimdump\Database\Dumper;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
+use Doctrine\DBAL\Driver\PDOMySql\Driver as PDOMySqlDriver;
 
 final class DumpTask
 {
@@ -39,7 +40,7 @@ final class DumpTask
         $this->output = $output;
         $this->config = ConfigBuilder::createConfigurationFromConsecutiveFiles($configFiles);
         $this->db = DriverManager::getConnection(
-            array('url' => $mysqliIndependentDsn, 'charset' => 'utf8', 'driverClass' => \Doctrine\DBAL\Driver\PDOMySql\Driver::class)
+            array('url' => $mysqliIndependentDsn, 'charset' => 'utf8', 'driverClass' => PDOMySqlDriver::class)
         );
     }
 
