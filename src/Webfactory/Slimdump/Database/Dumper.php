@@ -6,6 +6,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\PDOConnection;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Output\OutputInterface;
+use Webfactory\Slimdump\Config\Config;
 use Webfactory\Slimdump\Config\Table;
 
 class Dumper
@@ -13,10 +14,19 @@ class Dumper
     
     /** @var OutputInterface */
     protected $output;
-    
-    public function __construct(OutputInterface $output)
+
+    /** @var integer */
+    protected $bufferSize;
+
+    /**
+     * Dumper constructor.
+     * @param OutputInterface $output
+     * @param int|null $bufferSize Default buffer size is 100MB
+     */
+    public function __construct(OutputInterface $output, $bufferSize = null)
     {
         $this->output = $output;
+        $this->bufferSize = $bufferSize ? : 104857600;
     }
 
     public function exportAsUTF8()
@@ -73,7 +83,7 @@ class Dumper
      */
     public function dumpTriggers(Connection $db, $tableName, $level = Table::TRIGGER_NO_DEFINER)
     {
-        $triggers = $db->fetchAll("SHOW TRIGGERS LIKE ?", [$tableName]);
+        $triggers = $db->fetchAll(sprintf('SHOW TRIGGERS LIKE %s', $db->quote($tableName)));
 
         if (!$triggers) {
             return;
@@ -125,7 +135,7 @@ class Dumper
         $this->output->writeln("-- BEGIN DATA $table", OutputInterface::OUTPUT_RAW);
 
         $bufferSize = 0;
-        $max = 100 * 1024 * 1024; // 100 MB
+        $max = $this->bufferSize;
         $numRows = $db->fetchColumn("SELECT COUNT(*) FROM `$table`");
 
         if ($numRows == 0) {

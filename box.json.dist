@@ -2,7 +2,6 @@
     "chmod": "0755",
     "main": "bin/slimdump",
     "directories-bin": [
-        "php",
         "src"
     ],
     "finder-bin": [

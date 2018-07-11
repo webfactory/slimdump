@@ -5,6 +5,7 @@ namespace Webfactory\Slimdump;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 final class SlimdumpCommand extends Command
@@ -23,6 +24,12 @@ final class SlimdumpCommand extends Command
                 'config',
                 InputArgument::IS_ARRAY | InputArgument::REQUIRED,
                 'Configuration files (at least one).'
+            )
+            ->addOption(
+                'buffer-size',
+                'b',
+                InputOption::VALUE_OPTIONAL,
+                'Maximum length of a single SQL statement generated. Defaults to 100MB.'
             )
         ;
     }
@@ -45,4 +52,5 @@ final class SlimdumpCommand extends Command
         $dumptask = new DumpTask($dsn, $configFiles, $output);
         $dumptask->dump();
     }
+
 }
