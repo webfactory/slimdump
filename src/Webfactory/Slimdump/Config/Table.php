@@ -180,14 +180,14 @@ class Table
             return '""';
         } else {
             if ($column = $this->findColumn($columnName)) {
-                return $db->quote($column->processRowValue($value));
+                return addslashes($db->quote($column->processRowValue($value)));
             }
 
             if ($isBlobColumn) {
                 return $value;
             }
 
-            return $db->quote($value);
+            return addslashes($db->quote($value));
         }
     }
 
