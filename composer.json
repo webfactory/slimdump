@@ -1,5 +1,5 @@
 {
-    "name": "webfactory/slimdump",
+    "name": "dominikkukacka/slimdump",
     "description": "slimdump is a little tool to help you creating dumps of large MySQL-databases.",
     "minimum-stability": "stable",
     "license": "MIT",
