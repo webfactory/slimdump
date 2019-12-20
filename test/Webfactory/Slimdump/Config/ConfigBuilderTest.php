@@ -2,14 +2,15 @@
 
 namespace Webfactory\Slimdump\Config;
 
-class ConfigBuilderTest extends \PHPUnit_Framework_TestCase
+use PHPUnit\Framework\TestCase;
+use Webfactory\Slimdump\Exception\InvalidXmlException;
+
+class ConfigBuilderTest extends TestCase
 {
- 
-    /**
-     * @expectedException \Webfactory\Slimdump\Exception\InvalidXmlException
-     */
     public function testInvalidXML()
     {
+        $this->expectException(InvalidXmlException::class);
+
         $xml = '<?xml version="1.0"
             st" dump="XXX"
                 slimdump>';
@@ -29,11 +30,11 @@ class ConfigBuilderTest extends \PHPUnit_Framework_TestCase
                     <table name="test" dump="noblob" />
                 </slimdump>';
 
-        $config = ConfigBuilder::createConfigurationFromConsecutiveXmlStrings(array($xml1, $xml2));
+        $config = ConfigBuilder::createConfigurationFromConsecutiveXmlStrings([$xml1, $xml2]);
         $table = $config->findTable('test');
         $this->assertEquals('NULL', $table->getSelectExpression('testColumnName', true));
     }
-    
+
     public function testMergeOrderInSameFileOverrides()
     {
         $xml = '<?xml version="1.0" ?>
@@ -47,5 +48,4 @@ class ConfigBuilderTest extends \PHPUnit_Framework_TestCase
         $table = $config->findTable('test');
         $this->assertNotEquals('NULL', $table->getSelectExpression('testColumnName', true));
     }
-
 }

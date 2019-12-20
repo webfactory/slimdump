@@ -2,7 +2,10 @@
 
 namespace Webfactory\Slimdump\Config;
 
-class ConfigTest extends \PHPUnit_Framework_TestCase
+use PHPUnit\Framework\TestCase;
+use Webfactory\Slimdump\Exception\InvalidDumpTypeException;
+
+class ConfigTest extends TestCase
 {
 
     public function testFindTableWithWildcardSelector()
@@ -60,11 +63,10 @@ class ConfigTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('NULL', $table->getSelectExpression('testColumnName', true));
     }
 
-    /**
-     * @expectedException \Webfactory\Slimdump\Exception\InvalidDumpTypeException
-     */
     public function testInvalidConfiguration()
     {
+        $this->expectException(InvalidDumpTypeException::class);
+
         $xml = '<?xml version="1.0" ?>
                 <slimdump>
                     <table name="test" dump="XXX" />

@@ -2,11 +2,12 @@
 
 namespace Webfactory\Slimdump\Database;
 
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Webfactory\Slimdump\Config\Table;
 
-class DumperTest extends \PHPUnit_Framework_TestCase
+class DumperTest extends TestCase
 {
     /** @var  \PHPUnit_Framework_MockObject_MockObject */
     protected $dbMock;
@@ -20,7 +21,7 @@ class DumperTest extends \PHPUnit_Framework_TestCase
     /**
      * @before
      */
-    public function setup()
+    protected function setUp(): void
     {
         $this->outputBuffer = new BufferedOutput();
         $this->dumper = new Dumper($this->outputBuffer);
@@ -37,13 +38,13 @@ class DumperTest extends \PHPUnit_Framework_TestCase
         $this->dumper->dumpSchema('test', $this->dbMock);
         $output = $this->outputBuffer->fetch();
 
-        $this->assertContains('DROP TABLE IF EXISTS', $output);
-        $this->assertContains('CREATE TABLE statement', $output);
+        $this->assertStringContainsString('DROP TABLE IF EXISTS', $output);
+        $this->assertStringContainsString('CREATE TABLE statement', $output);
     }
 
     public function testDumpDataWithFullConfiguration()
     {
-        $pdoMock = $this->getMock('\stdClass', array('setAttribute'));
+        $pdoMock = $this->getMockBuilder(\stdClass::class)->addMethods(['setAttribute'])->getMock();
 
         $this->dbMock->expects($this->any())->method('getWrappedConnection')->willReturn($pdoMock);
 
@@ -90,7 +91,7 @@ class DumperTest extends \PHPUnit_Framework_TestCase
         $this->dumper->dumpData('test', $table, $this->dbMock);
         $output = $this->outputBuffer->fetch();
 
-        $this->assertContains('INSERT INTO', $output);
+        $this->assertStringContainsString('INSERT INTO', $output);
     }
 
     public function testQueriesAllTriggers()
@@ -136,7 +137,7 @@ class DumperTest extends \PHPUnit_Framework_TestCase
         $this->dumper->dumpTriggers($this->dbMock, 'test', Table::TRIGGER_KEEP_DEFINER);
 
         $output = $this->outputBuffer->fetch();
-        $this->assertContains('CREATE DEFINER=`somebody`@`myhost` TRIGGER trigger1 ...;', $output);
+        $this->assertStringContainsString('CREATE DEFINER=`somebody`@`myhost` TRIGGER trigger1 ...;', $output);
     }
 
     public function testDumpsTriggerWithoutDefiner()
@@ -159,6 +160,6 @@ class DumperTest extends \PHPUnit_Framework_TestCase
         $this->dumper->dumpTriggers($this->dbMock, 'test', Table::TRIGGER_NO_DEFINER);
 
         $output = $this->outputBuffer->fetch();
-        $this->assertContains('CREATE TRIGGER trigger1 ...;', $output);
+        $this->assertStringContainsString('CREATE TRIGGER trigger1 ...;', $output);
     }
 }

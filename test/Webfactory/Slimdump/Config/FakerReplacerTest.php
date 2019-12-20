@@ -2,13 +2,14 @@
 
 namespace Webfactory\Slimdump\Config;
 
+use PHPUnit\Framework\TestCase;
 use Webfactory\Slimdump\Exception\InvalidReplacementOptionException;
 
 /**
  * Class FakerReplacerTest
  * @package Webfactory\Slimdump\Config
  */
-class FakerReplacerTest extends \PHPUnit_Framework_TestCase
+class FakerReplacerTest extends TestCase
 {
     /**
      * @param string $replacementId
@@ -25,9 +26,9 @@ class FakerReplacerTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * no assertion because we only expect that no exception is thrown
      * @param string $replacementId
      * @dataProvider provideValidReplacementIds
+     * @doesNotPerformAssertions
      */
     public function testValidateReplacementConfiguredExisting($replacementId)
     {
@@ -42,7 +43,7 @@ class FakerReplacerTest extends \PHPUnit_Framework_TestCase
     {
         $fakerReplacer = new FakerReplacer();
 
-        $this->setExpectedException(InvalidReplacementOptionException::class, 'FOOBAR is no valid faker replacement');
+        $this->expectException(InvalidReplacementOptionException::class, 'FOOBAR is no valid faker replacement');
 
         // neither individual property nor faker property
         $fakerReplacer->generateReplacement('FAKER_FOOBAR');

@@ -3,8 +3,10 @@
 namespace Webfactory\Slimdump\Config;
 
 use phpDocumentor\Reflection\Types\Array_;
+use PHPUnit\Framework\TestCase;
+use Webfactory\Slimdump\Exception\InvalidDumpTypeException;
 
-class ColumnTest extends \PHPUnit_Framework_TestCase
+class ColumnTest extends TestCase
 {
 
     public function testProcessRowValueWithNormalConfiguration()
@@ -65,11 +67,10 @@ class ColumnTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('ANON', $replacedName);
     }
 
-    /**
-     * @expectedException \Webfactory\Slimdump\Exception\InvalidDumpTypeException
-     */
     public function testInvalidConfiguration()
     {
+        $this->expectException(InvalidDumpTypeException::class);
+
         $xml = '<?xml version="1.0" ?>
                 <column name="test" dump="xxx" />';
 
