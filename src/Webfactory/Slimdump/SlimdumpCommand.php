@@ -31,6 +31,12 @@ final class SlimdumpCommand extends Command
                 InputOption::VALUE_OPTIONAL,
                 'Maximum length of a single SQL statement generated. Defaults to 100MB.'
             )
+            ->addOption(
+                'no-progress',
+                '',
+                InputOption::VALUE_NONE,
+                'Don\'t print progress information while dumping tables.'
+            );
         ;
     }
 
@@ -44,12 +50,13 @@ final class SlimdumpCommand extends Command
     {
         $dsn = $input->getArgument('dsn');
         $configFiles = $input->getArgument('config');
+        $noProgress = $input->getOption('no-progress') ? true : false;
 
         if ($dsn === '-') {
             $dsn = getenv("MYSQL_DSN");
         }
 
-        $dumptask = new DumpTask($dsn, $configFiles, $output);
+        $dumptask = new DumpTask($dsn, $configFiles, $noProgress, $output);
         $dumptask->dump();
     }
 

@@ -28,15 +28,21 @@ final class DumpTask
     private $output;
 
     /**
+     * @var bool
+     */
+    private $noProgress;
+
+    /**
      * @param string $dsn
      * @param string[] $configFiles
      * @param OutputInterface $output
      * @throws \Doctrine\DBAL\DBALException
      */
-    public function __construct($dsn, array $configFiles, OutputInterface $output)
+    public function __construct($dsn, array $configFiles, bool $noProgress, OutputInterface $output)
     {
         $mysqliIndependentDsn = preg_replace('_^mysqli:_', 'mysql:', $dsn);
 
+        $this->noProgress = $noProgress;
         $this->output = $output;
         $this->config = ConfigBuilder::createConfigurationFromConsecutiveFiles($configFiles);
         $this->db = DriverManager::getConnection(
@@ -69,10 +75,10 @@ final class DumpTask
                 continue;
             }
 
-            $dumper->dumpSchema($tableName, $db, $tableConfig->keepAutoIncrement());
+            $dumper->dumpSchema($tableName, $db, $tableConfig->keepAutoIncrement(), $this->noProgress);
 
             if ($tableConfig->isDataDumpRequired()) {
-                $dumper->dumpData($tableName, $tableConfig, $db);
+                $dumper->dumpData($tableName, $tableConfig, $db, $this->noProgress);
             }
 
             if ($tableConfig->isTriggerDumpRequired()) {

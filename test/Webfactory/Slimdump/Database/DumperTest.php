@@ -88,7 +88,7 @@ class DumperTest extends TestCase
 
         $table = new Table(new \SimpleXMLElement('<table name="test" dump="full" />'));
 
-        $this->dumper->dumpData('test', $table, $this->dbMock);
+        $this->dumper->dumpData('test', $table, $this->dbMock, false);
         $output = $this->outputBuffer->fetch();
 
         $this->assertStringContainsString('INSERT INTO', $output);

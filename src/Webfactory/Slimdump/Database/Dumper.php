@@ -49,7 +49,7 @@ class Dumper
      * @param Connection    $db
      * @param boolean       $keepAutoIncrement
      */
-    public function dumpSchema($table, Connection $db, $keepAutoIncrement = true)
+    public function dumpSchema($table, Connection $db, $keepAutoIncrement = true, bool $noProgress = false)
     {
         $this->keepalive($db);
         $this->output->writeln("-- BEGIN STRUCTURE $table", OutputInterface::OUTPUT_RAW);
@@ -63,16 +63,18 @@ class Dumper
 
         $this->output->writeln($tableCreationCommand.";\n", OutputInterface::OUTPUT_RAW);
 
-        $progress = new ProgressBar($this->output, 1);
-        $format = "Dumping schema <fg=cyan>$table</>: <fg=yellow>%percent:3s%%</>";
-        $progress->setFormat($format);
-        $progress->setOverwrite(true);
-        $progress->setRedrawFrequency(1);
-        $progress->start();
-        $progress->setFormat("Dumping schema <fg=green>$table</>: <fg=green>%percent:3s%%</> Took: %elapsed%");
-        $progress->finish();
-        if ($this->output instanceof \Symfony\Component\Console\Output\ConsoleOutput) {
-            $this->output->getErrorOutput()->write("\n"); // write a newline after the progressbar.
+        if (!$noProgress) {
+            $progress = new ProgressBar($this->output, 1);
+            $format = "Dumping schema <fg=cyan>$table</>: <fg=yellow>%percent:3s%%</>";
+            $progress->setFormat($format);
+            $progress->setOverwrite(true);
+            $progress->setRedrawFrequency(1);
+            $progress->start();
+            $progress->setFormat("Dumping schema <fg=green>$table</>: <fg=green>%percent:3s%%</> Took: %elapsed%");
+            $progress->finish();
+            if ($this->output instanceof \Symfony\Component\Console\Output\ConsoleOutput) {
+                $this->output->getErrorOutput()->write("\n"); // write a newline after the progressbar.
+            }
         }
     }
 
@@ -109,7 +111,7 @@ class Dumper
      *
      * @throws \Doctrine\DBAL\DBALException
      */
-    public function dumpData($table, Table $tableConfig, Connection $db)
+    public function dumpData($table, Table $tableConfig, Connection $db, bool $noProgress)
     {
         $this->keepalive($db);
         $cols = $this->cols($table, $db);
@@ -143,11 +145,15 @@ class Dumper
             return;
         }
 
-        $progress = new ProgressBar($this->output, $numRows);
-        $progress->setFormat("Dumping data <fg=cyan>$table</>: <fg=yellow>%percent:3s%%</> %remaining%/%estimated%");
-        $progress->setOverwrite(true);
-        $progress->setRedrawFrequency(max($numRows / 100, 1));
-        $progress->start();
+        if (!$noProgress) {
+            $progress = new ProgressBar($this->output, $numRows);
+            $progress->setFormat("Dumping data <fg=cyan>$table</>: <fg=yellow>%percent:3s%%</> %remaining%/%estimated%");
+            $progress->setOverwrite(true);
+            $progress->setRedrawFrequency(max($numRows / 100, 1));
+            $progress->start();
+        } else {
+            $progress = null;
+        }
 
         /** @var PDOConnection $wrappedConnection */
         $wrappedConnection = $db->getWrappedConnection();
@@ -184,12 +190,17 @@ class Dumper
             }
             $this->output->write(")", false, OutputInterface::OUTPUT_RAW);
             $bufferSize += $b;
-            $progress->advance();
+            if ($progress !== null) {
+                $progress->advance();
+            }
         }
-        $progress->setFormat("Dumping data <fg=green>$table</>: <fg=green>%percent:3s%%</> Took: %elapsed%");
-        $progress->finish();
-        if ($this->output instanceof \Symfony\Component\Console\Output\ConsoleOutput) {
-            $this->output->getErrorOutput()->write("\n"); // write a newline after the progressbar.
+
+        if ($progress !== null) {
+            $progress->setFormat("Dumping data <fg=green>$table</>: <fg=green>%percent:3s%%</> Took: %elapsed%");
+            $progress->finish();
+            if ($this->output instanceof \Symfony\Component\Console\Output\ConsoleOutput) {
+                $this->output->getErrorOutput()->write("\n"); // write a newline after the progressbar.
+            }
         }
 
         $wrappedConnection->setAttribute(\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
