@@ -1,5 +1,3 @@
-/.idea/
-/composer.phar
-/vendor/
-/box.phar
-/slimdump.phar
+vendor/
+tools/
+slimdump.phar

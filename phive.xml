@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phive xmlns="https://phar.io/phive">
+  <phar name="humbug/box" version="^3.8.4" installed="3.8.4" location="./tools/box" copy="false"/>
+  <phar name="phpunit" version="^8.5.0" installed="8.5.0" location="./tools/phpunit" copy="false"/>
+  <phar name="php-coveralls/php-coveralls" version="^2.2.0" installed="2.2.0" location="./tools/php-coveralls" copy="false"/>
+</phive>
