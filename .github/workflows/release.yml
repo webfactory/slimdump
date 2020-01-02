@@ -20,10 +20,13 @@ jobs:
             -   run: composer install --no-interaction --no-scripts --no-progress --no-suggest
             -   run: phive --no-progress install --trust-gpg-keys 4AA394086372C20A,E82B2FB314E9906E --force-accept-unsigned
             -   run: tools/box build --verbose --no-ansi
+            -   name: Fetch tag name from GITHUB_REF
+                id: get_version
+                run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
             -   name: Attach .phar to release
                 uses: svenstaro/upload-release-action@14569a2d348419d066e34e5dfa65071ecd30b64b
                 with:
                     repo_token: ${{ secrets.GITHUB_TOKEN }}
                     file: slimdump.phar
-                    asset_name: slimdump-${{github.ref}}.phar
+                    asset_name: slimdump-${{ steps.get_version.outputs.VERSION }}.phar
                     tag: ${{ github.ref }}
