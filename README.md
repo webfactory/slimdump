@@ -201,22 +201,11 @@ Currently only MySQL is supported. But feel free to port it to the database of y
 
 ### Building the Phar
 
-Download [Box](https://github.com/box-project/box2) into the project root:
+* Make sure [Phive](https://phar.io/) is installed
+* Run `phive install` to install tools, including [Box](https://github.com/humbug/box)
+* Run `composer install --no-dev` to make sure the `vendor/` folder is up to date
+* Run `tools/box compile` to build `slimdump.phar`.
 
-    curl -LSs https://box-project.github.io/box2/installer.php | php
-    
-Install dependencies via Composer:
-
-    php composer.phar install
-    
-Start the Phar build:
-
-    ./box.phar build -v
-   
-Use slimdump as Phar:
-
-    ./slimdump.phar {DSN} {config-file}
-    
 ### Tests
 
 You can execute the phpunit-tests by calling `vendor/bin/phpunit`. 

@@ -1,6 +1,4 @@
 {
-    "chmod": "0755",
-    "main": "bin/slimdump",
     "directories-bin": [
         "src"
     ],
@@ -10,6 +8,5 @@
             "in": "vendor"
         }
     ],
-    "output": "slimdump.phar",
-    "stub": true
+    "output": "slimdump.phar"
 }
