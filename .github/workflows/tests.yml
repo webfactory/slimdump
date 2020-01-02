@@ -20,9 +20,9 @@ jobs:
                     sudo mv phive.phar /usr/local/bin/phive
             -   run: composer install --no-interaction --no-scripts --no-progress --no-suggest
             -   run: phive --no-progress install --trust-gpg-keys 4AA394086372C20A,E82B2FB314E9906E --force-accept-unsigned
-            -   run: mkdir .build
-            -   run: tools/phpunit --coverage-clover=.build/clover.xml
-            -   run: tools/php-coveralls --verbose --coverage-clover=.build/clover.xml
+            -   run: mkdir -p build/logs
+            -   run: tools/phpunit --coverage-clover=build/logs/clover.xml
+            -   run: tools/php-coveralls
                 env:
                     COVERALLS_RUN_LOCALLY: 1
                     COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
