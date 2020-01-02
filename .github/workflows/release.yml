@@ -25,5 +25,5 @@ jobs:
                 with:
                     repo_token: ${{ secrets.GITHUB_TOKEN }}
                     file: slimdump.phar
-                    asset: slimdump-${{github.ref}}.phar
+                    asset_name: slimdump-${{github.ref}}.phar
                     tag: ${{ github.ref }}
