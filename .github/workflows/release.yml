@@ -1,6 +1,6 @@
-on: [release]
-#    release:
-#        types: created
+on:
+    release:
+        types: created
 
 name: Build .phar on release
 
