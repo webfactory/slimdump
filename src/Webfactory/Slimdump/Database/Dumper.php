@@ -223,7 +223,7 @@ class Dumper
      */
     protected function insertValuesStatement($table, $cols)
     {
-        return "INSERT INTO `$table` (`" . implode(array_keys($cols), '`, `') . "`) VALUES ";
+        return "INSERT INTO `$table` (`" . implode('`, `', array_keys($cols)) . "`) VALUES ";
     }
 
     /**
