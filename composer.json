@@ -22,8 +22,8 @@
         "fzaninotto/faker": "^1.6"
     },
     "autoload": {
-        "psr-0": {
-            "Webfactory": "src/"
+        "psr-4": {
+            "Webfactory\\Slimdump\\": "src/Webfactory/Slimdump"
         }
     }
 }
