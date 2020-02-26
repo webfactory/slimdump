@@ -130,7 +130,7 @@ class TableTest extends TestCase
         $xmlElement = new \SimpleXMLElement($xml);
         $table = new Table($xmlElement);
 
-        $this->assertEquals($table->getDumpTriggersLevel(), Table::TRIGGER_NO_DEFINER);
+        $this->assertEquals($table->getDumpTriggersLevel(), Table::DEFINER_NO_DEFINER);
         $this->assertTrue($table->isTriggerDumpRequired());
     }
     
@@ -150,11 +150,11 @@ class TableTest extends TestCase
     public function dumpTriggerAttributeValues()
     {
         return [
-            ['true', Table::TRIGGER_NO_DEFINER],
+            ['true', Table::DEFINER_NO_DEFINER],
             ['false', Table::TRIGGER_SKIP],
             ['none', Table::TRIGGER_SKIP],
-            ['no-definer', Table::TRIGGER_NO_DEFINER],
-            ['keep-definer', Table::TRIGGER_KEEP_DEFINER],
+            ['no-definer', Table::DEFINER_NO_DEFINER],
+            ['keep-definer', Table::DEFINER_KEEP_DEFINER],
         ];
     }
 
