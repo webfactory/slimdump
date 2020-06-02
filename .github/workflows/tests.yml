@@ -19,7 +19,10 @@ jobs:
                     chmod +x phive.phar
                     sudo mv phive.phar /usr/local/bin/phive
             -   run: composer install --no-interaction --no-scripts --no-progress --no-suggest
-            -   run: phive --no-progress install --trust-gpg-keys 4AA394086372C20A,E82B2FB314E9906E --force-accept-unsigned
+            -   run:
+                    # Work around https://github.com/phar-io/phive/issues/262
+                    mkdir -p ~/.phive/phars/humbug 
+                    phive --no-progress install --trust-gpg-keys 4AA394086372C20A,E82B2FB314E9906E --force-accept-unsigned
             -   run: mkdir -p build/logs
             -   run: tools/phpunit --coverage-clover=build/logs/clover.xml
             # Commented out Coveralls reporting until https://github.com/php-coveralls/php-coveralls/pull/275 is resolved
