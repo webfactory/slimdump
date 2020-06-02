@@ -19,7 +19,7 @@ jobs:
                     chmod +x phive.phar
                     sudo mv phive.phar /usr/local/bin/phive
             -   run: composer install --no-interaction --no-scripts --no-progress --no-suggest
-            -   run: mkdir -p ~/.phive/phars/humbug # Work around https://github.com/phar-io/phive/issues/262
+            -   run: mkdir -p ~/.phive/phars/{humbug,php-coveralls} # Work around https://github.com/phar-io/phive/issues/262
             -   run: phive --no-progress install --trust-gpg-keys 4AA394086372C20A,E82B2FB314E9906E --force-accept-unsigned
             -   run: mkdir -p build/logs
             -   run: tools/phpunit --coverage-clover=build/logs/clover.xml
