@@ -21,7 +21,7 @@ jobs:
             -   run: composer install --no-interaction --no-scripts --no-progress --no-suggest
             -   run:
                     # Work around https://github.com/phar-io/phive/issues/262
-                    mkdir -p ~/.phive/phars/humbug 
+                    mkdir -p ~/.phive/phars/humbug
                     phive --no-progress install --trust-gpg-keys 4AA394086372C20A,E82B2FB314E9906E --force-accept-unsigned
             -   run: mkdir -p build/logs
             -   run: tools/phpunit --coverage-clover=build/logs/clover.xml
