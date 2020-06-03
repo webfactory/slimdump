@@ -134,7 +134,7 @@ class DumperTest extends TestCase
             ->with('SHOW CREATE TRIGGER `trigger1`')
             ->willReturn('CREATE DEFINER=`somebody`@`myhost` TRIGGER trigger1 ...');
 
-        $this->dumper->dumpTriggers($this->dbMock, 'test', Table::TRIGGER_KEEP_DEFINER);
+        $this->dumper->dumpTriggers($this->dbMock, 'test', Table::DEFINER_KEEP_DEFINER);
 
         $output = $this->outputBuffer->fetch();
         $this->assertStringContainsString('CREATE DEFINER=`somebody`@`myhost` TRIGGER trigger1 ...;', $output);
@@ -157,7 +157,7 @@ class DumperTest extends TestCase
             ->with('SHOW CREATE TRIGGER `trigger1`')
             ->willReturn('CREATE DEFINER=`somebody`@`myhost` TRIGGER trigger1 ...');
 
-        $this->dumper->dumpTriggers($this->dbMock, 'test', Table::TRIGGER_NO_DEFINER);
+        $this->dumper->dumpTriggers($this->dbMock, 'test', Table::DEFINER_NO_DEFINER);
 
         $output = $this->outputBuffer->fetch();
         $this->assertStringContainsString('CREATE TRIGGER trigger1 ...;', $output);

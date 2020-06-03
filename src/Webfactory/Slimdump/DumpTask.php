@@ -86,6 +86,18 @@ final class DumpTask
             }
         }
 
+        $fetchViewsResult = $db->query($platform->getListViewsSQL($db->getDatabase()));
+
+        while ($viewName = $fetchViewsResult->fetchColumn(2)) {
+            $tableConfig = $this->config->findTable($viewName);
+
+            if (null === $tableConfig) {
+                continue;
+            }
+
+            $dumper->dumpView($db, $viewName, $tableConfig->getViewDefinerLevel());
+        }
+
         $dumper->enableForeignKeys();
     }
 }

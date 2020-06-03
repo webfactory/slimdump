@@ -15,8 +15,8 @@ use Webfactory\Slimdump\Exception\InvalidDumpTypeException;
 class Table
 {
     const TRIGGER_SKIP = 0;
-    const TRIGGER_NO_DEFINER = 1;
-    const TRIGGER_KEEP_DEFINER = 2;
+    const DEFINER_NO_DEFINER = 1;
+    const DEFINER_KEEP_DEFINER = 2;
 
     private $selector;
     private $dump;
@@ -26,6 +26,9 @@ class Table
 
     /** @var integer */
     private $dumpTriggers;
+
+    /** @var integer */
+    private $viewDefiner;
 
     /** @var \SimpleXMLElement */
     private $config;
@@ -54,6 +57,7 @@ class Table
 
         $this->keepAutoIncrement = self::attributeToBoolean($attr->{'keep-auto-increment'}, true);
         $this->dumpTriggers = self::parseDumpTriggerAttribute($attr->{'dump-triggers'});
+        $this->viewDefiner = self::parseViewDefinerAttribute($attr->{'view-definer'});
 
         foreach ($config->column as $columnConfig) {
             $column = new Column($columnConfig);
@@ -76,19 +80,30 @@ class Table
     private static function parseDumpTriggerAttribute($value)
     {
         if ($value === null) {
-            return self::TRIGGER_NO_DEFINER; // default
+            return self::DEFINER_NO_DEFINER; // default
         } else if ($value == 'true') {
-            return self::TRIGGER_NO_DEFINER; // BC
+            return self::DEFINER_NO_DEFINER; // BC
         } else if ($value == 'false') {
             return self::TRIGGER_SKIP;
         } else if ($value == 'none') {
             return self::TRIGGER_SKIP;
         } else if ($value == 'no-definer') {
-            return self::TRIGGER_NO_DEFINER;
+            return self::DEFINER_NO_DEFINER;
         } else if ($value == 'keep-definer') {
-            return self::TRIGGER_KEEP_DEFINER;
+            return self::DEFINER_KEEP_DEFINER;
         } else {
             throw new \RuntimeException("Unsupported value '$value' for the 'dump-triggers' setting.");
+        }
+    }
+
+    private static function parseViewDefinerAttribute($value)
+    {
+        if ($value === null || $value == 'no-definer') {
+            return self::DEFINER_NO_DEFINER;
+        } else if ($value == 'keep-definer') {
+            return self::DEFINER_KEEP_DEFINER;
+        } else {
+            throw new \RuntimeException("Unsupported value '$value' for the 'view-definer' setting.");
         }
     }
 
@@ -130,6 +145,14 @@ class Table
     public function getDumpTriggersLevel()
     {
         return $this->dumpTriggers;
+    }
+
+    /**
+     * @return int
+     */
+    public function getViewDefinerLevel()
+    {
+        return $this->viewDefiner;
     }
 
     /**

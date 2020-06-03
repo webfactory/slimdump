@@ -6,7 +6,6 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\PDOConnection;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Output\OutputInterface;
-use Webfactory\Slimdump\Config\Config;
 use Webfactory\Slimdump\Config\Table;
 
 class Dumper
@@ -83,7 +82,7 @@ class Dumper
      * @param string     $tableName
      * @param integer    $level One of the Table::TRIGGER_* constants
      */
-    public function dumpTriggers(Connection $db, $tableName, $level = Table::TRIGGER_NO_DEFINER)
+    public function dumpTriggers(Connection $db, $tableName, $level = Table::DEFINER_NO_DEFINER)
     {
         $triggers = $db->fetchAll(sprintf('SHOW TRIGGERS LIKE %s', $db->quote($tableName)));
 
@@ -96,12 +95,25 @@ class Dumper
         foreach ($triggers as $row) {
             $createTriggerCommand = $db->fetchColumn("SHOW CREATE TRIGGER `{$row['Trigger']}`", [], 2);
 
-            if ($level == Table::TRIGGER_NO_DEFINER) {
+            if ($level == Table::DEFINER_NO_DEFINER) {
                 $createTriggerCommand = preg_replace('/DEFINER=`[^`]*`@`[^`]*` /', '', $createTriggerCommand);
             }
 
             $this->output->writeln($createTriggerCommand.";\n", OutputInterface::OUTPUT_RAW);
         }
+    }
+
+    public function dumpView(Connection $db, $viewName, $level = Table::DEFINER_NO_DEFINER)
+    {
+        $this->output->writeln("-- BEGIN VIEW $viewName", OutputInterface::OUTPUT_RAW);
+
+        $createViewCommand = $db->fetchColumn("SHOW CREATE VIEW `{$viewName}`", [], 1);
+
+        if ($level == Table::DEFINER_NO_DEFINER) {
+            $createViewCommand = preg_replace('/DEFINER=`[^`]*`@`[^`]*` /', '', $createViewCommand);
+        }
+
+        $this->output->writeln($createViewCommand . ";\n", OutputInterface::OUTPUT_RAW);
     }
 
     /**

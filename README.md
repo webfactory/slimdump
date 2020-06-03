@@ -83,6 +83,20 @@ Example:
         - 'keep-definer': Keep the DEFINER=... clause
   -->
   <table name="events" dump="schema" dump-triggers="false" />
+
+  <!--
+    View handling:
+
+    A configured <table> may also be a database view. A CREATE VIEW statement will be issued
+    in that case, but the "DEFINER=..." clause will be removed to make it easier to re-import
+    the database e. g. in development environments.
+
+    You can change this by setting 'view-definers' to one of:
+        - 'no-definer': Dump view creation statement but remove DEFINER=... clause
+        - 'keep-definer': Keep the DEFINER=... clause
+    'no-definer' is the default if the 'view-definers'  attribute is omitted.
+  -->
+  <table name="aggregated_data_view" dump="schema" view-definers="no-definer" />
 </slimdump>
 ```
 
