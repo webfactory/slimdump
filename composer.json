@@ -16,14 +16,23 @@
     ],
     "require": {
         "php": ">=7.2",
+        "ext-libxml": "*",
+        "ext-pdo": "*",
         "ext-SimpleXML": "*",
         "doctrine/dbal": "^2.5.2",
-        "symfony/console": "^4.0.0 || ^3.0.0 || ^2.8.7",
-        "fzaninotto/faker": "^1.6"
+        "fzaninotto/faker": "^1.6",
+        "symfony/console": "^4.0.0 || ^3.0.0 || ^2.8.7"
+    },
+    "require-dev": {
+        "roave/security-advisories": "dev-master",
+        "phpunit/phpunit": "^8.5"
     },
     "autoload": {
         "psr-4": {
             "Webfactory\\Slimdump\\": "src/Webfactory/Slimdump"
         }
+    },
+    "config": {
+        "sort-packages": true
     }
 }
