@@ -88,7 +88,7 @@ final class DumpTask
         while ($viewName = $fetchViewsResult->fetchColumn(2)) {
             $tableConfig = $this->config->findTable($viewName);
 
-            if (null === $tableConfig) {
+            if (null === $tableConfig || !$tableConfig->isSchemaDumpRequired()) {
                 continue;
             }
 
