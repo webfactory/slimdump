@@ -14,9 +14,6 @@ jobs:
         name: Check missing composer requirements
         runs-on: ubuntu-18.04
         steps:
-            -   uses: webfactory/ssh-agent@v0.3.0
-                with:
-                    ssh-private-key: ${{ secrets.ORG_SSH_PRIVATE_KEY }}
             -   uses: actions/checkout@v2
             -   name: Konfiguriere PHP-Version und -Einstellungen im Worker-Node
                 run: |
