@@ -10,27 +10,25 @@ use Webfactory\Slimdump\Config\Table;
 
 class Dumper
 {
-    
     /** @var OutputInterface */
     protected $output;
 
-    /** @var integer */
+    /** @var int */
     protected $bufferSize;
 
     /**
-     * Dumper constructor.
      * @param OutputInterface $output
-     * @param int|null $bufferSize Default buffer size is 100MB
+     * @param int|null        $bufferSize Default buffer size is 100MB
      */
     public function __construct(OutputInterface $output, $bufferSize = null)
     {
         $this->output = $output;
-        $this->bufferSize = $bufferSize ? : 104857600;
+        $this->bufferSize = $bufferSize ?: 104857600;
     }
 
     public function exportAsUTF8()
     {
-        $this->output->writeln("SET NAMES utf8;", OutputInterface::OUTPUT_RAW);
+        $this->output->writeln('SET NAMES utf8;', OutputInterface::OUTPUT_RAW);
     }
 
     public function disableForeignKeys()
@@ -44,9 +42,9 @@ class Dumper
     }
 
     /**
-     * @param               $table
-     * @param Connection    $db
-     * @param boolean       $keepAutoIncrement
+     * @param            $table
+     * @param Connection $db
+     * @param bool       $keepAutoIncrement
      */
     public function dumpSchema($table, Connection $db, $keepAutoIncrement = true, bool $noProgress = false)
     {
@@ -54,7 +52,7 @@ class Dumper
         $this->output->writeln("-- BEGIN STRUCTURE $table", OutputInterface::OUTPUT_RAW);
         $this->output->writeln("DROP TABLE IF EXISTS `$table`;", OutputInterface::OUTPUT_RAW);
 
-        $tableCreationCommand = $db->fetchColumn("SHOW CREATE TABLE `$table`", array(), 1);
+        $tableCreationCommand = $db->fetchColumn("SHOW CREATE TABLE `$table`", [], 1);
 
         if (!$keepAutoIncrement) {
             $tableCreationCommand = preg_replace('/ AUTO_INCREMENT=[0-9]*/', '', $tableCreationCommand);
@@ -80,7 +78,7 @@ class Dumper
     /**
      * @param Connection $db
      * @param string     $tableName
-     * @param integer    $level One of the Table::TRIGGER_* constants
+     * @param int        $level     One of the Table::TRIGGER_* constants
      */
     public function dumpTriggers(Connection $db, $tableName, $level = Table::DEFINER_NO_DEFINER)
     {
@@ -95,7 +93,7 @@ class Dumper
         foreach ($triggers as $row) {
             $createTriggerCommand = $db->fetchColumn("SHOW CREATE TRIGGER `{$row['Trigger']}`", [], 2);
 
-            if ($level == Table::DEFINER_NO_DEFINER) {
+            if (Table::DEFINER_NO_DEFINER == $level) {
                 $createTriggerCommand = preg_replace('/DEFINER=`[^`]*`@`[^`]*` /', '', $createTriggerCommand);
             }
 
@@ -109,11 +107,11 @@ class Dumper
 
         $createViewCommand = $db->fetchColumn("SHOW CREATE VIEW `{$viewName}`", [], 1);
 
-        if ($level == Table::DEFINER_NO_DEFINER) {
+        if (Table::DEFINER_NO_DEFINER == $level) {
             $createViewCommand = preg_replace('/DEFINER=`[^`]*`@`[^`]*` /', '', $createViewCommand);
         }
 
-        $this->output->writeln($createViewCommand . ";\n", OutputInterface::OUTPUT_RAW);
+        $this->output->writeln($createViewCommand.";\n", OutputInterface::OUTPUT_RAW);
     }
 
     /**
@@ -128,7 +126,7 @@ class Dumper
         $this->keepalive($db);
         $cols = $this->cols($table, $db);
 
-        $s = "SELECT ";
+        $s = 'SELECT ';
         $first = true;
         foreach (array_keys($cols) as $name) {
             $isBlobColumn = $this->isBlob($name, $cols);
@@ -152,7 +150,7 @@ class Dumper
         $max = $this->bufferSize;
         $numRows = $db->fetchColumn("SELECT COUNT(*) FROM `$table`".$tableConfig->getCondition());
 
-        if ($numRows == 0) {
+        if (0 == $numRows) {
             // Fail fast: No data to dump.
             return;
         }
@@ -172,19 +170,18 @@ class Dumper
         $wrappedConnection->setAttribute(\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
 
         foreach ($db->query($s) as $row) {
-
             $b = $this->rowLengthEstimate($row);
 
             // Start a new statement to ensure that the line does not get too long.
             if ($bufferSize && $bufferSize + $b > $max) {
-                $this->output->writeln(";", OutputInterface::OUTPUT_RAW);
+                $this->output->writeln(';', OutputInterface::OUTPUT_RAW);
                 $bufferSize = 0;
             }
 
-            if ($bufferSize == 0) {
+            if (0 == $bufferSize) {
                 $this->output->write($this->insertValuesStatement($table, $cols), false, OutputInterface::OUTPUT_RAW);
             } else {
-                $this->output->write(",", false, OutputInterface::OUTPUT_RAW);
+                $this->output->write(',', false, OutputInterface::OUTPUT_RAW);
             }
 
             $firstCol = true;
@@ -194,20 +191,20 @@ class Dumper
                 $isBlobColumn = $this->isBlob($name, $cols);
 
                 if (!$firstCol) {
-                    $this->output->write(", ", false, OutputInterface::OUTPUT_RAW);
+                    $this->output->write(', ', false, OutputInterface::OUTPUT_RAW);
                 }
 
                 $this->output->write($tableConfig->getStringForInsertStatement($name, $value, $isBlobColumn, $db), false, OutputInterface::OUTPUT_RAW);
                 $firstCol = false;
             }
-            $this->output->write(")", false, OutputInterface::OUTPUT_RAW);
+            $this->output->write(')', false, OutputInterface::OUTPUT_RAW);
             $bufferSize += $b;
-            if ($progress !== null) {
+            if (null !== $progress) {
                 $progress->advance();
             }
         }
 
-        if ($progress !== null) {
+        if (null !== $progress) {
             $progress->setFormat("Dumping data <fg=green>$table</>: <fg=green>%percent:3s%%</> Took: %elapsed%");
             $progress->finish();
             if ($this->output instanceof \Symfony\Component\Console\Output\ConsoleOutput) {
@@ -218,7 +215,7 @@ class Dumper
         $wrappedConnection->setAttribute(\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
 
         if ($bufferSize) {
-            $this->output->writeln(";", OutputInterface::OUTPUT_RAW);
+            $this->output->writeln(';', OutputInterface::OUTPUT_RAW);
         }
 
         $this->output->writeln('', OutputInterface::OUTPUT_RAW);
@@ -232,43 +229,48 @@ class Dumper
      */
     protected function cols($table, Connection $db)
     {
-        $c = array();
+        $c = [];
         foreach ($db->fetchAll("SHOW COLUMNS FROM `$table`") as $row) {
             $c[$row['Field']] = $row['Type'];
         }
+
         return $c;
     }
 
     /**
-     * @param string $table
+     * @param string               $table
      * @param array(string=>mixed) $cols
+     *
      * @return string
      */
     protected function insertValuesStatement($table, $cols)
     {
-        return "INSERT INTO `$table` (`" . implode('`, `', array_keys($cols)) . "`) VALUES ";
+        return "INSERT INTO `$table` (`".implode('`, `', array_keys($cols)).'`) VALUES ';
     }
 
     /**
      * @param string $col
-     * @param array $definitions
+     * @param array  $definitions
+     *
      * @return bool
      */
     protected function isBlob($col, array $definitions)
     {
-        return stripos($definitions[$col], 'blob') !== false;
+        return false !== stripos($definitions[$col], 'blob');
     }
 
     /**
      * @param array $row
+     *
      * @return int
      */
     protected function rowLengthEstimate(array $row)
     {
         $l = 0;
         foreach ($row as $value) {
-            $l += strlen($value);
+            $l += \strlen($value);
         }
+
         return $l;
     }
 

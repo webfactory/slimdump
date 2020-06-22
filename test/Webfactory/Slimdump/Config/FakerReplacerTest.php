@@ -5,10 +5,6 @@ namespace Webfactory\Slimdump\Config;
 use PHPUnit\Framework\TestCase;
 use Webfactory\Slimdump\Exception\InvalidReplacementOptionException;
 
-/**
- * Class FakerReplacerTest
- * @package Webfactory\Slimdump\Config
- */
 class FakerReplacerTest extends TestCase
 {
     /**
@@ -36,9 +32,6 @@ class FakerReplacerTest extends TestCase
         $fakerReplacer->generateReplacement($replacementId);
     }
 
-    /**
-     *
-     */
     public function testValidateReplacementConfiguredNotExisting()
     {
         $fakerReplacer = new FakerReplacer();
@@ -50,19 +43,21 @@ class FakerReplacerTest extends TestCase
     }
 
     /**
-     * provides valid faker replacement ids
+     * provides valid faker replacement ids.
+     *
      * @return array
      */
     public function provideValidReplacementIds()
     {
         return [
-            [FakerReplacer::PREFIX . 'firstname'], // original faker property
-            [FakerReplacer::PREFIX . 'lastname'], // original faker property
+            [FakerReplacer::PREFIX.'firstname'], // original faker property
+            [FakerReplacer::PREFIX.'lastname'], // original faker property
         ];
     }
 
     /**
-     * provides valid faker replacement ids
+     * provides valid faker replacement ids.
+     *
      * @return array
      */
     public function provideValidReplacementNames()

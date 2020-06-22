@@ -6,9 +6,9 @@ use Webfactory\Slimdump\Exception\InvalidXmlException;
 
 class ConfigBuilder
 {
-
     /**
      * @param string $file
+     *
      * @return Config
      */
     public static function createFromFile($file)
@@ -20,10 +20,13 @@ class ConfigBuilder
 
     /**
      * @param string $xmlString
+     *
      * @throws InvalidXmlException
+     *
      * @return Config
      */
-    public static function createFromXmlString($xmlString) {
+    public static function createFromXmlString($xmlString)
+    {
         libxml_use_internal_errors(true);
         libxml_clear_errors(); // Cleanup old Errors.
         $xmlElement = simplexml_load_string($xmlString);
@@ -32,7 +35,7 @@ class ConfigBuilder
         if ($errors) {
             $errorAsString = '';
             foreach ($errors as $error) {
-                /** @var \libXMLError $error */
+                /* @var \libXMLError $error */
                 $errorAsString .= sprintf("%s %d: %s\n", $error->file, $error->line, $error->message);
             }
             throw new InvalidXmlException("Invalid XML! Errors:\n$errorAsString");
@@ -43,7 +46,7 @@ class ConfigBuilder
 
     public static function createConfigurationFromConsecutiveFiles(array $filePaths)
     {
-        $xmlStrings = array();
+        $xmlStrings = [];
         foreach ($filePaths as $path) {
             $xmlStrings[] = file_get_contents($path);
         }
@@ -53,7 +56,8 @@ class ConfigBuilder
 
     /**
      * @param array $xmlStrings
-     * @return null|Config
+     *
+     * @return Config|null
      */
     public static function createConfigurationFromConsecutiveXmlStrings(array $xmlStrings)
     {
@@ -67,8 +71,7 @@ class ConfigBuilder
         while ($xml = array_shift($xmlStrings)) {
             $config = self::createFromXmlString($xml);
 
-
-            if ($previous !== null) {
+            if (null !== $previous) {
                 // $previous is ephemeral, so we need to merge
                 // the previous configuration into our current
                 // one.
@@ -80,5 +83,4 @@ class ConfigBuilder
 
         return $previous;
     }
-
 }

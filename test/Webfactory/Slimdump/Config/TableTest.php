@@ -7,7 +7,6 @@ use Webfactory\Slimdump\Exception\InvalidDumpTypeException;
 
 class TableTest extends TestCase
 {
-
     public function testGetSelectExpressionWithFullTableConfiguration()
     {
         $xml = '<?xml version="1.0" ?>
@@ -133,7 +132,7 @@ class TableTest extends TestCase
         $this->assertEquals($table->getDumpTriggersLevel(), Table::DEFINER_NO_DEFINER);
         $this->assertTrue($table->isTriggerDumpRequired());
     }
-    
+
     /** @dataProvider  dumpTriggerAttributeValues */
     public function testDumpTriggerAttribute($value, $expected)
     {
@@ -144,7 +143,7 @@ class TableTest extends TestCase
         $table = new Table($xmlElement);
 
         $this->assertEquals($table->getDumpTriggersLevel(), $expected);
-        $this->assertEquals($table->isTriggerDumpRequired(), $expected !== Table::TRIGGER_SKIP);
+        $this->assertEquals($table->isTriggerDumpRequired(), Table::TRIGGER_SKIP !== $expected);
     }
 
     public function dumpTriggerAttributeValues()
@@ -157,5 +156,4 @@ class TableTest extends TestCase
             ['keep-definer', Table::DEFINER_KEEP_DEFINER],
         ];
     }
-
 }

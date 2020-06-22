@@ -7,7 +7,6 @@ use Webfactory\Slimdump\Exception\InvalidDumpTypeException;
 
 class ConfigTest extends TestCase
 {
-
     public function testFindTableWithWildcardSelector()
     {
         $xml = '<?xml version="1.0" ?>
@@ -76,5 +75,4 @@ class ConfigTest extends TestCase
 
         new Config($xmlElement);
     }
-
 }

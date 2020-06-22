@@ -37,13 +37,14 @@ final class SlimdumpCommand extends Command
                 InputOption::VALUE_NONE,
                 'Don\'t print progress information while dumping tables.'
             );
-        ;
     }
 
     /**
-     * @param InputInterface $input
+     * @param InputInterface  $input
      * @param OutputInterface $output
-     * @return int|null|void
+     *
+     * @return int|void|null
+     *
      * @throws \Doctrine\DBAL\DBALException
      */
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -52,12 +53,11 @@ final class SlimdumpCommand extends Command
         $configFiles = $input->getArgument('config');
         $noProgress = $input->getOption('no-progress') ? true : false;
 
-        if ($dsn === '-') {
-            $dsn = getenv("MYSQL_DSN");
+        if ('-' === $dsn) {
+            $dsn = getenv('MYSQL_DSN');
         }
 
         $dumptask = new DumpTask($dsn, $configFiles, $noProgress, $output);
         $dumptask->dump();
     }
-
 }
