@@ -3,6 +3,7 @@
 
 [![Build Status](https://github.com/webfactory/slimdump/workflows/Run%20Tests/badge.svg)](https://github.com/webfactory/slimdump/actions)
 [![Coverage Status](https://coveralls.io/repos/webfactory/slimdump/badge.svg?branch=master&service=github)](https://coveralls.io/github/webfactory/slimdump?branch=master)
+![](https://github.com/webfactory/slimdump/workflows/AllDependenciesDeclared/badge.svg)
 
 `slimdump` is a little tool to help you create configurable dumps of large MySQL-databases. It works off one or several configuration files. For every table you specify, it can dump only the schema (`CREATE TABLE ...` statement), full table data, data without blobs and more.
 
