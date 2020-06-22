@@ -155,7 +155,7 @@ class Dumper
 
         $bufferSize = 0;
         $max = $this->bufferSize;
-        $numRows = $db->fetchColumn("SELECT COUNT(*) FROM `$table`".$tableConfig->getCondition());
+        $numRows = (int)$db->fetchColumn("SELECT COUNT(*) FROM `$table`".$tableConfig->getCondition());
 
         if (0 === $numRows) {
             // Fail fast: No data to dump.
