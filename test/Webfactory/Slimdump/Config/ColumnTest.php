@@ -2,13 +2,11 @@
 
 namespace Webfactory\Slimdump\Config;
 
-use phpDocumentor\Reflection\Types\Array_;
 use PHPUnit\Framework\TestCase;
 use Webfactory\Slimdump\Exception\InvalidDumpTypeException;
 
 class ColumnTest extends TestCase
 {
-
     public function testProcessRowValueWithNormalConfiguration()
     {
         $xml = '<?xml version="1.0" ?>
@@ -114,7 +112,7 @@ class ColumnTest extends TestCase
         $this->assertNotEquals(
             $firstGeneratedValue,
             $secondGeneratedValue,
-            'FAKER_unique->randomDigit generated the same value: "' . $firstGeneratedValue . '" twice'
+            'FAKER_unique->randomDigit generated the same value: "'.$firstGeneratedValue.'" twice'
         );
     }
 }

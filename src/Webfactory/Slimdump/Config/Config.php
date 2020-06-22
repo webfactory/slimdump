@@ -2,12 +2,7 @@
 
 namespace Webfactory\Slimdump\Config;
 
-use Webfactory\Slimdump\Exception\InvalidXmlException;
-
 /**
- * Class Config.
- * @package Webfactory\Slimdump\Config
- *
  * This is a class representation of the configuration file(s) given.
  */
 class Config
@@ -20,12 +15,8 @@ class Config
     const BLANK = 6;
     const REPLACE = 7;
 
-    private $tables = array();
+    private $tables = [];
 
-    /**
-     * Config constructor.
-     * @param \SimpleXMLElement $xml
-     */
     public function __construct(\SimpleXMLElement $xml)
     {
         foreach ($xml->table as $tableConfig) {
@@ -42,13 +33,14 @@ class Config
      *
      * @param Config $other
      */
-    public function merge(Config $other)
+    public function merge(self $other)
     {
         $this->tables = array_merge($this->tables, $other->getTables());
     }
 
     /**
      * @param string $tableName
+     *
      * @return Table
      */
     public function findTable($tableName)
@@ -57,8 +49,9 @@ class Config
     }
 
     /**
-     * @param array $haystack
+     * @param array  $haystack
      * @param string $needle
+     *
      * @return mixed
      */
     public static function findBySelector(array $haystack, $needle)
@@ -66,7 +59,7 @@ class Config
         krsort($haystack);
 
         foreach ($haystack as $selector => $config) {
-            $pattern = str_replace(array('*', '?'), array('(.*)', '.'), $selector);
+            $pattern = str_replace(['*', '?'], ['(.*)', '.'], $selector);
             if (preg_match("/^$pattern$/i", $needle)) {
                 return $config;
             }
@@ -77,5 +70,4 @@ class Config
     {
         return $this->tables;
     }
-
 }

@@ -9,10 +9,10 @@ use Webfactory\Slimdump\Config\Table;
 
 class DumperTest extends TestCase
 {
-    /** @var  \PHPUnit_Framework_MockObject_MockObject */
+    /** @var \PHPUnit_Framework_MockObject_MockObject */
     protected $dbMock;
 
-    /** @var  OutputInterface */
+    /** @var OutputInterface */
     protected $outputBuffer;
 
     /** @var Dumper */
@@ -54,20 +54,20 @@ class DumperTest extends TestCase
         $this->dbMock->expects($this->any())
             ->method('fetchAll')
             ->willReturnCallback(function ($query) {
-                if (strpos($query, 'SHOW COLUMNS') !== false) {
-                    return array(
-                        array(
+                if (false !== strpos($query, 'SHOW COLUMNS')) {
+                    return [
+                        [
                             'Field' => 'col1',
-                            'Type'  => 'varchar',
-                        ),
-                        array(
+                            'Type' => 'varchar',
+                        ],
+                        [
                             'Field' => 'col2',
-                            'Type'  => 'blob',
-                        ),
-                    );
+                            'Type' => 'blob',
+                        ],
+                    ];
                 }
 
-                throw new \RuntimeException('Unexpected fetchAll-call: ' . $query);
+                throw new \RuntimeException('Unexpected fetchAll-call: '.$query);
             });
         $this->dbMock->expects($this->any())
             ->method('quote')
@@ -75,16 +75,16 @@ class DumperTest extends TestCase
                 return $value;
             });
 
-        $this->dbMock->expects($this->any())->method('query')->willReturn(array(
-            array(
+        $this->dbMock->expects($this->any())->method('query')->willReturn([
+            [
                 'col1' => 'value1.1',
                 'col2' => 'value1.2',
-            ),
-            array(
+            ],
+            [
                 'col1' => 'value2.1',
                 'col2' => 'value2.2',
-            ),
-        ));
+            ],
+        ]);
 
         $table = new Table(new \SimpleXMLElement('<table name="test" dump="full" />'));
 

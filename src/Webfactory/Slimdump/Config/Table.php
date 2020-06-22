@@ -6,9 +6,6 @@ use Doctrine\DBAL\Connection;
 use Webfactory\Slimdump\Exception\InvalidDumpTypeException;
 
 /**
- * Class Table
- * @package Webfactory\Slimdump\Config
- *
  * This is a class representation of a configured table.
  * This is _not_ a representation of a database table.
  */
@@ -21,25 +18,20 @@ class Table
     private $selector;
     private $dump;
 
-    /** @var boolean */
+    /** @var bool */
     private $keepAutoIncrement;
 
-    /** @var integer */
+    /** @var int */
     private $dumpTriggers;
 
-    /** @var integer */
+    /** @var int */
     private $viewDefiner;
 
     /** @var \SimpleXMLElement */
     private $config;
 
-    private $columns = array();
+    private $columns = [];
 
-    /**
-     * Table constructor.
-     * @param \SimpleXMLElement $config
-     * @throws InvalidDumpTypeException
-     */
     public function __construct(\SimpleXMLElement $config)
     {
         $this->config = $config;
@@ -47,12 +39,12 @@ class Table
         $attr = $config->attributes();
         $this->selector = (string) $attr->name;
 
-        $const = 'Webfactory\Slimdump\Config\Config::' . strtoupper((string)$attr->dump);
+        $const = 'Webfactory\Slimdump\Config\Config::'.strtoupper((string) $attr->dump);
 
-        if (defined($const)) {
-            $this->dump = constant($const);
+        if (\defined($const)) {
+            $this->dump = \constant($const);
         } else {
-            throw new InvalidDumpTypeException(sprintf("Invalid dump type %s for table %s.", $attr->dump, $this->selector));
+            throw new InvalidDumpTypeException(sprintf('Invalid dump type %s for table %s.', $attr->dump, $this->selector));
         }
 
         $this->keepAutoIncrement = self::attributeToBoolean($attr->{'keep-auto-increment'}, true);
@@ -67,29 +59,32 @@ class Table
 
     /**
      * @param \SimpleXMLElement[]|null $attribute
-     * @param boolean $defaultValue
-     * @return boolean
+     * @param bool                     $defaultValue
+     *
+     * @return bool
      */
-    private static function attributeToBoolean($attribute, $defaultValue) {
-        if ($attribute == null) {
+    private static function attributeToBoolean($attribute, $defaultValue)
+    {
+        if (null == $attribute) {
             return $defaultValue;
         }
-        return ($attribute == 'true') ? true : false;
+
+        return ('true' == $attribute) ? true : false;
     }
 
     private static function parseDumpTriggerAttribute($value)
     {
-        if ($value === null) {
+        if (null === $value) {
             return self::DEFINER_NO_DEFINER; // default
-        } else if ($value == 'true') {
+        } elseif ('true' == $value) {
             return self::DEFINER_NO_DEFINER; // BC
-        } else if ($value == 'false') {
+        } elseif ('false' == $value) {
             return self::TRIGGER_SKIP;
-        } else if ($value == 'none') {
+        } elseif ('none' == $value) {
             return self::TRIGGER_SKIP;
-        } else if ($value == 'no-definer') {
+        } elseif ('no-definer' == $value) {
             return self::DEFINER_NO_DEFINER;
-        } else if ($value == 'keep-definer') {
+        } elseif ('keep-definer' == $value) {
             return self::DEFINER_KEEP_DEFINER;
         } else {
             throw new \RuntimeException("Unsupported value '$value' for the 'dump-triggers' setting.");
@@ -98,9 +93,9 @@ class Table
 
     private static function parseViewDefinerAttribute($value)
     {
-        if ($value === null || $value == 'no-definer') {
+        if (null === $value || 'no-definer' == $value) {
             return self::DEFINER_NO_DEFINER;
-        } else if ($value == 'keep-definer') {
+        } elseif ('keep-definer' == $value) {
             return self::DEFINER_KEEP_DEFINER;
         } else {
             throw new \RuntimeException("Unsupported value '$value' for the 'view-definer' setting.");
@@ -116,7 +111,7 @@ class Table
     }
 
     /**
-     * @return boolean
+     * @return bool
      */
     public function isSchemaDumpRequired()
     {
@@ -124,7 +119,7 @@ class Table
     }
 
     /**
-     * @return boolean
+     * @return bool
      */
     public function isDataDumpRequired()
     {
@@ -132,7 +127,7 @@ class Table
     }
 
     /**
-     * @return boolean
+     * @return bool
      */
     public function isTriggerDumpRequired()
     {
@@ -156,7 +151,7 @@ class Table
     }
 
     /**
-     * @return boolean
+     * @return bool
      */
     public function keepAutoIncrement()
     {
@@ -165,7 +160,8 @@ class Table
 
     /**
      * @param string $columnName
-     * @param boolean $isBlobColumn
+     * @param bool   $isBlobColumn
+     *
      * @return string
      */
     public function getSelectExpression($columnName, $isBlobColumn)
@@ -177,7 +173,7 @@ class Table
         }
 
         if ($isBlobColumn) {
-            if ($dump == Config::NOBLOB) {
+            if (Config::NOBLOB == $dump) {
                 return 'NULL';
             } else {
                 return "IF(ISNULL(`$columnName`), NULL, IF(`$columnName`='', '', CONCAT('0x', HEX(`$columnName`))))";
@@ -190,16 +186,16 @@ class Table
     /**
      * @param string      $columnName
      * @param string|null $value
-     * @param boolean     $isBlobColumn
+     * @param bool        $isBlobColumn
      * @param Connection  $db
      *
      * @return string
      */
     public function getStringForInsertStatement($columnName, $value, $isBlobColumn, Connection $db)
     {
-        if ($value === null) {
+        if (null === $value) {
             return 'NULL';
-        } else if ($value === '') {
+        } elseif ('' === $value) {
             return '""';
         } else {
             if ($column = $this->findColumn($columnName)) {
@@ -219,10 +215,10 @@ class Table
      */
     public function getCondition()
     {
-        $condition = (string)$this->config->attributes()->condition;
+        $condition = (string) $this->config->attributes()->condition;
 
-        if (trim($condition) !== '') {
-            return ' WHERE ' . $condition;
+        if ('' !== trim($condition)) {
+            return ' WHERE '.$condition;
         }
     }
 
@@ -235,5 +231,4 @@ class Table
     {
         return Config::findBySelector($this->columns, $columnName);
     }
-
 }

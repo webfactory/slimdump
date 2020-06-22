@@ -33,9 +33,10 @@ final class DumpTask
     private $noProgress;
 
     /**
-     * @param string $dsn
-     * @param string[] $configFiles
+     * @param string          $dsn
+     * @param string[]        $configFiles
      * @param OutputInterface $output
+     *
      * @throws \Doctrine\DBAL\DBALException
      */
     public function __construct($dsn, array $configFiles, bool $noProgress, OutputInterface $output)
@@ -46,14 +47,15 @@ final class DumpTask
         $this->output = $output;
         $this->config = ConfigBuilder::createConfigurationFromConsecutiveFiles($configFiles);
         $this->db = DriverManager::getConnection(
-            array('url' => $mysqliIndependentDsn, 'charset' => 'utf8', 'driverClass' => PDOMySqlDriver::class)
+            ['url' => $mysqliIndependentDsn, 'charset' => 'utf8', 'driverClass' => PDOMySqlDriver::class]
         );
     }
 
     /**
-     * @param Config $config
-     * @param Connection $db
+     * @param Config          $config
+     * @param Connection      $db
      * @param OutputInterface $output
+     *
      * @throws \Doctrine\DBAL\DBALException
      */
     public function dump()
