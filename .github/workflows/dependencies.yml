@@ -1,0 +1,37 @@
+name: AllDependenciesDeclared
+
+on:
+    push:
+        branches:
+            - master
+    pull_request:
+
+env:
+    PHP_VERSION: 7.2
+
+jobs:
+    composer-require-checker:
+        name: Check missing composer requirements
+        runs-on: ubuntu-18.04
+        steps:
+            -   uses: webfactory/ssh-agent@v0.3.0
+                with:
+                    ssh-private-key: ${{ secrets.ORG_SSH_PRIVATE_KEY }}
+            -   uses: actions/checkout@v2
+            -   name: Konfiguriere PHP-Version und -Einstellungen im Worker-Node
+                run: |
+                    sudo update-alternatives --set php /usr/bin/php$PHP_VERSION
+                    echo 'variables_order = "EGPCS"' | sudo tee /etc/php/$PHP_VERSION/cli/conf.d/99-local.ini
+            -   name: Cache Composer Dependencies
+                uses: actions/cache@v1
+                with:
+                    path: vendor/
+                    key: composer-${{ env.PHP_VERSION }}-${{ hashFiles('composer.*') }}
+                    restore-keys: |
+                        composer-${{ env.PHP_VERSION }}-${{ github.ref }}
+                        composer-${{ env.PHP_VERSION }}-
+            -   run: |
+                    composer install --no-interaction --no-scripts --no-progress --no-suggest
+                    composer show
+            -   name: ComposerRequireChecker
+                uses: docker://webfactory/composer-require-checker:2.1.0
