@@ -1,5 +1,10 @@
-on: [push, pull_request]
 name: Run Tests
+
+on:
+    push:
+        branches:
+            - master
+    pull_request:
 
 jobs:
     PHPUnit:
