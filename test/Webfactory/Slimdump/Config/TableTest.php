@@ -129,7 +129,7 @@ class TableTest extends TestCase
         $xmlElement = new \SimpleXMLElement($xml);
         $table = new Table($xmlElement);
 
-        $this->assertEquals($table->getDumpTriggersLevel(), Table::DEFINER_NO_DEFINER);
+        $this->assertEquals(Table::DEFINER_NO_DEFINER, $table->getDumpTriggersLevel());
         $this->assertTrue($table->isTriggerDumpRequired());
     }
 

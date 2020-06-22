@@ -33,7 +33,7 @@ class DumperTest extends TestCase
 
     public function testDumpSchemaWithNormalConfiguration()
     {
-        $this->dbMock->expects($this->any())->method('fetchColumn')->willReturn('CREATE TABLE statement');
+        $this->dbMock->method('fetchColumn')->willReturn('CREATE TABLE statement');
 
         $this->dumper->dumpSchema('test', $this->dbMock);
         $output = $this->outputBuffer->fetch();
@@ -46,12 +46,12 @@ class DumperTest extends TestCase
     {
         $pdoMock = $this->getMockBuilder(\stdClass::class)->addMethods(['setAttribute'])->getMock();
 
-        $this->dbMock->expects($this->any())->method('getWrappedConnection')->willReturn($pdoMock);
+        $this->dbMock->method('getWrappedConnection')->willReturn($pdoMock);
 
-        $this->dbMock->expects($this->any())
+        $this->dbMock
             ->method('fetchColumn')
             ->willReturn(2);
-        $this->dbMock->expects($this->any())
+        $this->dbMock
             ->method('fetchAll')
             ->willReturnCallback(function ($query) {
                 if (false !== strpos($query, 'SHOW COLUMNS')) {
@@ -69,13 +69,13 @@ class DumperTest extends TestCase
 
                 throw new \RuntimeException('Unexpected fetchAll-call: '.$query);
             });
-        $this->dbMock->expects($this->any())
+        $this->dbMock
             ->method('quote')
             ->willReturnCallback(function ($value) {
                 return $value;
             });
 
-        $this->dbMock->expects($this->any())->method('query')->willReturn([
+        $this->dbMock->method('query')->willReturn([
             [
                 'col1' => 'value1.1',
                 'col2' => 'value1.2',
