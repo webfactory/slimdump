@@ -2,6 +2,8 @@
 
 namespace Webfactory\Slimdump\Exception;
 
-class InvalidDumpTypeException extends \Exception
+use Exception;
+
+class InvalidDumpTypeException extends Exception
 {
 }

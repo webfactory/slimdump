@@ -2,25 +2,26 @@
 
 namespace Webfactory\Slimdump\Config;
 
+use SimpleXMLElement;
+
 /**
  * This is a class representation of the configuration file(s) given.
  */
 class Config
 {
-    const NONE = 1;
-    const SCHEMA = 2;
-    const NOBLOB = 3;
-    const MASKED = 4;
-    const FULL = 5;
-    const BLANK = 6;
-    const REPLACE = 7;
+    public const NONE = 1;
+    public const SCHEMA = 2;
+    public const NOBLOB = 3;
+    public const MASKED = 4;
+    public const FULL = 5;
+    public const BLANK = 6;
+    public const REPLACE = 7;
 
     private $tables = [];
 
-    public function __construct(\SimpleXMLElement $xml)
+    public function __construct(SimpleXMLElement $xml)
     {
         foreach ($xml->table as $tableConfig) {
-            /** @var \SimpleXMLElement $tableConfig */
             $table = new Table($tableConfig);
             $this->tables[$table->getSelector()] = $table;
         }
@@ -64,6 +65,8 @@ class Config
                 return $config;
             }
         }
+
+        return null;
     }
 
     public function getTables()

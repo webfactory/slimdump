@@ -2,14 +2,19 @@
 
 namespace Webfactory\Slimdump\Database;
 
+use Doctrine\DBAL\Connection;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
+use SimpleXMLElement;
+use stdClass;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Webfactory\Slimdump\Config\Table;
 
 class DumperTest extends TestCase
 {
-    /** @var \PHPUnit_Framework_MockObject_MockObject */
+    /** @var Connection|MockObject */
     protected $dbMock;
 
     /** @var OutputInterface */
@@ -26,7 +31,7 @@ class DumperTest extends TestCase
         $this->outputBuffer = new BufferedOutput();
         $this->dumper = new Dumper($this->outputBuffer);
 
-        $this->dbMock = $this->getMockBuilder('\Doctrine\DBAL\Connection')
+        $this->dbMock = $this->getMockBuilder(Connection::class)
             ->disableOriginalConstructor()
             ->getMock();
     }
@@ -44,7 +49,7 @@ class DumperTest extends TestCase
 
     public function testDumpDataWithFullConfiguration()
     {
-        $pdoMock = $this->getMockBuilder(\stdClass::class)->addMethods(['setAttribute'])->getMock();
+        $pdoMock = $this->getMockBuilder(stdClass::class)->addMethods(['setAttribute'])->getMock();
 
         $this->dbMock->method('getWrappedConnection')->willReturn($pdoMock);
 
@@ -53,9 +58,10 @@ class DumperTest extends TestCase
             ->willReturn(2);
         $this->dbMock
             ->method('fetchAll')
-            ->willReturnCallback(function ($query) {
-                if (false !== strpos($query, 'SHOW COLUMNS')) {
-                    return [
+            ->willReturnCallback(
+                static function ($query) {
+                    if (false !== strpos($query, 'SHOW COLUMNS')) {
+                        return [
                         [
                             'Field' => 'col1',
                             'Type' => 'varchar',
@@ -65,15 +71,16 @@ class DumperTest extends TestCase
                             'Type' => 'blob',
                         ],
                     ];
-                }
+                    }
 
-                throw new \RuntimeException('Unexpected fetchAll-call: '.$query);
-            });
+                    throw new RuntimeException('Unexpected fetchAll-call: '.$query);
+                });
         $this->dbMock
             ->method('quote')
-            ->willReturnCallback(function ($value) {
-                return $value;
-            });
+            ->willReturnCallback(
+                static function ($value) {
+                    return $value;
+                });
 
         $this->dbMock->method('query')->willReturn([
             [
@@ -86,7 +93,7 @@ class DumperTest extends TestCase
             ],
         ]);
 
-        $table = new Table(new \SimpleXMLElement('<table name="test" dump="full" />'));
+        $table = new Table(new SimpleXMLElement('<table name="test" dump="full" />'));
 
         $this->dumper->dumpData('test', $table, $this->dbMock, false);
         $output = $this->outputBuffer->fetch();

@@ -3,6 +3,8 @@
 namespace Webfactory\Slimdump\Config;
 
 use Faker;
+use Faker\Generator;
+use InvalidArgumentException;
 use Webfactory\Slimdump\Exception\InvalidReplacementOptionException;
 
 /**
@@ -14,9 +16,9 @@ use Webfactory\Slimdump\Exception\InvalidReplacementOptionException;
  */
 class FakerReplacer
 {
-    const PREFIX = 'FAKER_';
+    public const PREFIX = 'FAKER_';
 
-    /** @var \Faker\Generator */
+    /** @var Generator */
     private $faker;
 
     /**
@@ -37,11 +39,7 @@ class FakerReplacer
      */
     public static function isFakerColumn($replacement)
     {
-        if (0 === strpos($replacement, self::PREFIX)) {
-            return true;
-        }
-
-        return false;
+        return 0 === strpos($replacement, self::PREFIX);
     }
 
     /**
@@ -56,18 +54,16 @@ class FakerReplacer
         $replacementMethodName = str_replace(self::PREFIX, '', $replacementId);
 
         if (false !== strpos($replacementMethodName, '->')) {
-            $modifierAndMethod = explode('->', $replacementMethodName);
-            $modifierName = $modifierAndMethod[0];
-            $replacementMethodName = $modifierAndMethod[1];
+            [$modifierName, $replacementMethodName] = explode('->', $replacementMethodName);
 
             $this->validateReplacementConfiguredModifier($modifierName, $replacementMethodName);
 
             return (string) $this->faker->$modifierName->$replacementMethodName;
-        } else {
-            $this->validateReplacementConfigured($replacementMethodName);
-
-            return (string) $this->faker->$replacementMethodName;
         }
+
+        $this->validateReplacementConfigured($replacementMethodName);
+
+        return (string) $this->faker->$replacementMethodName;
     }
 
     /**
@@ -75,13 +71,13 @@ class FakerReplacer
      *
      * @param string $replacementName
      *
-     * @throws \Webfactory\Slimdump\Exception\InvalidReplacementOptionException if not a faker method
+     * @throws InvalidReplacementOptionException if not a faker method
      */
     private function validateReplacementConfigured($replacementName)
     {
         try {
             $this->faker->__get($replacementName);
-        } catch (\InvalidArgumentException $exception) {
+        } catch (InvalidArgumentException $exception) {
             throw new InvalidReplacementOptionException($replacementName.' is no valid faker replacement');
         }
     }
@@ -90,7 +86,7 @@ class FakerReplacer
     {
         try {
             $this->faker->__get($replacementModifier)->__get($replacementName);
-        } catch (\InvalidArgumentException $exception) {
+        } catch (InvalidArgumentException $exception) {
             throw new InvalidReplacementOptionException($replacementModifier.'->'.$replacementName.' is no valid faker replacement');
         }
     }

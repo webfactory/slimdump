@@ -2,6 +2,7 @@
 
 namespace Webfactory\Slimdump\Config;
 
+use SimpleXMLElement;
 use Webfactory\Slimdump\Exception\InvalidDumpTypeException;
 
 /**
@@ -10,10 +11,16 @@ use Webfactory\Slimdump\Exception\InvalidDumpTypeException;
  */
 class Column
 {
-    private $config = null;
+    private $config;
     private $fakerReplacer;
 
-    public function __construct(\SimpleXMLElement $config)
+    /** @var int */
+    private $dump;
+
+    /** @var string */
+    private $selector;
+
+    public function __construct(SimpleXMLElement $config)
     {
         $this->config = $config;
 
@@ -54,22 +61,22 @@ class Column
      */
     public function processRowValue($value)
     {
-        if (Config::MASKED == $this->dump) {
+        if (Config::MASKED === $this->dump) {
             return preg_replace('/[a-z0-9]/i', 'x', $value);
         }
 
-        if (Config::REPLACE == $this->dump) {
-            /** @var \SimpleXMLElement $replacement */
+        if (Config::REPLACE === $this->dump) {
+            /** @var SimpleXMLElement $replacement */
             $replacementName = (string) $this->config->attributes()->replacement;
 
-            if ($this->fakerReplacer->isFakerColumn($replacementName)) {
+            if ($this->fakerReplacer::isFakerColumn($replacementName)) {
                 return $this->fakerReplacer->generateReplacement($replacementName);
             }
 
             return $this->config->attributes()->replacement;
         }
 
-        if (Config::BLANK == $this->dump) {
+        if (Config::BLANK === $this->dump) {
             return '';
         }
 

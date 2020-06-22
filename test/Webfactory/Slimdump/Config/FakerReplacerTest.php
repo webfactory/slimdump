@@ -36,7 +36,7 @@ class FakerReplacerTest extends TestCase
     {
         $fakerReplacer = new FakerReplacer();
 
-        $this->expectException(InvalidReplacementOptionException::class, 'FOOBAR is no valid faker replacement');
+        $this->expectException(InvalidReplacementOptionException::class);
 
         // neither individual property nor faker property
         $fakerReplacer->generateReplacement('FAKER_FOOBAR');

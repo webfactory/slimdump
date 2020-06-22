@@ -3,6 +3,7 @@
 namespace Webfactory\Slimdump\Config;
 
 use PHPUnit\Framework\TestCase;
+use SimpleXMLElement;
 use Webfactory\Slimdump\Exception\InvalidDumpTypeException;
 
 class ColumnTest extends TestCase
@@ -12,7 +13,7 @@ class ColumnTest extends TestCase
         $xml = '<?xml version="1.0" ?>
                 <column name="test" dump="full" />';
 
-        $xmlElement = new \SimpleXMLElement($xml);
+        $xmlElement = new SimpleXMLElement($xml);
 
         $columnConfig = new Column($xmlElement);
         $this->assertEquals('test value', $columnConfig->processRowValue('test value'));
@@ -23,7 +24,7 @@ class ColumnTest extends TestCase
         $xml = '<?xml version="1.0" ?>
                 <column name="test" dump="blank" />';
 
-        $xmlElement = new \SimpleXMLElement($xml);
+        $xmlElement = new SimpleXMLElement($xml);
 
         $columnConfig = new Column($xmlElement);
         $this->assertEmpty($columnConfig->processRowValue('test value'));
@@ -34,7 +35,7 @@ class ColumnTest extends TestCase
         $xml = '<?xml version="1.0" ?>
                 <column name="test" dump="masked" />';
 
-        $xmlElement = new \SimpleXMLElement($xml);
+        $xmlElement = new SimpleXMLElement($xml);
 
         $columnConfig = new Column($xmlElement);
         $this->assertEquals('xxxx@xxxx.xxx', $columnConfig->processRowValue('test@fest.com'));
@@ -44,7 +45,7 @@ class ColumnTest extends TestCase
     {
         $xml = '<?xml version="1.0" ?>
                 <column name="test" dump="replace" replacement="FAKER_NAME" />';
-        $xmlElement = new \SimpleXMLElement($xml);
+        $xmlElement = new SimpleXMLElement($xml);
 
         $columnConfig = new Column($xmlElement);
 
@@ -56,7 +57,7 @@ class ColumnTest extends TestCase
     {
         $xml = '<?xml version="1.0" ?>
                 <column name="test" dump="replace" replacement="ANON" />';
-        $xmlElement = new \SimpleXMLElement($xml);
+        $xmlElement = new SimpleXMLElement($xml);
 
         $columnConfig = new Column($xmlElement);
 
@@ -72,7 +73,7 @@ class ColumnTest extends TestCase
         $xml = '<?xml version="1.0" ?>
                 <column name="test" dump="xxx" />';
 
-        $xmlElement = new \SimpleXMLElement($xml);
+        $xmlElement = new SimpleXMLElement($xml);
 
         new Column($xmlElement);
     }
@@ -82,7 +83,7 @@ class ColumnTest extends TestCase
         $xml = '<?xml version="1.0" ?>
                 <column name="test" dump="replace" replacement="xxx" />';
 
-        $xmlElement = new \SimpleXMLElement($xml);
+        $xmlElement = new SimpleXMLElement($xml);
 
         $columnConfig = new Column($xmlElement);
         $this->assertEquals('xxx', $columnConfig->processRowValue('test value'));
@@ -93,7 +94,7 @@ class ColumnTest extends TestCase
         $xml = '<?xml version="1.0" ?>
                 <column name="test" dump="replace" />';
 
-        $xmlElement = new \SimpleXMLElement($xml);
+        $xmlElement = new SimpleXMLElement($xml);
 
         $columnConfig = new Column($xmlElement);
         $this->assertEquals('', $columnConfig->processRowValue('test value'));
@@ -103,7 +104,7 @@ class ColumnTest extends TestCase
     {
         $xml = '<?xml version="1.0" ?>
                 <column name="test" dump="replace" replacement="FAKER_unique->randomDigit" />';
-        $xmlElement = new \SimpleXMLElement($xml);
+        $xmlElement = new SimpleXMLElement($xml);
         $columnConfig = new Column($xmlElement);
 
         $firstGeneratedValue = $columnConfig->processRowValue('test value');
