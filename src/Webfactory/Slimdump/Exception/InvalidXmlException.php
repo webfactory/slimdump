@@ -2,6 +2,8 @@
 
 namespace Webfactory\Slimdump\Exception;
 
-class InvalidXmlException extends \Exception
+use Exception;
+
+class InvalidXmlException extends Exception
 {
 }

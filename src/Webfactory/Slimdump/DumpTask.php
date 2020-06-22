@@ -2,6 +2,7 @@
 
 namespace Webfactory\Slimdump;
 
+use Doctrine\DBAL\DBALException;
 use Symfony\Component\Console\Output\OutputInterface;
 use Webfactory\Slimdump\Config\Config;
 use Webfactory\Slimdump\Config\ConfigBuilder;
@@ -35,9 +36,10 @@ final class DumpTask
     /**
      * @param string          $dsn
      * @param string[]        $configFiles
+     * @param bool            $noProgress
      * @param OutputInterface $output
      *
-     * @throws \Doctrine\DBAL\DBALException
+     * @throws DBALException
      */
     public function __construct($dsn, array $configFiles, bool $noProgress, OutputInterface $output)
     {
@@ -51,13 +53,6 @@ final class DumpTask
         );
     }
 
-    /**
-     * @param Config          $config
-     * @param Connection      $db
-     * @param OutputInterface $output
-     *
-     * @throws \Doctrine\DBAL\DBALException
-     */
     public function dump()
     {
         $dumper = new Dumper($this->output);

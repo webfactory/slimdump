@@ -3,8 +3,11 @@
 namespace Webfactory\Slimdump\Database;
 
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\Driver\PDOConnection;
+use PDO;
 use Symfony\Component\Console\Helper\ProgressBar;
+use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Webfactory\Slimdump\Config\Table;
 
@@ -45,6 +48,9 @@ class Dumper
      * @param            $table
      * @param Connection $db
      * @param bool       $keepAutoIncrement
+     * @param bool       $noProgress
+     *
+     * @throws DBALException
      */
     public function dumpSchema($table, Connection $db, $keepAutoIncrement = true, bool $noProgress = false)
     {
@@ -55,7 +61,7 @@ class Dumper
         $tableCreationCommand = $db->fetchColumn("SHOW CREATE TABLE `$table`", [], 1);
 
         if (!$keepAutoIncrement) {
-            $tableCreationCommand = preg_replace('/ AUTO_INCREMENT=[0-9]*/', '', $tableCreationCommand);
+            $tableCreationCommand = preg_replace('/ AUTO_INCREMENT=\d*/', '', $tableCreationCommand);
         }
 
         $this->output->writeln($tableCreationCommand.";\n", OutputInterface::OUTPUT_RAW);
@@ -69,7 +75,7 @@ class Dumper
             $progress->start();
             $progress->setFormat("Dumping schema <fg=green>$table</>: <fg=green>%percent:3s%%</> Took: %elapsed%");
             $progress->finish();
-            if ($this->output instanceof \Symfony\Component\Console\Output\ConsoleOutput) {
+            if ($this->output instanceof ConsoleOutput) {
                 $this->output->getErrorOutput()->write("\n"); // write a newline after the progressbar.
             }
         }
@@ -93,7 +99,7 @@ class Dumper
         foreach ($triggers as $row) {
             $createTriggerCommand = $db->fetchColumn("SHOW CREATE TRIGGER `{$row['Trigger']}`", [], 2);
 
-            if (Table::DEFINER_NO_DEFINER == $level) {
+            if (Table::DEFINER_NO_DEFINER === $level) {
                 $createTriggerCommand = preg_replace('/DEFINER=`[^`]*`@`[^`]*` /', '', $createTriggerCommand);
             }
 
@@ -107,7 +113,7 @@ class Dumper
 
         $createViewCommand = $db->fetchColumn("SHOW CREATE VIEW `{$viewName}`", [], 1);
 
-        if (Table::DEFINER_NO_DEFINER == $level) {
+        if (Table::DEFINER_NO_DEFINER === $level) {
             $createViewCommand = preg_replace('/DEFINER=`[^`]*`@`[^`]*` /', '', $createViewCommand);
         }
 
@@ -118,8 +124,9 @@ class Dumper
      * @param            $table
      * @param Table      $tableConfig
      * @param Connection $db
+     * @param bool       $noProgress
      *
-     * @throws \Doctrine\DBAL\DBALException
+     * @throws DBALException
      */
     public function dumpData($table, Table $tableConfig, Connection $db, bool $noProgress)
     {
@@ -150,7 +157,7 @@ class Dumper
         $max = $this->bufferSize;
         $numRows = $db->fetchColumn("SELECT COUNT(*) FROM `$table`".$tableConfig->getCondition());
 
-        if (0 == $numRows) {
+        if (0 === $numRows) {
             // Fail fast: No data to dump.
             return;
         }
@@ -167,7 +174,7 @@ class Dumper
 
         /** @var PDOConnection $wrappedConnection */
         $wrappedConnection = $db->getWrappedConnection();
-        $wrappedConnection->setAttribute(\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
+        $wrappedConnection->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
 
         foreach ($db->query($s) as $row) {
             $b = $this->rowLengthEstimate($row);
@@ -178,7 +185,7 @@ class Dumper
                 $bufferSize = 0;
             }
 
-            if (0 == $bufferSize) {
+            if (0 === $bufferSize) {
                 $this->output->write($this->insertValuesStatement($table, $cols), false, OutputInterface::OUTPUT_RAW);
             } else {
                 $this->output->write(',', false, OutputInterface::OUTPUT_RAW);
@@ -207,12 +214,12 @@ class Dumper
         if (null !== $progress) {
             $progress->setFormat("Dumping data <fg=green>$table</>: <fg=green>%percent:3s%%</> Took: %elapsed%");
             $progress->finish();
-            if ($this->output instanceof \Symfony\Component\Console\Output\ConsoleOutput) {
+            if ($this->output instanceof ConsoleOutput) {
                 $this->output->getErrorOutput()->write("\n"); // write a newline after the progressbar.
             }
         }
 
-        $wrappedConnection->setAttribute(\PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
+        $wrappedConnection->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
 
         if ($bufferSize) {
             $this->output->writeln(';', OutputInterface::OUTPUT_RAW);

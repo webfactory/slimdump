@@ -3,6 +3,7 @@
 namespace Webfactory\Slimdump\Config;
 
 use PHPUnit\Framework\TestCase;
+use SimpleXMLElement;
 use Webfactory\Slimdump\Exception\InvalidDumpTypeException;
 
 class TableTest extends TestCase
@@ -12,7 +13,7 @@ class TableTest extends TestCase
         $xml = '<?xml version="1.0" ?>
                 <table name="dicht*" dump="full" />';
 
-        $xmlElement = new \SimpleXMLElement($xml);
+        $xmlElement = new SimpleXMLElement($xml);
 
         $table = new Table($xmlElement);
 
@@ -25,7 +26,7 @@ class TableTest extends TestCase
         $xml = '<?xml version="1.0" ?>
                 <table name="dicht*" dump="noblob" />';
 
-        $xmlElement = new \SimpleXMLElement($xml);
+        $xmlElement = new SimpleXMLElement($xml);
 
         $table = new Table($xmlElement);
 
@@ -38,7 +39,7 @@ class TableTest extends TestCase
         $xml = '<?xml version="1.0" ?>
                 <table name="dicht*" dump="full" />';
 
-        $xmlElement = new \SimpleXMLElement($xml);
+        $xmlElement = new SimpleXMLElement($xml);
 
         $table = new Table($xmlElement);
 
@@ -51,7 +52,7 @@ class TableTest extends TestCase
         $xml = '<?xml version="1.0" ?>
                 <table name="dicht*" dump="schema" />';
 
-        $xmlElement = new \SimpleXMLElement($xml);
+        $xmlElement = new SimpleXMLElement($xml);
 
         $table = new Table($xmlElement);
 
@@ -66,7 +67,7 @@ class TableTest extends TestCase
         $xml = '<?xml version="1.0" ?>
                 <table name="test" dump="xxx" />';
 
-        $xmlElement = new \SimpleXMLElement($xml);
+        $xmlElement = new SimpleXMLElement($xml);
 
         new Table($xmlElement);
     }
@@ -76,7 +77,7 @@ class TableTest extends TestCase
         $xml = '<?xml version="1.0" ?>
                 <table name="dicht*" dump="full" condition="`first_name` LIKE \'foo%\'" />';
 
-        $xmlElement = new \SimpleXMLElement($xml);
+        $xmlElement = new SimpleXMLElement($xml);
 
         $table = new Table($xmlElement);
 
@@ -89,7 +90,7 @@ class TableTest extends TestCase
         $xml = '<?xml version="1.0" ?>
                 <table name="dicht*" dump="full" condition="   " />';
 
-        $xmlElement = new \SimpleXMLElement($xml);
+        $xmlElement = new SimpleXMLElement($xml);
 
         $table = new Table($xmlElement);
 
@@ -102,7 +103,7 @@ class TableTest extends TestCase
         $xml = '<?xml version="1.0" ?>
                 <table name="dicht*" dump="full" />';
 
-        $xmlElement = new \SimpleXMLElement($xml);
+        $xmlElement = new SimpleXMLElement($xml);
 
         $table = new Table($xmlElement);
 
@@ -114,7 +115,7 @@ class TableTest extends TestCase
         $xml = '<?xml version="1.0" ?>
                 <table name="dicht*" dump="full" keep-auto-increment="false" />';
 
-        $xmlElement = new \SimpleXMLElement($xml);
+        $xmlElement = new SimpleXMLElement($xml);
 
         $table = new Table($xmlElement);
 
@@ -126,20 +127,27 @@ class TableTest extends TestCase
         $xml = '<?xml version="1.0" ?>
                 <table name="*" dump="full" />';
 
-        $xmlElement = new \SimpleXMLElement($xml);
+        $xmlElement = new SimpleXMLElement($xml);
         $table = new Table($xmlElement);
 
         $this->assertEquals(Table::DEFINER_NO_DEFINER, $table->getDumpTriggersLevel());
         $this->assertTrue($table->isTriggerDumpRequired());
     }
 
-    /** @dataProvider  dumpTriggerAttributeValues */
+    /**
+     * @dataProvider  dumpTriggerAttributeValues
+     *
+     * @param string $value
+     * @param $expected
+     *
+     * @throws mixed InvalidDumpTypeException
+     */
     public function testDumpTriggerAttribute($value, $expected)
     {
         $xml = '<?xml version="1.0" ?>
                 <table name="*" dump="full" dump-triggers="'.$value.'" />';
 
-        $xmlElement = new \SimpleXMLElement($xml);
+        $xmlElement = new SimpleXMLElement($xml);
         $table = new Table($xmlElement);
 
         $this->assertEquals($table->getDumpTriggersLevel(), $expected);

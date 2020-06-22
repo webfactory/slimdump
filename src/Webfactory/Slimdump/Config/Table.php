@@ -3,6 +3,8 @@
 namespace Webfactory\Slimdump\Config;
 
 use Doctrine\DBAL\Connection;
+use RuntimeException;
+use SimpleXMLElement;
 use Webfactory\Slimdump\Exception\InvalidDumpTypeException;
 
 /**
@@ -11,9 +13,9 @@ use Webfactory\Slimdump\Exception\InvalidDumpTypeException;
  */
 class Table
 {
-    const TRIGGER_SKIP = 0;
-    const DEFINER_NO_DEFINER = 1;
-    const DEFINER_KEEP_DEFINER = 2;
+    public const TRIGGER_SKIP = 0;
+    public const DEFINER_NO_DEFINER = 1;
+    public const DEFINER_KEEP_DEFINER = 2;
 
     private $selector;
     private $dump;
@@ -27,12 +29,12 @@ class Table
     /** @var int */
     private $viewDefiner;
 
-    /** @var \SimpleXMLElement */
+    /** @var SimpleXMLElement */
     private $config;
 
     private $columns = [];
 
-    public function __construct(\SimpleXMLElement $config)
+    public function __construct(SimpleXMLElement $config)
     {
         $this->config = $config;
 
@@ -58,48 +60,60 @@ class Table
     }
 
     /**
-     * @param \SimpleXMLElement[]|null $attribute
-     * @param bool                     $defaultValue
+     * @param SimpleXMLElement[]|string|null $attribute
+     * @param bool                           $defaultValue
      *
      * @return bool
      */
     private static function attributeToBoolean($attribute, $defaultValue)
     {
-        if (null == $attribute) {
+        if (null === $attribute) {
             return $defaultValue;
         }
 
-        return ('true' == $attribute) ? true : false;
+        return 'true' === $attribute;
     }
 
-    private static function parseDumpTriggerAttribute($value)
+    private static function parseDumpTriggerAttribute(?string $value)
     {
         if (null === $value) {
             return self::DEFINER_NO_DEFINER; // default
-        } elseif ('true' == $value) {
-            return self::DEFINER_NO_DEFINER; // BC
-        } elseif ('false' == $value) {
-            return self::TRIGGER_SKIP;
-        } elseif ('none' == $value) {
-            return self::TRIGGER_SKIP;
-        } elseif ('no-definer' == $value) {
-            return self::DEFINER_NO_DEFINER;
-        } elseif ('keep-definer' == $value) {
-            return self::DEFINER_KEEP_DEFINER;
-        } else {
-            throw new \RuntimeException("Unsupported value '$value' for the 'dump-triggers' setting.");
         }
+
+        if ('true' === $value) {
+            return self::DEFINER_NO_DEFINER; // BC
+        }
+
+        if ('false' === $value) {
+            return self::TRIGGER_SKIP;
+        }
+
+        if ('none' === $value) {
+            return self::TRIGGER_SKIP;
+        }
+
+        if ('no-definer' === $value) {
+            return self::DEFINER_NO_DEFINER;
+        }
+
+        if ('keep-definer' === $value) {
+            return self::DEFINER_KEEP_DEFINER;
+        }
+
+        throw new RuntimeException("Unsupported value '$value' for the 'dump-triggers' setting.");
     }
 
     private static function parseViewDefinerAttribute($value)
     {
-        if (null === $value || 'no-definer' == $value) {
+        if (null === $value || 'no-definer' === $value) {
             return self::DEFINER_NO_DEFINER;
-        } elseif ('keep-definer' == $value) {
-            return self::DEFINER_KEEP_DEFINER;
-        } else {
-            throw new \RuntimeException("Unsupported value '$value' for the 'view-definer' setting.");
         }
+
+        if ('keep-definer' === $value) {
+            return self::DEFINER_KEEP_DEFINER;
+        }
+
+        throw new RuntimeException("Unsupported value '$value' for the 'view-definer' setting.");
     }
 
     /**
@@ -173,14 +187,14 @@ class Table
         }
 
         if ($isBlobColumn) {
-            if (Config::NOBLOB == $dump) {
+            if (Config::NOBLOB === $dump) {
                 return 'NULL';
-            } else {
-                return "IF(ISNULL(`$columnName`), NULL, IF(`$columnName`='', '', CONCAT('0x', HEX(`$columnName`))))";
             }
-        } else {
-            return "`$columnName`";
+
+            return "IF(ISNULL(`$columnName`), NULL, IF(`$columnName`='', '', CONCAT('0x', HEX(`$columnName`))))";
         }
+
+        return "`$columnName`";
     }
 
     /**
@@ -195,19 +209,21 @@ class Table
     {
         if (null === $value) {
             return 'NULL';
-        } elseif ('' === $value) {
-            return '""';
-        } else {
-            if ($column = $this->findColumn($columnName)) {
-                return $db->quote($column->processRowValue($value));
-            }
-
-            if ($isBlobColumn) {
-                return $value;
-            }
-
-            return $db->quote($value);
         }
+
+        if ('' === $value) {
+            return '""';
+        }
+
+        if ($column = $this->findColumn($columnName)) {
+            return $db->quote($column->processRowValue($value));
+        }
+
+        if ($isBlobColumn) {
+            return $value;
+        }
+
+        return $db->quote($value);
     }
 
     /**
@@ -220,6 +236,8 @@ class Table
         if ('' !== trim($condition)) {
             return ' WHERE '.$condition;
         }
+
+        return null;
     }
 
     /**

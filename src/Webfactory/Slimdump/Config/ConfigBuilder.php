@@ -2,6 +2,7 @@
 
 namespace Webfactory\Slimdump\Config;
 
+use libXMLError;
 use Webfactory\Slimdump\Exception\InvalidXmlException;
 
 class ConfigBuilder
@@ -35,7 +36,7 @@ class ConfigBuilder
         if ($errors) {
             $errorAsString = '';
             foreach ($errors as $error) {
-                /* @var \libXMLError $error */
+                /* @var libXMLError $error */
                 $errorAsString .= sprintf("%s %d: %s\n", $error->file, $error->line, $error->message);
             }
             throw new InvalidXmlException("Invalid XML! Errors:\n$errorAsString");

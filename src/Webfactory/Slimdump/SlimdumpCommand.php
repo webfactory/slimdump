@@ -2,6 +2,7 @@
 
 namespace Webfactory\Slimdump;
 
+use Doctrine\DBAL\DBALException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -45,7 +46,7 @@ final class SlimdumpCommand extends Command
      *
      * @return int|void|null
      *
-     * @throws \Doctrine\DBAL\DBALException
+     * @throws DBALException
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
