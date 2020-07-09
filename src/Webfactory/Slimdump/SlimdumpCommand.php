@@ -44,7 +44,7 @@ final class SlimdumpCommand extends Command
      * @param InputInterface  $input
      * @param OutputInterface $output
      *
-     * @return int|void|null
+     * @return int
      *
      * @throws DBALException
      */
@@ -60,5 +60,7 @@ final class SlimdumpCommand extends Command
 
         $dumptask = new DumpTask($dsn, $configFiles, $noProgress, $output);
         $dumptask->dump();
+        
+        return 0;
     }
 }
