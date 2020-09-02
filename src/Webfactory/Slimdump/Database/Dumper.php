@@ -151,7 +151,7 @@ class Dumper
 
         $s .= $tableConfig->getCondition();
 
-        $this->output->writeln("-- BEGIN DATA $table", OutputInterface::OUTPUT_RAW);
+        $this->writeDataDumpBeginning($table);
 
         $bufferSize = 0;
         $max = $this->bufferSize;
@@ -159,6 +159,7 @@ class Dumper
 
         if (0 === $numRows) {
             // Fail fast: No data to dump.
+            $this->writeDataDumpEnd();
             return;
         }
 
@@ -225,7 +226,7 @@ class Dumper
             $this->output->writeln(';', OutputInterface::OUTPUT_RAW);
         }
 
-        $this->output->writeln('', OutputInterface::OUTPUT_RAW);
+        $this->writeDataDumpEnd();
     }
 
     /**
@@ -287,5 +288,17 @@ class Dumper
             $db->close();
             $db->connect();
         }
+    }
+
+    protected function writeDataDumpBeginning(string $table): void
+    {
+        $this->output->writeln("-- BEGIN DATA $table", OutputInterface::OUTPUT_RAW);
+        $this->output->writeln("LOCK TABLES `$table` WRITE;", OutputInterface::OUTPUT_RAW);
+    }
+
+    protected function writeDataDumpEnd(): void
+    {
+        $this->output->writeln("UNLOCK TABLES;", OutputInterface::OUTPUT_RAW);
+        $this->output->writeln('', OutputInterface::OUTPUT_RAW);
     }
 }
