@@ -37,6 +37,12 @@ final class SlimdumpCommand extends Command
                 '',
                 InputOption::VALUE_NONE,
                 'Don\'t print progress information while dumping tables.'
+            )
+            ->addOption(
+                'single-line-insert-statements',
+                '',
+                InputOption::VALUE_NONE,
+                'Write each whole INSERT INTO statement into one single line instead of creating a new line for each row.'
             );
     }
 
@@ -53,12 +59,13 @@ final class SlimdumpCommand extends Command
         $dsn = $input->getArgument('dsn');
         $configFiles = $input->getArgument('config');
         $noProgress = $input->getOption('no-progress') ? true : false;
+        $singleLineInsertStatements = $input->getOption('single-line-insert-statements') ? true : false;
 
         if ('-' === $dsn) {
             $dsn = getenv('MYSQL_DSN');
         }
 
-        $dumptask = new DumpTask($dsn, $configFiles, $noProgress, $output);
+        $dumptask = new DumpTask($dsn, $configFiles, $noProgress, $singleLineInsertStatements, $output);
         $dumptask->dump();
         
         return 0;
