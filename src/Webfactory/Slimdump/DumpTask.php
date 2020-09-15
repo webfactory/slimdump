@@ -34,18 +34,25 @@ final class DumpTask
     private $noProgress;
 
     /**
+     * @var bool
+     */
+    private $singleLineInsertStatements;
+
+    /**
      * @param string          $dsn
      * @param string[]        $configFiles
      * @param bool            $noProgress
+     * @param bool            $singleLineInsertStatements
      * @param OutputInterface $output
      *
      * @throws DBALException
      */
-    public function __construct($dsn, array $configFiles, bool $noProgress, OutputInterface $output)
+    public function __construct($dsn, array $configFiles, bool $noProgress, bool $singleLineInsertStatements, OutputInterface $output)
     {
         $mysqliIndependentDsn = preg_replace('_^mysqli:_', 'mysql:', $dsn);
 
         $this->noProgress = $noProgress;
+        $this->singleLineInsertStatements = $singleLineInsertStatements;
         $this->output = $output;
         $this->config = ConfigBuilder::createConfigurationFromConsecutiveFiles($configFiles);
         $this->db = DriverManager::getConnection(
@@ -56,6 +63,7 @@ final class DumpTask
     public function dump()
     {
         $dumper = new Dumper($this->output);
+        $dumper->setSingleLineInsertStatements($this->singleLineInsertStatements);
         $dumper->exportAsUTF8();
         $dumper->disableForeignKeys();
 

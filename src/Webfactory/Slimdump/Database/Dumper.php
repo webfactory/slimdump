@@ -19,6 +19,9 @@ class Dumper
     /** @var int */
     protected $bufferSize;
 
+    /** @var bool */
+    protected $singleLineInsertStatements = false;
+
     /**
      * @param OutputInterface $output
      * @param int|null        $bufferSize Default buffer size is 100MB
@@ -27,6 +30,11 @@ class Dumper
     {
         $this->output = $output;
         $this->bufferSize = $bufferSize ?: 104857600;
+    }
+
+    public function setSingleLineInsertStatements(bool $singleLineInsertStatements): void
+    {
+        $this->singleLineInsertStatements = $singleLineInsertStatements;
     }
 
     public function exportAsUTF8()
@@ -194,7 +202,12 @@ class Dumper
             }
 
             $firstCol = true;
-            $this->output->write("\n(", false, OutputInterface::OUTPUT_RAW);
+
+            if (!$this->singleLineInsertStatements) {
+                $this->output->write("\n", false, OutputInterface::OUTPUT_RAW);
+            }
+
+            $this->output->write("(", false, OutputInterface::OUTPUT_RAW);
 
             foreach ($row as $name => $value) {
                 $isBlobColumn = $this->isBlob($name, $cols);
