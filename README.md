@@ -41,7 +41,14 @@ The DSN has to be in the following format:
 
 For further explanations have a look at the [Doctrine documentation](http://doctrine-orm.readthedocs.org/projects/doctrine-dbal/en/latest/reference/configuration.html#connecting-using-a-url).
 
-### Optional parameters
+### Optional parameters and command line switches
+
+#### no-progress
+
+This turns off printing some progress information on `stderr`. Useful in scripting contexts.
+
+Example:
+`slimdump --no-progress {DSN} {config-file}`
 
 #### buffer-size
 
@@ -240,9 +247,11 @@ You can execute the phpunit-tests by calling `vendor/bin/phpunit`.
 
 ## Credits, Copyright and License
 
-This tool was started at webfactory GmbH in Bonn by [mpdude](https://github.com/mpdude).
+This tool was written by webfactory GmbH, Bonn, Germany. We're a software development agency with a focus on PHP (mostly [Symfony](http://github.com/symfony/symfony)). We're big fans of automation, DevOps, CI and CD, and of open source in general.
+
+If you're a developer looking for new challenges, we'd like to hear from you! Otherwise, if this tool is useful for you, add a ⭐️.
 
 - <https://www.webfactory.de>
 - <https://twitter.com/webfactory>
 
-Copyright 2014-2017 webfactory GmbH, Bonn. Code released under [the MIT license](LICENSE).
+Copyright 2014-2020 webfactory GmbH, Bonn. Code released under [the MIT license](LICENSE).
