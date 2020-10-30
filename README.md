@@ -225,6 +225,9 @@ on a column containing personal information, like the email address.
         <column name="firstname" dump="replace" replacement="FAKER_firstName" />
         <column name="lastname" dump="replace" replacement="FAKER_lastName" />
         <column name="email" dump="replace" replacement="FAKER_unique->safeEmail" />
+        <column name="year" dump="replace" replacement="FAKER_numberBetween:1975,2020" />
+        <column name="sign" dump="replace" replacement="FAKER_numerify:'Helo ###'" />
+        <column name="age" dump="replace" replacement="FAKER_unique->randomDigitNot:0" />
     </table>
 </slimdump>
 ```
