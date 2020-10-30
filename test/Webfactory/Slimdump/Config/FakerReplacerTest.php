@@ -52,6 +52,10 @@ class FakerReplacerTest extends TestCase
         return [
             [FakerReplacer::PREFIX.'firstname'], // original faker property
             [FakerReplacer::PREFIX.'lastname'], // original faker property
+            [FakerReplacer::PREFIX.'randomDigitNot:0'], // faker method with single argument
+            [FakerReplacer::PREFIX.'numberBetween:1,20'], // faker method with two arguments
+            [FakerReplacer::PREFIX.'shuffle:"hello world"'], // faker property with single argument
+            [FakerReplacer::PREFIX.'numerify:"Helo ###"'], // faker property with single argument
         ];
     }
 
@@ -65,6 +69,10 @@ class FakerReplacerTest extends TestCase
         return [
             ['firstname'], // original faker property
             ['lastname'], // original faker property
+            ['randomDigitNot:0'], // original faker property
+            ['numberBetween:1,20'], // original faker property
+            ['shuffle:"hello world"'], // original faker property
+            ['numerify:"Helo ###"'], // original faker property
         ];
     }
 }
