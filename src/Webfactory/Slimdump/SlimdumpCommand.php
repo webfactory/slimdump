@@ -81,7 +81,7 @@ final class SlimdumpCommand extends Command
         return 0;
     }
 
-    private function parseBufferSize($bufferSize): ?int
+    private function parseBufferSize(?string $bufferSize): ?int
     {
         if ($bufferSize === null) {
             return null;
