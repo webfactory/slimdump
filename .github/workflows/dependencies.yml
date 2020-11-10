@@ -16,9 +16,11 @@ jobs:
         steps:
             -   uses: actions/checkout@v2
             -   name: Konfiguriere PHP-Version und -Einstellungen im Worker-Node
-                run: |
-                    sudo update-alternatives --set php /usr/bin/php$PHP_VERSION
-                    echo 'variables_order = "EGPCS"' | sudo tee /etc/php/$PHP_VERSION/cli/conf.d/99-local.ini
+                uses: shivammathur/setup-php@v2
+                with:
+                  php-version: ${{ env.PHP_VERSION }}
+                  tools: composer:v1
+                  ini-values: variables_order=EGPCS
             -   name: Cache Composer Dependencies
                 uses: actions/cache@v1
                 with:
