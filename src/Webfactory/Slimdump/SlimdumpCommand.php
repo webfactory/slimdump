@@ -3,11 +3,14 @@
 namespace Webfactory\Slimdump;
 
 use Doctrine\DBAL\DBALException;
+use Doctrine\DBAL\Driver\PDOMySql\Driver as PDOMySqlDriver;
+use Doctrine\DBAL\DriverManager;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Webfactory\Slimdump\Config\ConfigBuilder;
 
 final class SlimdumpCommand extends Command
 {
@@ -57,17 +60,49 @@ final class SlimdumpCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $dsn = $input->getArgument('dsn');
-        $configFiles = $input->getArgument('config');
-        $noProgress = $input->getOption('no-progress') ? true : false;
-        $singleLineInsertStatements = $input->getOption('single-line-insert-statements') ? true : false;
 
         if ('-' === $dsn) {
             $dsn = getenv('MYSQL_DSN');
         }
 
-        $dumptask = new DumpTask($dsn, $configFiles, $noProgress, $singleLineInsertStatements, $output);
+        $mysqliIndependentDsn = preg_replace('_^mysqli:_', 'mysql:', $dsn);
+        $connection = DriverManager::getConnection(
+            ['url' => $mysqliIndependentDsn, 'charset' => 'utf8', 'driverClass' => PDOMySqlDriver::class]
+        );
+
+        $noProgress = $input->getOption('no-progress') ? true : false;
+        $singleLineInsertStatements = $input->getOption('single-line-insert-statements') ? true : false;
+        $bufferSize = $this->parseBufferSize($input->getOption('buffer-size'));
+        $config = ConfigBuilder::createConfigurationFromConsecutiveFiles($input->getArgument('config'));
+
+        $dumptask = new DumpTask($connection, $config, $noProgress, $singleLineInsertStatements, $bufferSize, $output);
         $dumptask->dump();
-        
+
         return 0;
+    }
+
+    private function parseBufferSize($bufferSize): ?int
+    {
+        if ($bufferSize !== null) {
+            $match = preg_match('/^(\d+)(KB|MB|GB)?$/', $bufferSize, $matches);
+            if ($match === false) {
+                throw new \RuntimeException('The buffer size must be an unsigned integer, optionally ending with KB, MB or GB.');
+            }
+            $bufferSize = (int)$matches[1];
+            $bufferFactor = 1;
+
+            switch ($matches[2]) {
+                case 'GB':
+                    $bufferFactor *= 1024;
+                case 'MB':
+                    $bufferFactor *= 1024;
+                case 'KB':
+                    $bufferFactor *= 1024;
+            }
+
+            return $bufferSize * $bufferFactor;
+        }
+
+        return null;
     }
 }

@@ -5,11 +5,9 @@ namespace Webfactory\Slimdump;
 use Doctrine\DBAL\DBALException;
 use Symfony\Component\Console\Output\OutputInterface;
 use Webfactory\Slimdump\Config\Config;
-use Webfactory\Slimdump\Config\ConfigBuilder;
 use Webfactory\Slimdump\Database\Dumper;
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\DriverManager;
-use Doctrine\DBAL\Driver\PDOMySql\Driver as PDOMySqlDriver;
+
 
 final class DumpTask
 {
@@ -21,7 +19,7 @@ final class DumpTask
     /**
      * @var Connection
      */
-    private $db;
+    private $connection;
 
     /**
      * @var OutputInterface
@@ -39,35 +37,31 @@ final class DumpTask
     private $singleLineInsertStatements;
 
     /**
-     * @param string          $dsn
-     * @param string[]        $configFiles
-     * @param bool            $noProgress
-     * @param bool            $singleLineInsertStatements
-     * @param OutputInterface $output
-     *
+     * @var int|null
+     */
+    private $bufferSize;
+
+    /**
      * @throws DBALException
      */
-    public function __construct($dsn, array $configFiles, bool $noProgress, bool $singleLineInsertStatements, OutputInterface $output)
+    public function __construct(Connection $connection, Config $config, bool $noProgress, bool $singleLineInsertStatements, ?int $bufferSize, OutputInterface $output)
     {
-        $mysqliIndependentDsn = preg_replace('_^mysqli:_', 'mysql:', $dsn);
-
+        $this->connection = $connection;
+        $this->config = $config;
         $this->noProgress = $noProgress;
         $this->singleLineInsertStatements = $singleLineInsertStatements;
+        $this->bufferSize = $bufferSize;
         $this->output = $output;
-        $this->config = ConfigBuilder::createConfigurationFromConsecutiveFiles($configFiles);
-        $this->db = DriverManager::getConnection(
-            ['url' => $mysqliIndependentDsn, 'charset' => 'utf8', 'driverClass' => PDOMySqlDriver::class]
-        );
     }
 
     public function dump()
     {
-        $dumper = new Dumper($this->output);
+        $dumper = new Dumper($this->output, $this->bufferSize);
         $dumper->setSingleLineInsertStatements($this->singleLineInsertStatements);
         $dumper->exportAsUTF8();
         $dumper->disableForeignKeys();
 
-        $db = $this->db;
+        $db = $this->connection;
 
         $platform = $db->getDatabasePlatform();
 
