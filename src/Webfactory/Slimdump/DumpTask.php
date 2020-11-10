@@ -8,7 +8,6 @@ use Webfactory\Slimdump\Config\Config;
 use Webfactory\Slimdump\Database\Dumper;
 use Doctrine\DBAL\Connection;
 
-
 final class DumpTask
 {
     /**
