@@ -83,26 +83,26 @@ final class SlimdumpCommand extends Command
 
     private function parseBufferSize($bufferSize): ?int
     {
-        if ($bufferSize !== null) {
-            $match = preg_match('/^(\d+)(KB|MB|GB)?$/', $bufferSize, $matches);
-            if ($match === false) {
-                throw new \RuntimeException('The buffer size must be an unsigned integer, optionally ending with KB, MB or GB.');
-            }
-            $bufferSize = (int)$matches[1];
-            $bufferFactor = 1;
-
-            switch ($matches[2]) {
-                case 'GB':
-                    $bufferFactor *= 1024;
-                case 'MB':
-                    $bufferFactor *= 1024;
-                case 'KB':
-                    $bufferFactor *= 1024;
-            }
-
-            return $bufferSize * $bufferFactor;
+        if ($bufferSize === null) {
+            return null;
         }
 
-        return null;
+        $match = preg_match('/^(\d+)(KB|MB|GB)?$/', $bufferSize, $matches);
+        if ($match === false) {
+            throw new \RuntimeException('The buffer size must be an unsigned integer, optionally ending with KB, MB or GB.');
+        }
+        $bufferSize = (int)$matches[1];
+        $bufferFactor = 1;
+
+        switch ($matches[2]) {
+            case 'GB':
+                $bufferFactor *= 1024;
+            case 'MB':
+                $bufferFactor *= 1024;
+            case 'KB':
+                $bufferFactor *= 1024;
+        }
+
+        return $bufferSize * $bufferFactor;
     }
 }
