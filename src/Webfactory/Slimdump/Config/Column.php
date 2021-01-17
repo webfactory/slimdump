@@ -20,6 +20,9 @@ class Column
     /** @var string */
     private $selector;
 
+    /** @var array */
+    private $replacements = [];
+
     public function __construct(SimpleXMLElement $config)
     {
         $this->config = $config;
@@ -33,6 +36,16 @@ class Column
             $this->dump = \constant($const);
         } else {
             throw new InvalidDumpTypeException(sprintf('Invalid dump type %s for column %s.', $attr->dump, $this->selector));
+        }
+
+        if ($this->dump === Config::REPLACE) {
+            if ($replacement = (string) $this->config->attributes()->replacement) {
+                $this->replacements[] = Replacement::fromColumnReplacementAttr($replacement);
+            } else {
+                foreach ($config->replacement as $replacementConfig) {
+                    $this->replacements[] = new Replacement($replacementConfig);
+                }
+            }
         }
 
         $this->fakerReplacer = new FakerReplacer();
@@ -66,14 +79,18 @@ class Column
         }
 
         if (Config::REPLACE === $this->dump) {
-            /** @var SimpleXMLElement $replacement */
-            $replacementName = (string) $this->config->attributes()->replacement;
-
-            if ($this->fakerReplacer::isFakerColumn($replacementName)) {
-                return $this->fakerReplacer->generateReplacement($replacementName);
+            if (empty($this->replacements)) {
+                return '';
             }
 
-            return $this->config->attributes()->replacement;
+            /** @var Replacement $replacement */
+            foreach ($this->replacements as $replacement) {
+                if ($replacement->matchesConstraint($value)) {
+                    return $replacement->getReplacement($this->fakerReplacer);
+                }
+            }
+
+            return $value;
         }
 
         if (Config::BLANK === $this->dump) {

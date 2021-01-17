@@ -5,6 +5,7 @@ namespace Webfactory\Slimdump\Config;
 use PHPUnit\Framework\TestCase;
 use SimpleXMLElement;
 use Webfactory\Slimdump\Exception\InvalidDumpTypeException;
+use Webfactory\Slimdump\Exception\InvalidReplacementStrategy;
 
 class ColumnTest extends TestCase
 {
@@ -100,7 +101,7 @@ class ColumnTest extends TestCase
         $this->assertEquals('', $columnConfig->processRowValue('test value'));
     }
 
-    public function testReplaceColumnWithUniqeValue()
+    public function testReplaceColumnWithUniqueValue()
     {
         $xml = '<?xml version="1.0" ?>
                 <column name="test" dump="replace" replacement="FAKER_unique->randomDigit" />';
@@ -115,5 +116,86 @@ class ColumnTest extends TestCase
             $secondGeneratedValue,
             'FAKER_unique->randomDigit generated the same value: "'.$firstGeneratedValue.'" twice'
         );
+    }
+
+    public function testReplaceColumnWithReplacementElement()
+    {
+        $xml = '<?xml version="1.0" ?>
+                <column name="test" dump="replace">
+                    <replacement value="updated"/>
+                </column>';
+
+        $columnConfig = new Column(new SimpleXMLElement($xml));
+
+        $this->assertEquals('updated', $columnConfig->processRowValue('should replace'));
+    }
+
+    public function testReplaceColumnWithReplacementElementUsingRegexStrategy()
+    {
+        $xml = '<?xml version="1.0" ?>
+                <column name="test" dump="replace">
+                    <replacement strategy="regex" constraint="/^should replace$/" value="updated"/>
+                </column>';
+
+        $columnConfig = new Column(new SimpleXMLElement($xml));
+
+        $this->assertEquals('original', $columnConfig->processRowValue('original'));
+        $this->assertEquals('updated', $columnConfig->processRowValue('should replace'));
+    }
+
+    public function testReplaceColumnWithReplacementElementUsingRegexStrategyThrowsIfMissingConstraintAttr()
+    {
+        $this->expectException(InvalidReplacementStrategy::class);
+
+        $xml = '<?xml version="1.0" ?>
+                <column name="test" dump="replace">
+                    <replacement strategy="regex" value="updated"/>
+                </column>';
+
+        new Column(new SimpleXMLElement($xml));
+    }
+
+    public function testReplaceColumnWithReplacementElementUsingEqualsStrategy()
+    {
+        $xml = '<?xml version="1.0" ?>
+                <column name="test" dump="replace">
+                    <replacement strategy="eq" constraint="should replace" value="updated"/>
+                </column>';
+
+        $columnConfig = new Column(new SimpleXMLElement($xml));
+
+        $this->assertEquals('original', $columnConfig->processRowValue('original'));
+        $this->assertEquals('updated', $columnConfig->processRowValue('should replace'));
+    }
+
+    public function testReplaceColumnWithReplacementElementUsingNotEqualsStrategy()
+    {
+        $xml = '<?xml version="1.0" ?>
+                <column name="test" dump="replace">
+                    <replacement strategy="neq" constraint="original" value="updated"/>
+                </column>';
+
+        $columnConfig = new Column(new SimpleXMLElement($xml));
+
+        $this->assertEquals('original', $columnConfig->processRowValue('original'));
+        $this->assertEquals('updated', $columnConfig->processRowValue('should replace'));
+    }
+
+    public function testReplaceColumnWithReplacementElementsUsingMultipleStrategies()
+    {
+        $xml = '<?xml version="1.0" ?>
+                <column name="test" dump="replace">
+                    <replacement strategy="regex" constraint="/^pattern$/" value="updatedRegEx"/>
+                    <replacement strategy="eq" constraint="something" value="updatedEQ"/>
+                    <replacement strategy="neq" constraint="other" value="updatedNEQ"/>
+                    <replacement value="fallback"/>
+                </column>';
+
+        $columnConfig = new Column(new SimpleXMLElement($xml));
+
+        $this->assertEquals('updatedRegEx', $columnConfig->processRowValue('pattern'));
+        $this->assertEquals('updatedEQ', $columnConfig->processRowValue('something'));
+        $this->assertEquals('updatedNEQ', $columnConfig->processRowValue('something else'));
+        $this->assertEquals('fallback', $columnConfig->processRowValue('other'));
     }
 }
