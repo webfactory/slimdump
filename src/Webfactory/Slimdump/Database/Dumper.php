@@ -174,7 +174,7 @@ class Dumper
 
         if (!$noProgress) {
             $progress = new ProgressBar($this->output, $numRows);
-            $progress->setFormat("Dumping data <fg=cyan>$table</>: <fg=yellow>%percent:3s%%</> %remaining%/%estimated%");
+            $progress->setFormat("Dumping data <fg=cyan>$table</>: <fg=yellow>%percent%%</> %remaining%/%estimated% -- %current%");
             $progress->setOverwrite(true);
             $progress->setRedrawFrequency(max($numRows / 100, 1));
             $progress->start();
