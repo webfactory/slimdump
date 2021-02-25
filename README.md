@@ -139,7 +139,7 @@ A simple way to export roughly a percentage of the users is this:
 ```xml
 <?xml version="1.0" ?>
 <slimdump>
-  <!-- Dump all users whose usernames begin with foo -->
+  <!-- Dump every tenth user -->
   <table name="user" dump="full" condition="id % 10 = 0" />
 </slimdump>
 ```
