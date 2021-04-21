@@ -278,7 +278,7 @@ class Dumper
      */
     protected function isBlob($col, array $definitions)
     {
-        return false !== stripos($definitions[$col], 'blob');
+        return false !== stripos($definitions[$col], 'blob') || false !== stripos($definitions[$col], 'binary');
     }
 
     /**
