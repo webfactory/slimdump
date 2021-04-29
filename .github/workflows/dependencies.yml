@@ -33,4 +33,4 @@ jobs:
                     composer install --no-interaction --no-scripts --no-progress --no-suggest
                     composer show
             -   name: ComposerRequireChecker
-                uses: docker://webfactory/composer-require-checker:2.1.0
+                uses: docker://webfactory/composer-require-checker:3.2.0
