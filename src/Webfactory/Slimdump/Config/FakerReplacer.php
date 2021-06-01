@@ -51,41 +51,49 @@ class FakerReplacer
      */
     public function generateReplacement($replacementId)
     {
+        $replacementMethodArguments = [];
+
         $replacementMethodName = str_replace(self::PREFIX, '', $replacementId);
+
+        if (strpos($replacementMethodName, ':') !== false) {
+            [$replacementMethodName, $replacementMethodArguments] = explode(':', $replacementMethodName, 2);
+            $replacementMethodArguments = str_getcsv(strtolower($replacementMethodArguments));
+        }
 
         if (false !== strpos($replacementMethodName, '->')) {
             [$modifierName, $replacementMethodName] = explode('->', $replacementMethodName);
 
-            $this->validateReplacementConfiguredModifier($modifierName, $replacementMethodName);
+            $this->validateReplacementConfiguredModifier($modifierName, $replacementMethodName, $replacementMethodArguments);
 
-            return (string) $this->faker->$modifierName->$replacementMethodName;
+            return (string) $this->faker->$modifierName->format($replacementMethodName, $replacementMethodArguments);
         }
 
-        $this->validateReplacementConfigured($replacementMethodName);
+        $this->validateReplacementConfigured($replacementMethodName, $replacementMethodArguments);
 
-        return (string) $this->faker->$replacementMethodName;
+        return (string) $this->faker->format($replacementMethodName, $replacementMethodArguments);
     }
 
     /**
      * validates if this type of replacement was configured.
      *
      * @param string $replacementName
+     * @param array $replacementArguments
      *
      * @throws InvalidReplacementOptionException if not a faker method
      */
-    private function validateReplacementConfigured($replacementName)
+    private function validateReplacementConfigured($replacementName, $replacementArguments = [])
     {
         try {
-            $this->faker->__get($replacementName);
+            $this->faker->format($replacementName, $replacementArguments);
         } catch (InvalidArgumentException $exception) {
             throw new InvalidReplacementOptionException($replacementName.' is no valid faker replacement');
         }
     }
 
-    private function validateReplacementConfiguredModifier($replacementModifier, $replacementName)
+    private function validateReplacementConfiguredModifier($replacementModifier, $replacementName, $replacementArguments = [])
     {
         try {
-            $this->faker->__get($replacementModifier)->__get($replacementName);
+            $this->faker->__get($replacementModifier)->format($replacementName, $replacementArguments);
         } catch (InvalidArgumentException $exception) {
             throw new InvalidReplacementOptionException($replacementModifier.'->'.$replacementName.' is no valid faker replacement');
         }
