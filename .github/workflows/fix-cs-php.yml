@@ -1,0 +1,29 @@
+# Update this by running
+# curl https://gist.githubusercontent.com/mpdude/ca93a185bcbf56eb7e341632ad4f8263/raw/fix-cs-php.yml > .github/workflows/fix-cs-php.yml
+
+on:
+    push:
+        branches:
+            - master
+    pull_request:
+
+name: Coding Standards
+
+jobs:
+    open-pr-for-cs-violations:
+        name: PHP-CS-Fixer
+        runs-on: ubuntu-20.04
+        if: github.actor != 'dependabot[bot]'
+        steps:
+            -   name: Checkout code
+                uses: actions/checkout@v2
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   name: Run PHP-CS-Fixer
+                uses: docker://oskarstark/php-cs-fixer-ga:2.19.0
+
+            -   name: Commit and push back changes
+                uses: stefanzweifel/git-auto-commit-action@v4
+                with:
+                    commit_message: "Fix CS with PHP-CS-Fixer 2.19.0"
