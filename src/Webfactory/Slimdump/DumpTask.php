@@ -2,11 +2,11 @@
 
 namespace Webfactory\Slimdump;
 
+use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DBALException;
 use Symfony\Component\Console\Output\OutputInterface;
 use Webfactory\Slimdump\Config\Config;
 use Webfactory\Slimdump\Database\Dumper;
-use Doctrine\DBAL\Connection;
 
 final class DumpTask
 {

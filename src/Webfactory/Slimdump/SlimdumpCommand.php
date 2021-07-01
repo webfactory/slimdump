@@ -5,6 +5,7 @@ namespace Webfactory\Slimdump;
 use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\Driver\PDOMySql\Driver as PDOMySqlDriver;
 use Doctrine\DBAL\DriverManager;
+use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -50,9 +51,6 @@ final class SlimdumpCommand extends Command
     }
 
     /**
-     * @param InputInterface  $input
-     * @param OutputInterface $output
-     *
      * @return int
      *
      * @throws DBALException
@@ -83,22 +81,24 @@ final class SlimdumpCommand extends Command
 
     private function parseBufferSize(?string $bufferSize): ?int
     {
-        if ($bufferSize === null) {
+        if (null === $bufferSize) {
             return null;
         }
 
         $match = preg_match('/^(\d+)(KB|MB|GB)?$/', $bufferSize, $matches);
-        if ($match === false || $match === 0) {
-            throw new \RuntimeException('The buffer size must be an unsigned integer, optionally ending with KB, MB or GB.');
+        if (false === $match || 0 === $match) {
+            throw new RuntimeException('The buffer size must be an unsigned integer, optionally ending with KB, MB or GB.');
         }
-        $bufferSize = (int)$matches[1];
+        $bufferSize = (int) $matches[1];
         $bufferFactor = 1;
 
         switch ($matches[2]) {
             case 'GB':
                 $bufferFactor *= 1024;
+                // no break
             case 'MB':
                 $bufferFactor *= 1024;
+                // no break
             case 'KB':
                 $bufferFactor *= 1024;
         }

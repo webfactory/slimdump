@@ -23,8 +23,7 @@ class Dumper
     protected $singleLineInsertStatements = false;
 
     /**
-     * @param OutputInterface $output
-     * @param int|null        $bufferSize Default buffer size is 100MB
+     * @param int|null $bufferSize Default buffer size is 100MB
      */
     public function __construct(OutputInterface $output, $bufferSize = null)
     {
@@ -53,10 +52,8 @@ class Dumper
     }
 
     /**
-     * @param            $table
-     * @param Connection $db
-     * @param bool       $keepAutoIncrement
-     * @param bool       $noProgress
+     * @param      $table
+     * @param bool $keepAutoIncrement
      *
      * @throws DBALException
      */
@@ -90,9 +87,8 @@ class Dumper
     }
 
     /**
-     * @param Connection $db
-     * @param string     $tableName
-     * @param int        $level     One of the Table::TRIGGER_* constants
+     * @param string $tableName
+     * @param int    $level     One of the Table::TRIGGER_* constants
      */
     public function dumpTriggers(Connection $db, $tableName, $level = Table::DEFINER_NO_DEFINER)
     {
@@ -129,10 +125,7 @@ class Dumper
     }
 
     /**
-     * @param            $table
-     * @param Table      $tableConfig
-     * @param Connection $db
-     * @param bool       $noProgress
+     * @param $table
      *
      * @throws DBALException
      */
@@ -164,11 +157,12 @@ class Dumper
 
         $bufferSize = 0;
         $max = $this->bufferSize;
-        $numRows = (int)$db->fetchColumn("SELECT COUNT(*) FROM `$table`".$tableConfig->getCondition());
+        $numRows = (int) $db->fetchColumn("SELECT COUNT(*) FROM `$table`".$tableConfig->getCondition());
 
         if (0 === $numRows) {
             // Fail fast: No data to dump.
             $this->writeDataDumpEnd($table);
+
             return;
         }
 
@@ -207,7 +201,7 @@ class Dumper
                 $this->output->write("\n", false, OutputInterface::OUTPUT_RAW);
             }
 
-            $this->output->write("(", false, OutputInterface::OUTPUT_RAW);
+            $this->output->write('(', false, OutputInterface::OUTPUT_RAW);
 
             foreach ($row as $name => $value) {
                 $isBlobColumn = $this->isBlob($name, $cols);
@@ -244,8 +238,7 @@ class Dumper
     }
 
     /**
-     * @param string     $table
-     * @param Connection $db
+     * @param string $table
      *
      * @return array
      */
@@ -272,7 +265,6 @@ class Dumper
 
     /**
      * @param string $col
-     * @param array  $definitions
      *
      * @return bool
      */
@@ -282,8 +274,6 @@ class Dumper
     }
 
     /**
-     * @param array $row
-     *
      * @return int
      */
     protected function rowLengthEstimate(array $row)
@@ -313,7 +303,7 @@ class Dumper
     protected function writeDataDumpEnd($table): void
     {
         $this->output->writeln("ALTER TABLE `$table` ENABLE KEYS;", OutputInterface::OUTPUT_RAW);
-        $this->output->writeln("UNLOCK TABLES;", OutputInterface::OUTPUT_RAW);
+        $this->output->writeln('UNLOCK TABLES;', OutputInterface::OUTPUT_RAW);
         $this->output->writeln('', OutputInterface::OUTPUT_RAW);
     }
 }
