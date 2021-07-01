@@ -56,8 +56,6 @@ class ConfigBuilder
     }
 
     /**
-     * @param array $xmlStrings
-     *
      * @return Config|null
      */
     public static function createConfigurationFromConsecutiveXmlStrings(array $xmlStrings)

@@ -50,7 +50,6 @@ class Config
     }
 
     /**
-     * @param array  $haystack
      * @param string $needle
      *
      * @return mixed

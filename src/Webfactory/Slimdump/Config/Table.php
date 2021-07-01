@@ -201,7 +201,6 @@ class Table
      * @param string      $columnName
      * @param string|null $value
      * @param bool        $isBlobColumn
-     * @param Connection  $db
      *
      * @return string
      */
