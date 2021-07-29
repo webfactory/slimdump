@@ -169,4 +169,27 @@ class DumperTest extends TestCase
         $output = $this->outputBuffer->fetch();
         $this->assertStringContainsString('CREATE TRIGGER trigger1 ...;', $output);
     }
+
+    public function testDumpsTriggerWithDelimiter()
+    {
+        $this->dbMock->expects($this->at(0))
+            ->method('quote')
+            ->with('test')
+            ->willReturn("'test'");
+
+        $this->dbMock->expects($this->at(1))
+            ->method('fetchAll')
+            ->with("SHOW TRIGGERS LIKE 'test'")
+            ->willReturn([['Trigger' => 'trigger1']]);
+
+        $this->dbMock->expects($this->at(2))
+            ->method('fetchColumn')
+            ->with('SHOW CREATE TRIGGER `trigger1`');
+
+        $this->dumper->dumpTriggers($this->dbMock, 'test');
+
+        $output = $this->outputBuffer->fetch();
+        $this->assertStringContainsString('DELIMITER ;;', $output);
+        $this->assertStringContainsString('DELIMITER ;', $output);
+    }
 }

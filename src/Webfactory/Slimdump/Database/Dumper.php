@@ -100,6 +100,8 @@ class Dumper
 
         $this->output->writeln("-- BEGIN TRIGGERS $tableName", OutputInterface::OUTPUT_RAW);
 
+        $this->output->writeln("DELIMITER ;;\n");
+
         foreach ($triggers as $row) {
             $createTriggerCommand = $db->fetchColumn("SHOW CREATE TRIGGER `{$row['Trigger']}`", [], 2);
 
@@ -107,8 +109,10 @@ class Dumper
                 $createTriggerCommand = preg_replace('/DEFINER=`[^`]*`@`[^`]*` /', '', $createTriggerCommand);
             }
 
-            $this->output->writeln($createTriggerCommand.";\n", OutputInterface::OUTPUT_RAW);
+            $this->output->writeln($createTriggerCommand.";;\n", OutputInterface::OUTPUT_RAW);
         }
+
+        $this->output->writeln('DELIMITER ;');
     }
 
     public function dumpView(Connection $db, $viewName, $level = Table::DEFINER_NO_DEFINER)
