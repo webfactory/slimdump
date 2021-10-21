@@ -64,9 +64,9 @@ final class DumpTask
 
         $platform = $db->getDatabasePlatform();
 
-        $fetchTablesResult = $db->query($platform->getListTablesSQL());
+        $fetchTablesResult = $db->executeQuery($platform->getListTablesSQL());
 
-        while ($tableName = $fetchTablesResult->fetchColumn(0)) {
+        while ($tableName = $fetchTablesResult->fetchOne()) {
             $tableConfig = $this->config->findTable($tableName);
 
             if (null === $tableConfig || !$tableConfig->isSchemaDumpRequired()) {
@@ -84,9 +84,8 @@ final class DumpTask
             }
         }
 
-        $fetchViewsResult = $db->query($platform->getListViewsSQL($db->getDatabase()));
-
-        while ($viewName = $fetchViewsResult->fetchColumn(2)) {
+        foreach ($db->createSchemaManager()->listViews() as $view) {
+            $viewName = $view->getName();
             $tableConfig = $this->config->findTable($viewName);
 
             if (null === $tableConfig || !$tableConfig->isSchemaDumpRequired()) {

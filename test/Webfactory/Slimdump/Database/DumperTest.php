@@ -2,7 +2,9 @@
 
 namespace Webfactory\Slimdump\Database;
 
+use Doctrine\DBAL\Cache\ArrayResult;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Result;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
@@ -38,7 +40,7 @@ class DumperTest extends TestCase
 
     public function testDumpSchemaWithNormalConfiguration()
     {
-        $this->dbMock->method('fetchColumn')->willReturn('CREATE TABLE statement');
+        $this->dbMock->method('fetchOne')->willReturn('CREATE TABLE statement');
 
         $this->dumper->dumpSchema('test', $this->dbMock);
         $output = $this->outputBuffer->fetch();
@@ -54,10 +56,10 @@ class DumperTest extends TestCase
         $this->dbMock->method('getWrappedConnection')->willReturn($pdoMock);
 
         $this->dbMock
-            ->method('fetchColumn')
+            ->method('fetchOne')
             ->willReturn(2);
         $this->dbMock
-            ->method('fetchAll')
+            ->method('fetchAllAssociative')
             ->willReturnCallback(
                 static function ($query) {
                     if (false !== strpos($query, 'SHOW COLUMNS')) {
@@ -73,7 +75,7 @@ class DumperTest extends TestCase
                     ];
                     }
 
-                    throw new RuntimeException('Unexpected fetchAll-call: '.$query);
+                    throw new RuntimeException('Unexpected fetchAllAssociative-call: '.$query);
                 });
         $this->dbMock
             ->method('quote')
@@ -82,16 +84,17 @@ class DumperTest extends TestCase
                     return $value;
                 });
 
-        $this->dbMock->method('query')->willReturn([
-            [
-                'col1' => 'value1.1',
-                'col2' => 'value1.2',
-            ],
-            [
-                'col1' => 'value2.1',
-                'col2' => 'value2.2',
-            ],
-        ]);
+        $this->dbMock->method('executeQuery')->willReturn(new Result(new ArrayResult([
+                [
+                    'col1' => 'value1.1',
+                    'col2' => 'value1.2',
+                ],
+                [
+                    'col1' => 'value2.1',
+                    'col2' => 'value2.2',
+                ],
+            ]), $this->createMock(Connection::class))
+        );
 
         $table = new Table(new SimpleXMLElement('<table name="test" dump="full" />'));
 
@@ -109,16 +112,16 @@ class DumperTest extends TestCase
             ->willReturn("'test'");
 
         $this->dbMock->expects($this->at(1))
-            ->method('fetchAll')
+            ->method('fetchAllAssociative')
             ->with("SHOW TRIGGERS LIKE 'test'")
             ->willReturn([['Trigger' => 'trigger1'], ['Trigger' => 'trigger2']]);
 
         $this->dbMock->expects($this->at(2))
-            ->method('fetchColumn')
+            ->method('fetchOne')
             ->with('SHOW CREATE TRIGGER `trigger1`');
 
         $this->dbMock->expects($this->at(3))
-            ->method('fetchColumn')
+            ->method('fetchOne')
             ->with('SHOW CREATE TRIGGER `trigger2`');
 
         $this->dumper->dumpTriggers($this->dbMock, 'test');
@@ -132,12 +135,12 @@ class DumperTest extends TestCase
             ->willReturn("'test'");
 
         $this->dbMock->expects($this->at(1))
-            ->method('fetchAll')
+            ->method('fetchAllAssociative')
             ->with("SHOW TRIGGERS LIKE 'test'")
             ->willReturn([['Trigger' => 'trigger1']]);
 
         $this->dbMock->expects($this->at(2))
-            ->method('fetchColumn')
+            ->method('fetchOne')
             ->with('SHOW CREATE TRIGGER `trigger1`')
             ->willReturn('CREATE DEFINER=`somebody`@`myhost` TRIGGER trigger1 ...');
 
@@ -155,12 +158,12 @@ class DumperTest extends TestCase
             ->willReturn("'test'");
 
         $this->dbMock->expects($this->at(1))
-            ->method('fetchAll')
+            ->method('fetchAllAssociative')
             ->with("SHOW TRIGGERS LIKE 'test'")
             ->willReturn([['Trigger' => 'trigger1']]);
 
         $this->dbMock->expects($this->at(2))
-            ->method('fetchColumn')
+            ->method('fetchOne')
             ->with('SHOW CREATE TRIGGER `trigger1`')
             ->willReturn('CREATE DEFINER=`somebody`@`myhost` TRIGGER trigger1 ...');
 
@@ -178,12 +181,12 @@ class DumperTest extends TestCase
             ->willReturn("'test'");
 
         $this->dbMock->expects($this->at(1))
-            ->method('fetchAll')
+            ->method('fetchAllAssociative')
             ->with("SHOW TRIGGERS LIKE 'test'")
             ->willReturn([['Trigger' => 'trigger1']]);
 
         $this->dbMock->expects($this->at(2))
-            ->method('fetchColumn')
+            ->method('fetchOne')
             ->with('SHOW CREATE TRIGGER `trigger1`');
 
         $this->dumper->dumpTriggers($this->dbMock, 'test');

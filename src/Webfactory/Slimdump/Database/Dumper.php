@@ -59,11 +59,10 @@ class Dumper
      */
     public function dumpSchema($table, Connection $db, $keepAutoIncrement = true, bool $noProgress = false)
     {
-        $this->keepalive($db);
         $this->output->writeln("-- BEGIN STRUCTURE $table", OutputInterface::OUTPUT_RAW);
         $this->output->writeln("DROP TABLE IF EXISTS `$table`;", OutputInterface::OUTPUT_RAW);
 
-        $tableCreationCommand = $db->fetchColumn("SHOW CREATE TABLE `$table`", [], 1);
+        $tableCreationCommand = $db->fetchOne("SHOW CREATE TABLE `$table`", []);
 
         if (!$keepAutoIncrement) {
             $tableCreationCommand = preg_replace('/ AUTO_INCREMENT=\d*/', '', $tableCreationCommand);
@@ -92,7 +91,7 @@ class Dumper
      */
     public function dumpTriggers(Connection $db, $tableName, $level = Table::DEFINER_NO_DEFINER)
     {
-        $triggers = $db->fetchAll(sprintf('SHOW TRIGGERS LIKE %s', $db->quote($tableName)));
+        $triggers = $db->fetchAllAssociative(sprintf('SHOW TRIGGERS LIKE %s', $db->quote($tableName)));
 
         if (!$triggers) {
             return;
@@ -103,7 +102,7 @@ class Dumper
         $this->output->writeln("DELIMITER ;;\n");
 
         foreach ($triggers as $row) {
-            $createTriggerCommand = $db->fetchColumn("SHOW CREATE TRIGGER `{$row['Trigger']}`", [], 2);
+            $createTriggerCommand = $db->fetchAssociative("SHOW CREATE TRIGGER `{$row['Trigger']}`", [])['SQL Original Statement'];
 
             if (Table::DEFINER_NO_DEFINER === $level) {
                 $createTriggerCommand = preg_replace('/DEFINER=`[^`]*`@`[^`]*` /', '', $createTriggerCommand);
@@ -119,7 +118,7 @@ class Dumper
     {
         $this->output->writeln("-- BEGIN VIEW $viewName", OutputInterface::OUTPUT_RAW);
 
-        $createViewCommand = $db->fetchColumn("SHOW CREATE VIEW `{$viewName}`", [], 1);
+        $createViewCommand = $db->fetchOne("SHOW CREATE VIEW `{$viewName}`", []);
 
         if (Table::DEFINER_NO_DEFINER === $level) {
             $createViewCommand = preg_replace('/DEFINER=`[^`]*`@`[^`]*` /', '', $createViewCommand);
@@ -135,7 +134,6 @@ class Dumper
      */
     public function dumpData($table, Table $tableConfig, Connection $db, bool $noProgress)
     {
-        $this->keepalive($db);
         $cols = $this->cols($table, $db);
 
         $s = 'SELECT ';
@@ -161,7 +159,7 @@ class Dumper
 
         $bufferSize = 0;
         $max = $this->bufferSize;
-        $numRows = (int) $db->fetchColumn("SELECT COUNT(*) FROM `$table`".$tableConfig->getCondition());
+        $numRows = (int) $db->fetchOne("SELECT COUNT(*) FROM `$table`".$tableConfig->getCondition());
 
         if (0 === $numRows) {
             // Fail fast: No data to dump.
@@ -180,11 +178,9 @@ class Dumper
             $progress = null;
         }
 
-        /** @var PDOConnection $wrappedConnection */
-        $wrappedConnection = $db->getWrappedConnection();
-        $wrappedConnection->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
+        $this->setPdoAttribute($db, PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
 
-        foreach ($db->query($s) as $row) {
+        foreach ($db->executeQuery($s)->fetchAllAssociative() as $row) {
             $b = $this->rowLengthEstimate($row);
 
             // Start a new statement to ensure that the line does not get too long.
@@ -232,7 +228,7 @@ class Dumper
             }
         }
 
-        $wrappedConnection->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
+        $this->setPdoAttribute($db, PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
 
         if ($bufferSize) {
             $this->output->writeln(';', OutputInterface::OUTPUT_RAW);
@@ -249,7 +245,7 @@ class Dumper
     protected function cols($table, Connection $db)
     {
         $c = [];
-        foreach ($db->fetchAll("SHOW COLUMNS FROM `$table`") as $row) {
+        foreach ($db->fetchAllAssociative("SHOW COLUMNS FROM `$table`") as $row) {
             $c[$row['Field']] = $row['Type'];
         }
 
@@ -290,14 +286,6 @@ class Dumper
         return $l;
     }
 
-    private function keepalive(Connection $db)
-    {
-        if (false === $db->ping()) {
-            $db->close();
-            $db->connect();
-        }
-    }
-
     protected function writeDataDumpBegin($table): void
     {
         $this->output->writeln("LOCK TABLES `$table` WRITE;", OutputInterface::OUTPUT_RAW);
@@ -309,5 +297,18 @@ class Dumper
         $this->output->writeln("ALTER TABLE `$table` ENABLE KEYS;", OutputInterface::OUTPUT_RAW);
         $this->output->writeln('UNLOCK TABLES;', OutputInterface::OUTPUT_RAW);
         $this->output->writeln('', OutputInterface::OUTPUT_RAW);
+    }
+
+    protected function setPdoAttribute(Connection $connection, int $attribute, $value): void
+    {
+        while (method_exists($connection, 'getWrappedConnection') && !$connection instanceof PDO) {
+            $connection = $connection->getWrappedConnection();
+        }
+
+        if (!$connection instanceof PDO) {
+            return;
+        }
+
+        $connection->setAttribute($attribute, $value);
     }
 }
