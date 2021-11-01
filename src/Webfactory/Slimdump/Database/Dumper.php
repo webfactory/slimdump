@@ -62,7 +62,7 @@ class Dumper
         $this->output->writeln("-- BEGIN STRUCTURE $table", OutputInterface::OUTPUT_RAW);
         $this->output->writeln("DROP TABLE IF EXISTS `$table`;", OutputInterface::OUTPUT_RAW);
 
-        $tableCreationCommand = $db->fetchOne("SHOW CREATE TABLE `$table`", []);
+        $tableCreationCommand = $db->fetchAssociative("SHOW CREATE TABLE `$table`", [])['Create Table'];
 
         if (!$keepAutoIncrement) {
             $tableCreationCommand = preg_replace('/ AUTO_INCREMENT=\d*/', '', $tableCreationCommand);
@@ -118,7 +118,7 @@ class Dumper
     {
         $this->output->writeln("-- BEGIN VIEW $viewName", OutputInterface::OUTPUT_RAW);
 
-        $createViewCommand = $db->fetchOne("SHOW CREATE VIEW `{$viewName}`", []);
+        $createViewCommand = $db->fetchAssociative("SHOW CREATE VIEW `{$viewName}`", [])['Create View'];
 
         if (Table::DEFINER_NO_DEFINER === $level) {
             $createViewCommand = preg_replace('/DEFINER=`[^`]*`@`[^`]*` /', '', $createViewCommand);
