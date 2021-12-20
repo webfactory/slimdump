@@ -183,6 +183,7 @@ class Dumper
         /** @var PDOConnection $wrappedConnection */
         $wrappedConnection = $db->getWrappedConnection();
         $wrappedConnection->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
+        $actualRows = 0;
 
         foreach ($db->query($s) as $row) {
             $b = $this->rowLengthEstimate($row);
@@ -222,6 +223,8 @@ class Dumper
             if (null !== $progress) {
                 $progress->advance();
             }
+
+            ++$actualRows;
         }
 
         if (null !== $progress) {
@@ -230,6 +233,10 @@ class Dumper
             if ($this->output instanceof ConsoleOutput) {
                 $this->output->getErrorOutput()->write("\n"); // write a newline after the progressbar.
             }
+        }
+
+        if ($actualRows !== $numRows) {
+            $this->output->getErrorOutput()->writeln(sprintf('<error>Expected %d rows, actually processed %d – verify results!</error>', $numRows, $actualRows));
         }
 
         $wrappedConnection->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
