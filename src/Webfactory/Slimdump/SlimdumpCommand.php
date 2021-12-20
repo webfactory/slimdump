@@ -10,6 +10,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Webfactory\Slimdump\Config\ConfigBuilder;
 
@@ -67,6 +68,15 @@ final class SlimdumpCommand extends Command
         $connection = DriverManager::getConnection(
             ['url' => $mysqliIndependentDsn, 'charset' => 'utf8', 'driverClass' => PDOMySqlDriver::class]
         );
+
+        $maxExecutionTimeInfo = $connection->fetchAssociative('SHOW VARIABLES LIKE "max_execution_time"');
+
+        if ($maxExecutionTimeInfo && $maxExecutionTimeInfo['Value'] != 0) {
+            $connection->executeQuery('SET SESSION max_execution_time = 0');
+            if ($output instanceof ConsoleOutputInterface) {
+                $output->getErrorOutput()->writeln('<info>The MySQL "max_execution_time" timeout setting has been disabled for the current database connection.</info>');
+            }
+        }
 
         $noProgress = $input->getOption('no-progress') ? true : false;
         $singleLineInsertStatements = $input->getOption('single-line-insert-statements') ? true : false;
