@@ -71,7 +71,7 @@ final class SlimdumpCommand extends Command
 
         $maxExecutionTimeInfo = $connection->fetchAssociative('SHOW VARIABLES LIKE "max_execution_time"');
 
-        if ($maxExecutionTimeInfo && $maxExecutionTimeInfo['Value'] != 0) {
+        if ($maxExecutionTimeInfo && 0 != $maxExecutionTimeInfo['Value']) {
             $connection->executeQuery('SET SESSION max_execution_time = 0');
             if ($output instanceof ConsoleOutputInterface) {
                 $output->getErrorOutput()->writeln('<info>The MySQL "max_execution_time" timeout setting has been disabled for the current database connection.</info>');
