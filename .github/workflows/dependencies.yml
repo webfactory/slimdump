@@ -12,7 +12,7 @@ env:
 jobs:
     composer-require-checker:
         name: Check missing composer requirements
-        runs-on: ubuntu-18.04
+        runs-on: ubuntu-20.04
         steps:
             -   uses: actions/checkout@v2
             -   name: Konfiguriere PHP-Version und -Einstellungen im Worker-Node

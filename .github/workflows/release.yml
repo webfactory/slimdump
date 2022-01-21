@@ -6,7 +6,7 @@ name: Build .phar on release
 
 jobs:
     build_phar:
-        runs-on: ubuntu-18.04
+        runs-on: ubuntu-20.04
         steps:
             -   uses: actions/checkout@v1
             -   name: Install PHIVE
