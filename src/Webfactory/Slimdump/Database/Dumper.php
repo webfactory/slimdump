@@ -23,12 +23,18 @@ class Dumper
     protected $singleLineInsertStatements = false;
 
     /**
+     * @var SqlDumper
+     */
+    private $sqlDumper;
+
+    /**
      * @param int|null $bufferSize Default buffer size is 100MB
      */
     public function __construct(OutputInterface $output, $bufferSize = null)
     {
         $this->output = $output;
         $this->bufferSize = $bufferSize ?: 104857600;
+        $this->sqlDumper = new SqlDumper($output);
     }
 
     public function setSingleLineInsertStatements(bool $singleLineInsertStatements): void
@@ -36,19 +42,19 @@ class Dumper
         $this->singleLineInsertStatements = $singleLineInsertStatements;
     }
 
-    public function exportAsUTF8()
+    public function exportAsUTF8(): void
     {
-        $this->output->writeln('SET NAMES utf8;', OutputInterface::OUTPUT_RAW);
+        $this->sqlDumper->exportAsUTF8();
     }
 
-    public function disableForeignKeys()
+    public function disableForeignKeys(): void
     {
-        $this->output->writeln("SET FOREIGN_KEY_CHECKS = 0;\n", OutputInterface::OUTPUT_RAW);
+        $this->sqlDumper->disableForeignKeys();
     }
 
-    public function enableForeignKeys()
+    public function enableForeignKeys(): void
     {
-        $this->output->writeln("\nSET FOREIGN_KEY_CHECKS = 1;", OutputInterface::OUTPUT_RAW);
+        $this->sqlDumper->enableForeignKeys();
     }
 
     /**
@@ -60,6 +66,7 @@ class Dumper
     public function dumpSchema($table, Connection $db, $keepAutoIncrement = true, bool $noProgress = false)
     {
         $this->keepalive($db);
+
         $this->output->writeln("-- BEGIN STRUCTURE $table", OutputInterface::OUTPUT_RAW);
         $this->output->writeln("DROP TABLE IF EXISTS `$table`;", OutputInterface::OUTPUT_RAW);
 
