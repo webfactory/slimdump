@@ -18,6 +18,7 @@ class SqlDumper
     {
         $this->output->writeln('SET NAMES utf8;', OutputInterface::OUTPUT_RAW);
     }
+
     public function disableForeignKeys(): void
     {
         $this->output->writeln("SET FOREIGN_KEY_CHECKS = 0;\n", OutputInterface::OUTPUT_RAW);
@@ -27,5 +28,4 @@ class SqlDumper
     {
         $this->output->writeln("\nSET FOREIGN_KEY_CHECKS = 1;", OutputInterface::OUTPUT_RAW);
     }
-
 }
