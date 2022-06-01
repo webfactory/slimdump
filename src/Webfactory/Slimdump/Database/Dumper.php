@@ -34,12 +34,12 @@ class Dumper
     {
         $this->output = $output;
         $this->bufferSize = $bufferSize ?: 104857600;
-        $this->sqlDumper = new SqlDumper($output);
+        $this->sqlDumper = new SqlDumper($output, $this->bufferSize);
     }
 
     public function setSingleLineInsertStatements(bool $singleLineInsertStatements): void
     {
-        $this->singleLineInsertStatements = $singleLineInsertStatements;
+        $this->sqlDumper->setSingleLineInsertStatements($singleLineInsertStatements);
     }
 
     public function exportAsUTF8(): void
@@ -67,16 +67,7 @@ class Dumper
     {
         $this->keepalive($db);
 
-        $this->output->writeln("-- BEGIN STRUCTURE $table", OutputInterface::OUTPUT_RAW);
-        $this->output->writeln("DROP TABLE IF EXISTS `$table`;", OutputInterface::OUTPUT_RAW);
-
-        $tableCreationCommand = $db->fetchColumn("SHOW CREATE TABLE `$table`", [], 1);
-
-        if (!$keepAutoIncrement) {
-            $tableCreationCommand = preg_replace('/ AUTO_INCREMENT=\d*/', '', $tableCreationCommand);
-        }
-
-        $this->output->writeln($tableCreationCommand.";\n", OutputInterface::OUTPUT_RAW);
+        $this->sqlDumper->writeDumpHeadContent($table, $db, $keepAutoIncrement);
 
         if (!$noProgress) {
             $progress = new ProgressBar($this->output, 1);
@@ -99,40 +90,12 @@ class Dumper
      */
     public function dumpTriggers(Connection $db, $tableName, $level = Table::DEFINER_NO_DEFINER)
     {
-        $triggers = $db->fetchAll(sprintf('SHOW TRIGGERS LIKE %s', $db->quote($tableName)));
-
-        if (!$triggers) {
-            return;
-        }
-
-        $this->output->writeln("-- BEGIN TRIGGERS $tableName", OutputInterface::OUTPUT_RAW);
-
-        $this->output->writeln("DELIMITER ;;\n");
-
-        foreach ($triggers as $row) {
-            $createTriggerCommand = $db->fetchColumn("SHOW CREATE TRIGGER `{$row['Trigger']}`", [], 2);
-
-            if (Table::DEFINER_NO_DEFINER === $level) {
-                $createTriggerCommand = preg_replace('/DEFINER=`[^`]*`@`[^`]*` /', '', $createTriggerCommand);
-            }
-
-            $this->output->writeln($createTriggerCommand.";;\n", OutputInterface::OUTPUT_RAW);
-        }
-
-        $this->output->writeln('DELIMITER ;');
+        $this->sqlDumper->dumpTriggers($db, $tableName, $level);
     }
 
     public function dumpView(Connection $db, $viewName, $level = Table::DEFINER_NO_DEFINER)
     {
-        $this->output->writeln("-- BEGIN VIEW $viewName", OutputInterface::OUTPUT_RAW);
-
-        $createViewCommand = $db->fetchColumn("SHOW CREATE VIEW `{$viewName}`", [], 1);
-
-        if (Table::DEFINER_NO_DEFINER === $level) {
-            $createViewCommand = preg_replace('/DEFINER=`[^`]*`@`[^`]*` /', '', $createViewCommand);
-        }
-
-        $this->output->writeln($createViewCommand.";\n", OutputInterface::OUTPUT_RAW);
+        $this->sqlDumper->dumpView($db, $viewName, $level);
     }
 
     /**
@@ -163,16 +126,13 @@ class Dumper
 
         $s .= $tableConfig->getCondition();
 
-        $this->output->writeln("-- BEGIN DATA $table", OutputInterface::OUTPUT_RAW);
-        $this->writeDataDumpBegin($table);
+        $this->sqlDumper->writeDataDumpBegin($table);
 
-        $bufferSize = 0;
-        $max = $this->bufferSize;
         $numRows = (int) $db->fetchColumn("SELECT COUNT(*) FROM `$table`".$tableConfig->getCondition());
 
         if (0 === $numRows) {
             // Fail fast: No data to dump.
-            $this->writeDataDumpEnd($table);
+            $this->sqlDumper->writeDataDumpEnd($table);
 
             return;
         }
@@ -193,40 +153,24 @@ class Dumper
         $actualRows = 0;
 
         foreach ($db->query($s) as $row) {
-            $b = $this->rowLengthEstimate($row);
+            $rowLength = $this->rowLengthEstimate($row);
 
-            // Start a new statement to ensure that the line does not get too long.
-            if ($bufferSize && $bufferSize + $b > $max) {
-                $this->output->writeln(';', OutputInterface::OUTPUT_RAW);
-                $bufferSize = 0;
-            }
-
-            if (0 === $bufferSize) {
-                $this->output->write($this->insertValuesStatement($table, $cols), false, OutputInterface::OUTPUT_RAW);
-            } else {
-                $this->output->write(',', false, OutputInterface::OUTPUT_RAW);
-            }
+            $this->sqlDumper->writeNewDataLineStart($rowLength, $table, $cols);
 
             $firstCol = true;
-
-            if (!$this->singleLineInsertStatements) {
-                $this->output->write("\n", false, OutputInterface::OUTPUT_RAW);
-            }
-
-            $this->output->write('(', false, OutputInterface::OUTPUT_RAW);
-
             foreach ($row as $name => $value) {
                 $isBlobColumn = $this->isBlob($name, $cols);
 
                 if (!$firstCol) {
-                    $this->output->write(', ', false, OutputInterface::OUTPUT_RAW);
+                    $this->output->write($this->sqlDumper::COL_DELIMITER, false, OutputInterface::OUTPUT_RAW);
                 }
 
                 $this->output->write($tableConfig->getStringForInsertStatement($name, $value, $isBlobColumn, $db), false, OutputInterface::OUTPUT_RAW);
                 $firstCol = false;
             }
-            $this->output->write(')', false, OutputInterface::OUTPUT_RAW);
-            $bufferSize += $b;
+
+            $this->sqlDumper->writeNewDataLineEnd($rowLength);
+
             if (null !== $progress) {
                 $progress->advance();
             }
@@ -248,11 +192,11 @@ class Dumper
 
         $wrappedConnection->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
 
-        if ($bufferSize) {
+        if ($this->sqlDumper->getCurrentBufferSize()) {
             $this->output->writeln(';', OutputInterface::OUTPUT_RAW);
         }
 
-        $this->writeDataDumpEnd($table);
+        $this->sqlDumper->writeDataDumpEnd($table);
     }
 
     /**
@@ -268,17 +212,6 @@ class Dumper
         }
 
         return $c;
-    }
-
-    /**
-     * @param string               $table
-     * @param array(string=>mixed) $cols
-     *
-     * @return string
-     */
-    protected function insertValuesStatement($table, $cols)
-    {
-        return "INSERT INTO `$table` (`".implode('`, `', array_keys($cols)).'`) VALUES ';
     }
 
     /**
@@ -310,18 +243,5 @@ class Dumper
             $db->close();
             $db->connect();
         }
-    }
-
-    protected function writeDataDumpBegin($table): void
-    {
-        $this->output->writeln("LOCK TABLES `$table` WRITE;", OutputInterface::OUTPUT_RAW);
-        $this->output->writeln("ALTER TABLE `$table` DISABLE KEYS;", OutputInterface::OUTPUT_RAW);
-    }
-
-    protected function writeDataDumpEnd($table): void
-    {
-        $this->output->writeln("ALTER TABLE `$table` ENABLE KEYS;", OutputInterface::OUTPUT_RAW);
-        $this->output->writeln('UNLOCK TABLES;', OutputInterface::OUTPUT_RAW);
-        $this->output->writeln('', OutputInterface::OUTPUT_RAW);
     }
 }
