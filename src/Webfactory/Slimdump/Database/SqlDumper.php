@@ -104,7 +104,7 @@ class SqlDumper
         $this->output->writeln($createViewCommand.";\n", OutputInterface::OUTPUT_RAW);
     }
 
-    public function writeNewDataLineStart(int $rowLength, string $table, array $cols): void
+    public function writeNewDataLineStart(int $rowLength, string $tableName, array $cols): void
     {
         // Start a new statement to ensure that the line does not get too long.
         if ($this->currentBufferSize && $this->currentBufferSize + $rowLength > $this->maxBufferSize) {
@@ -113,7 +113,7 @@ class SqlDumper
         }
 
         if (0 === $this->currentBufferSize) {
-            $this->output->write($this->insertValuesStatement($table, $cols), false, OutputInterface::OUTPUT_RAW);
+            $this->output->write($this->insertValuesStatement($tableName, $cols), false, OutputInterface::OUTPUT_RAW);
         } else {
             $this->output->write(',', false, OutputInterface::OUTPUT_RAW);
         }
@@ -132,23 +132,24 @@ class SqlDumper
         $this->incrementCurrentBufferSize($rowLength);
     }
 
-    public function insertValuesStatement(string $table, array $cols): string
+    public function insertValuesStatement(string $tableName, array $cols): string
     {
-        return "INSERT INTO `$table` (`".implode('`, `', array_keys($cols)).'`) VALUES ';
+        return "INSERT INTO `$tableName` (`".implode('`, `', array_keys($cols)).'`) VALUES ';
     }
 
-    public function writeDataDumpBegin(string $table): void
+    public function writeDataDumpBegin(string $tableName): void
     {
-        $this->output->writeln("-- BEGIN DATA $table", OutputInterface::OUTPUT_RAW);
-        $this->output->writeln("LOCK TABLES `$table` WRITE;", OutputInterface::OUTPUT_RAW);
-        $this->output->writeln("ALTER TABLE `$table` DISABLE KEYS;", OutputInterface::OUTPUT_RAW);
+        $this->currentBufferSize = 0;
+        $this->output->writeln("-- BEGIN DATA $tableName", OutputInterface::OUTPUT_RAW);
+        $this->output->writeln("LOCK TABLES `$tableName` WRITE;", OutputInterface::OUTPUT_RAW);
+        $this->output->writeln("ALTER TABLE `$tableName` DISABLE KEYS;", OutputInterface::OUTPUT_RAW);
     }
 
-    public function writeDataDumpRow(array $row, string $table, Table $config, array $cols): void
+    public function writeDataDumpRow(array $row, string $tableName, Table $config, array $cols): void
     {
         $rowLength = $this->rowLengthEstimate($row);
 
-        $this->writeNewDataLineStart($rowLength, $table, $cols);
+        $this->writeNewDataLineStart($rowLength, $tableName, $cols);
 
         $firstCol = true;
         foreach ($row as $name => $value) {
@@ -165,13 +166,13 @@ class SqlDumper
         $this->writeNewDataLineEnd($rowLength);
     }
 
-    public function writeDataDumpEnd(string $table): void
+    public function writeDataDumpEnd(string $tableName): void
     {
         if ($this->currentBufferSize) {
             $this->output->writeln(';', OutputInterface::OUTPUT_RAW);
         }
 
-        $this->output->writeln("ALTER TABLE `$table` ENABLE KEYS;", OutputInterface::OUTPUT_RAW);
+        $this->output->writeln("ALTER TABLE `$tableName` ENABLE KEYS;", OutputInterface::OUTPUT_RAW);
         $this->output->writeln('UNLOCK TABLES;', OutputInterface::OUTPUT_RAW);
         $this->output->writeln('', OutputInterface::OUTPUT_RAW);
     }
