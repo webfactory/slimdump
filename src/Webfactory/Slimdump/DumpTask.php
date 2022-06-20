@@ -7,6 +7,7 @@ use Doctrine\DBAL\DBALException;
 use Symfony\Component\Console\Output\OutputInterface;
 use Webfactory\Slimdump\Config\Config;
 use Webfactory\Slimdump\Database\Dumper;
+use Webfactory\Slimdump\Database\SqlDumper;
 
 final class DumpTask
 {
@@ -55,47 +56,24 @@ final class DumpTask
 
     public function dump()
     {
-        $dumper = new Dumper($this->output, $this->bufferSize);
-        $dumper->setSingleLineInsertStatements($this->singleLineInsertStatements);
-        $dumper->exportAsUTF8();
-        $dumper->disableForeignKeys();
+        $sqlDumper = new SqlDumper($this->output, $this->connection, $this->bufferSize, $this->singleLineInsertStatements);
+        $dumper = new Dumper($this->output, $this->connection, $sqlDumper);
+        $dumper->beginDump();
 
         $db = $this->connection;
 
-        $platform = $db->getDatabasePlatform();
+        $manager = $db->getSchemaManager();
 
-        $fetchTablesResult = $db->query($platform->getListTablesSQL());
-
-        while ($tableName = $fetchTablesResult->fetchColumn(0)) {
-            $tableConfig = $this->config->findTable($tableName);
+        foreach (array_merge($manager->listTables(), $manager->listViews()) as $asset) {
+            $tableConfig = $this->config->findTable($asset->getName());
 
             if (null === $tableConfig || !$tableConfig->isSchemaDumpRequired()) {
                 continue;
             }
 
-            $dumper->dumpSchema($tableName, $db, $tableConfig->keepAutoIncrement(), $this->noProgress);
-
-            if ($tableConfig->isDataDumpRequired()) {
-                $dumper->dumpData($tableName, $tableConfig, $db, $this->noProgress);
-            }
-
-            if ($tableConfig->isTriggerDumpRequired()) {
-                $dumper->dumpTriggers($db, $tableName, $tableConfig->getDumpTriggersLevel());
-            }
+            $dumper->dumpAsset($asset, $tableConfig, $this->noProgress);
         }
 
-        $fetchViewsResult = $db->query($platform->getListViewsSQL($db->getDatabase()));
-
-        while ($viewName = $fetchViewsResult->fetchColumn(2)) {
-            $tableConfig = $this->config->findTable($viewName);
-
-            if (null === $tableConfig || !$tableConfig->isSchemaDumpRequired()) {
-                continue;
-            }
-
-            $dumper->dumpView($db, $viewName, $tableConfig->getViewDefinerLevel());
-        }
-
-        $dumper->enableForeignKeys();
+        $dumper->endDump();
     }
 }

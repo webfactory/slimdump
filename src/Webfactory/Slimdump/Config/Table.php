@@ -244,7 +244,7 @@ class Table
      *
      * @return Column
      */
-    private function findColumn($columnName)
+    public function findColumn($columnName)
     {
         return Config::findBySelector($this->columns, $columnName);
     }

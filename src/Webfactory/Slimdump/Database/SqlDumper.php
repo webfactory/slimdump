@@ -8,10 +8,11 @@ use Webfactory\Slimdump\Config\Table;
 
 class SqlDumper
 {
-    public const COL_DELIMITER = ', ';
-
     /** @var OutputInterface */
     private $output;
+
+    /** @var Connection */
+    private $db;
 
     /** @var int */
     private $maxBufferSize;
@@ -20,51 +21,54 @@ class SqlDumper
     private $currentBufferSize = 0;
 
     /** @var bool */
-    private $singleLineInsertStatements = false;
+    private $singleLineInsertStatements;
 
-    public function __construct(OutputInterface $output, $maxBufferSize)
+    /**
+     * @param int|null $maxBufferSize Default buffer size is 100MB
+     */
+    public function __construct(OutputInterface $output, Connection $db, int $maxBufferSize = null, bool $singleLineInsertStatements = false)
     {
-        $this->maxBufferSize = $maxBufferSize;
         $this->output = $output;
-    }
-
-    public function setSingleLineInsertStatements(bool $singleLineInsertStatements): void
-    {
+        $this->db = $db;
+        $this->maxBufferSize = $maxBufferSize ?: 104857600;
         $this->singleLineInsertStatements = $singleLineInsertStatements;
     }
 
-    public function exportAsUTF8(): void
+    public function beginDump(): void
     {
         $this->output->writeln('SET NAMES utf8;', OutputInterface::OUTPUT_RAW);
-    }
-
-    public function disableForeignKeys(): void
-    {
         $this->output->writeln("SET FOREIGN_KEY_CHECKS = 0;\n", OutputInterface::OUTPUT_RAW);
     }
 
-    public function enableForeignKeys(): void
+    public function endDump(): void
     {
         $this->output->writeln("\nSET FOREIGN_KEY_CHECKS = 1;", OutputInterface::OUTPUT_RAW);
     }
 
-    public function writeDumpHeadContent(string $table, Connection $db, bool $keepAutoIncrement): void
+    public function dumpTableStructure(string $tableName, Table $config): void
     {
-        $this->output->writeln("-- BEGIN STRUCTURE $table", OutputInterface::OUTPUT_RAW);
-        $this->output->writeln("DROP TABLE IF EXISTS `$table`;", OutputInterface::OUTPUT_RAW);
+        $this->output->writeln("-- BEGIN STRUCTURE $tableName", OutputInterface::OUTPUT_RAW);
+        $this->output->writeln("DROP TABLE IF EXISTS `$tableName`;", OutputInterface::OUTPUT_RAW);
 
-        $tableCreationCommand = $db->fetchColumn("SHOW CREATE TABLE `$table`", [], 1);
+        $tableCreationCommand = $this->db->fetchColumn("SHOW CREATE TABLE `$tableName`", [], 1);
 
-        if (!$keepAutoIncrement) {
+        if (!$config->keepAutoIncrement()) {
             $tableCreationCommand = preg_replace('/ AUTO_INCREMENT=\d*/', '', $tableCreationCommand);
         }
 
         $this->output->writeln($tableCreationCommand.";\n", OutputInterface::OUTPUT_RAW);
+
+        if ($config->isTriggerDumpRequired()) {
+            $this->dumpTriggers($tableName, $config->getDumpTriggersLevel());
+        }
     }
 
-    public function dumpTriggers(Connection $db, string $tableName, int $level = Table::DEFINER_NO_DEFINER): void
+    /**
+     * @param int $level One of the Table::TRIGGER_* constants
+     */
+    private function dumpTriggers(string $tableName, int $level = Table::DEFINER_NO_DEFINER): void
     {
-        $triggers = $db->fetchAll(sprintf('SHOW TRIGGERS LIKE %s', $db->quote($tableName)));
+        $triggers = $this->db->fetchAll(sprintf('SHOW TRIGGERS LIKE %s', $this->db->quote($tableName)));
 
         if (!$triggers) {
             return;
@@ -75,7 +79,7 @@ class SqlDumper
         $this->output->writeln("DELIMITER ;;\n");
 
         foreach ($triggers as $row) {
-            $createTriggerCommand = $db->fetchColumn("SHOW CREATE TRIGGER `{$row['Trigger']}`", [], 2);
+            $createTriggerCommand = $this->db->fetchColumn("SHOW CREATE TRIGGER `{$row['Trigger']}`", [], 2);
 
             if (Table::DEFINER_NO_DEFINER === $level) {
                 $createTriggerCommand = preg_replace('/DEFINER=`[^`]*`@`[^`]*` /', '', $createTriggerCommand);
@@ -87,11 +91,11 @@ class SqlDumper
         $this->output->writeln('DELIMITER ;');
     }
 
-    public function dumpView(Connection $db, string $viewName, int $level = Table::DEFINER_NO_DEFINER): void
+    public function dumpView(string $viewName, int $level = Table::DEFINER_NO_DEFINER): void
     {
         $this->output->writeln("-- BEGIN VIEW $viewName", OutputInterface::OUTPUT_RAW);
 
-        $createViewCommand = $db->fetchColumn("SHOW CREATE VIEW `{$viewName}`", [], 1);
+        $createViewCommand = $this->db->fetchColumn("SHOW CREATE VIEW `{$viewName}`", [], 1);
 
         if (Table::DEFINER_NO_DEFINER === $level) {
             $createViewCommand = preg_replace('/DEFINER=`[^`]*`@`[^`]*` /', '', $createViewCommand);
@@ -140,8 +144,33 @@ class SqlDumper
         $this->output->writeln("ALTER TABLE `$table` DISABLE KEYS;", OutputInterface::OUTPUT_RAW);
     }
 
+    public function writeDataDumpRow(array $row, string $table, Table $config, array $cols): void
+    {
+        $rowLength = $this->rowLengthEstimate($row);
+
+        $this->writeNewDataLineStart($rowLength, $table, $cols);
+
+        $firstCol = true;
+        foreach ($row as $name => $value) {
+            $isBlobColumn = Dumper::isBlob($name, $cols);
+
+            if (!$firstCol) {
+                $this->output->write(', ', false, OutputInterface::OUTPUT_RAW);
+            }
+
+            $this->output->write($this->getStringForInsertStatement($name, $config, $value, $isBlobColumn), false, OutputInterface::OUTPUT_RAW);
+            $firstCol = false;
+        }
+
+        $this->writeNewDataLineEnd($rowLength);
+    }
+
     public function writeDataDumpEnd(string $table): void
     {
+        if ($this->currentBufferSize) {
+            $this->output->writeln(';', OutputInterface::OUTPUT_RAW);
+        }
+
         $this->output->writeln("ALTER TABLE `$table` ENABLE KEYS;", OutputInterface::OUTPUT_RAW);
         $this->output->writeln('UNLOCK TABLES;', OutputInterface::OUTPUT_RAW);
         $this->output->writeln('', OutputInterface::OUTPUT_RAW);
@@ -152,8 +181,34 @@ class SqlDumper
         $this->currentBufferSize += $bufferSize;
     }
 
-    public function getCurrentBufferSize(): int
+    private function rowLengthEstimate(array $row): int
     {
-        return $this->currentBufferSize;
+        $l = 0;
+        foreach ($row as $value) {
+            $l += \strlen($value);
+        }
+
+        return $l;
+    }
+
+    private function getStringForInsertStatement(string $columnName, Table $config, ?string $value, bool $isBlobColumn): string
+    {
+        if (null === $value) {
+            return 'NULL';
+        }
+
+        if ('' === $value) {
+            return '""';
+        }
+
+        if ($column = $config->findColumn($columnName)) {
+            return $this->db->quote($column->processRowValue($value));
+        }
+
+        if ($isBlobColumn) {
+            return $value;
+        }
+
+        return $this->db->quote($value);
     }
 }
