@@ -108,10 +108,10 @@ class SqlDumper implements OutputFormatDriverInterface
         $this->output->writeln($createViewCommand.";\n", OutputInterface::OUTPUT_RAW);
     }
 
-    private function writeInsertStatementBegin(Schema\Table $asset): void
+    private function writeInsertStatementBegin(array $row, Schema\Table $asset): void
     {
         if (0 === $this->currentBufferSize) {
-            $this->output->write($this->insertValuesStatement($asset), false, OutputInterface::OUTPUT_RAW);
+            $this->output->write($this->insertValuesStatement($row, $asset), false, OutputInterface::OUTPUT_RAW);
         } else {
             $this->output->write(',', false, OutputInterface::OUTPUT_RAW);
         }
@@ -128,9 +128,9 @@ class SqlDumper implements OutputFormatDriverInterface
         $this->output->write(')', false, OutputInterface::OUTPUT_RAW);
     }
 
-    private function insertValuesStatement(Schema\Table $asset): string
+    private function insertValuesStatement(array $row, Schema\Table $asset): string
     {
-        return sprintf('INSERT INTO `%s` (%s)', $asset->getName(), implode(', ', array_map(function (Schema\Column $column) { return sprintf('`%s`', $column->getName()); }, $asset->getColumns())));
+        return sprintf('INSERT INTO `%s` (`%s`) VALUES ', $asset->getName(), implode('`, `', array_keys($row)));
     }
 
     public function beginTableDataDump(Schema\Table $asset, Table $config): void
@@ -148,7 +148,7 @@ class SqlDumper implements OutputFormatDriverInterface
 
         $this->endStatementIfBufferSizeExceeded($rowLength);
 
-        $this->writeInsertStatementBegin($asset);
+        $this->writeInsertStatementBegin($row, $asset);
         $this->writeInsertValueList($row, $asset, $config);
         $this->writeInsertStatementEnd();
 
@@ -215,16 +215,15 @@ class SqlDumper implements OutputFormatDriverInterface
     private function writeInsertValueList(array $row, Schema\Table $asset, Table $config): void
     {
         $firstCol = true;
-        foreach ($asset->getColumns() as $column) {
+        foreach ($row as $columnName => $value) {
             if (!$firstCol) {
                 $this->output->write(', ', false, OutputInterface::OUTPUT_RAW);
             }
             $firstCol = false;
 
-            $name = $column->getName();
-            $isBlobColumn = Dumper::isBlob($column);
+            $isBlobColumn = Dumper::isBlob($asset->getColumn($columnName));
 
-            $this->output->write($this->getStringForInsertStatement($name, $config, $row[$name], $isBlobColumn), false, OutputInterface::OUTPUT_RAW);
+            $this->output->write($this->getStringForInsertStatement($columnName, $config, $value, $isBlobColumn), false, OutputInterface::OUTPUT_RAW);
         }
     }
 }

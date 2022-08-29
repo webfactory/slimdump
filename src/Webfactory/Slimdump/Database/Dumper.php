@@ -92,17 +92,17 @@ class Dumper
     {
         $this->keepalive();
         $table = $asset->getName();
+        $columnOrder = array_map(function (array $columnInfo): string { return $columnInfo['Field']; }, $this->db->fetchAllAssociative(sprintf('SHOW COLUMNS FROM `%s`', $asset->getName())));
 
         $s = 'SELECT ';
         $first = true;
-        foreach ($asset->getColumns() as $column) {
+        foreach ($columnOrder as $columnName) {
             if (!$first) {
                 $s .= ', ';
             }
             $first = false;
 
-            $name = $column->getName();
-            $s .= $tableConfig->getSelectExpression($name, self::isBlob($column)) . " AS `$name`";
+            $s .= $tableConfig->getSelectExpression($columnName, self::isBlob($asset->getColumn($columnName))) . " AS `$columnName`";
         }
         $s .= " FROM `$table`";
         $s .= $tableConfig->getCondition();
@@ -131,7 +131,7 @@ class Dumper
 
         $this->sqlDumper->beginTableDataDump($asset, $tableConfig);
 
-        foreach ($this->db->query($s) as $row) {
+        foreach ($this->db->executeQuery($s) as $row) {
             $this->sqlDumper->dumpTableRow($row, $asset, $tableConfig);
 
             if (null !== $progress) {
