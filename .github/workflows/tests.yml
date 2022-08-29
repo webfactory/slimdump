@@ -12,9 +12,9 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                php: [7.2, 7.3, 7.4]
+                php: [7.2, 7.4, 8.1]
         steps:
-            -   uses: actions/checkout@v1
+            -   uses: actions/checkout@v2
             -   name: Install PHIVE
                 run: |
                     wget --quiet -O phive.phar https://phar.io/releases/phive.phar
@@ -30,7 +30,7 @@ jobs:
                     php-version: ${{ matrix.php }}
                     tools: composer:v2
             -   name: Cache Composer Dependencies
-                uses: actions/cache@v1
+                uses: actions/cache@v2
                 with:
                     path: vendor/
                     key: composer-${{ matrix.php }}-${{ hashFiles('composer.*') }}
