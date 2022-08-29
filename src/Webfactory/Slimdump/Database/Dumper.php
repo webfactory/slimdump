@@ -24,7 +24,7 @@ class Dumper
     protected $singleLineInsertStatements = false;
 
     /** @var OutputFormatDriverInterface */
-    private $sqlDumper;
+    private $outputFormatDriver;
 
     /** @var Connection */
     private $db;
@@ -33,17 +33,17 @@ class Dumper
     {
         $this->output = $output;
         $this->db = $db;
-        $this->sqlDumper = $sqlDumper;
+        $this->outputFormatDriver = $sqlDumper;
     }
 
     public function beginDump(): void
     {
-        $this->sqlDumper->beginDump();
+        $this->outputFormatDriver->beginDump();
     }
 
     public function endDump(): void
     {
-        $this->sqlDumper->endDump();
+        $this->outputFormatDriver->endDump();
     }
 
     public function dumpAsset(AbstractAsset $asset, Table $config, bool $noProgress = false): void
@@ -62,7 +62,7 @@ class Dumper
         $this->keepalive();
 
         $table = $asset->getName();
-        $this->sqlDumper->dumpTableStructure($asset, $config);
+        $this->outputFormatDriver->dumpTableStructure($asset, $config);
 
         if (!$noProgress) {
             $progress = new ProgressBar($this->output, 1);
@@ -85,7 +85,7 @@ class Dumper
 
     private function dumpView(Schema\View $asset, Table $config, bool $noProgress = false): void
     {
-        $this->sqlDumper->dumpViewDefinition($asset, $config);
+        $this->outputFormatDriver->dumpViewDefinition($asset, $config);
     }
 
     private function dumpData(Schema\Table $asset, Table $tableConfig, bool $noProgress): void
@@ -129,10 +129,10 @@ class Dumper
         $wrappedConnection->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
         $actualRows = 0;
 
-        $this->sqlDumper->beginTableDataDump($asset, $tableConfig);
+        $this->outputFormatDriver->beginTableDataDump($asset, $tableConfig);
 
         foreach ($this->db->executeQuery($s) as $row) {
-            $this->sqlDumper->dumpTableRow($row, $asset, $tableConfig);
+            $this->outputFormatDriver->dumpTableRow($row, $asset, $tableConfig);
 
             if (null !== $progress) {
                 $progress->advance();
@@ -155,22 +155,7 @@ class Dumper
 
         $wrappedConnection->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
 
-        $this->sqlDumper->endTableDataDump($asset, $tableConfig);
-    }
-
-    /**
-     * @param string $table
-     *
-     * @return array
-     */
-    protected function cols($table)
-    {
-        $c = [];
-        foreach ($this->db->fetchAll("SHOW COLUMNS FROM `$table`") as $row) {
-            $c[$row['Field']] = $row['Type'];
-        }
-
-        return $c;
+        $this->outputFormatDriver->endTableDataDump($asset, $tableConfig);
     }
 
     public static function isBlob(Schema\Column $column): bool
