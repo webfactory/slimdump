@@ -7,7 +7,7 @@ use Doctrine\DBAL\DBALException;
 use Symfony\Component\Console\Output\OutputInterface;
 use Webfactory\Slimdump\Config\Config;
 use Webfactory\Slimdump\Database\Dumper;
-use Webfactory\Slimdump\Database\SqlDumper;
+use Webfactory\Slimdump\Database\MysqlOutputFormatDriver;
 
 final class DumpTask
 {
@@ -56,7 +56,7 @@ final class DumpTask
 
     public function dump()
     {
-        $sqlDumper = new SqlDumper($this->output, $this->connection, $this->bufferSize, $this->singleLineInsertStatements);
+        $sqlDumper = new MysqlOutputFormatDriver($this->output, $this->connection, $this->bufferSize, $this->singleLineInsertStatements);
         $dumper = new Dumper($this->output, $this->connection, $sqlDumper);
         $dumper->beginDump();
 

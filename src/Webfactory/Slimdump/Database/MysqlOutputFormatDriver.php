@@ -7,7 +7,7 @@ use Doctrine\DBAL\Schema;
 use Symfony\Component\Console\Output\OutputInterface;
 use Webfactory\Slimdump\Config\Table;
 
-class SqlDumper implements OutputFormatDriverInterface
+class MysqlOutputFormatDriver implements OutputFormatDriverInterface
 {
     /** @var OutputInterface */
     private $output;
