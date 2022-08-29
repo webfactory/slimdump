@@ -291,7 +291,7 @@ class Dumper
     {
         $l = 0;
         foreach ($row as $value) {
-            $l += \strlen($value);
+            $l += \strlen((string) $value);
         }
 
         return $l;
