@@ -6,6 +6,8 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\PDOConnection;
 use Doctrine\DBAL\Schema\AbstractAsset;
 use Doctrine\DBAL\Schema as Schema;
+use Doctrine\DBAL\Types\BinaryType;
+use Doctrine\DBAL\Types\BlobType;
 use InvalidArgumentException;
 use PDO;
 use Symfony\Component\Console\Helper\ProgressBar;
@@ -21,45 +23,46 @@ class Dumper
     /** @var bool */
     protected $singleLineInsertStatements = false;
 
-    /** @var SqlDumper */
-    private $sqlDumper;
+    /** @var OutputFormatDriverInterface */
+    private $outputFormatDriver;
 
     /** @var Connection */
     private $db;
 
-    public function __construct(OutputInterface $output, Connection $db, SqlDumper $sqlDumper)
+    public function __construct(OutputInterface $output, Connection $db, OutputFormatDriverInterface $sqlDumper)
     {
         $this->output = $output;
         $this->db = $db;
-        $this->sqlDumper = $sqlDumper;
+        $this->outputFormatDriver = $sqlDumper;
     }
 
     public function beginDump(): void
     {
-        $this->sqlDumper->beginDump();
+        $this->outputFormatDriver->beginDump();
     }
 
     public function endDump(): void
     {
-        $this->sqlDumper->endDump();
+        $this->outputFormatDriver->endDump();
     }
 
     public function dumpAsset(AbstractAsset $asset, Table $config, bool $noProgress = false): void
     {
         if ($asset instanceof Schema\Table) {
-            $this->dumpTable($asset->getName(), $config, $noProgress);
+            $this->dumpTable($asset, $config, $noProgress);
         } elseif ($asset instanceof Schema\View) {
-            $this->dumpView($asset->getName(), $config, $noProgress);
+            $this->dumpView($asset, $config, $noProgress);
         } else {
             throw new InvalidArgumentException();
         }
     }
 
-    private function dumpTable(string $table, Table $config, bool $noProgress = false): void
+    private function dumpTable(Schema\Table $asset, Table $config, bool $noProgress = false): void
     {
         $this->keepalive();
 
-        $this->sqlDumper->dumpTableStructure($table, $config);
+        $table = $asset->getName();
+        $this->outputFormatDriver->dumpTableStructure($asset, $config);
 
         if (!$noProgress) {
             $progress = new ProgressBar($this->output, 1);
@@ -76,36 +79,32 @@ class Dumper
         }
 
         if ($config->isDataDumpRequired()) {
-            $this->dumpData($table, $config, $noProgress);
+            $this->dumpData($asset, $config, $noProgress);
         }
     }
 
-    private function dumpView(string $viewName, Table $config, bool $noProgress = false): void
+    private function dumpView(Schema\View $asset, Table $config, bool $noProgress = false): void
     {
-        $this->sqlDumper->dumpView($viewName, $config->getViewDefinerLevel());
+        $this->outputFormatDriver->dumpViewDefinition($asset, $config);
     }
 
-    private function dumpData(string $table, Table $tableConfig, bool $noProgress): void
+    private function dumpData(Schema\Table $asset, Table $tableConfig, bool $noProgress): void
     {
         $this->keepalive();
-        $cols = $this->cols($table);
+        $table = $asset->getName();
+        $columnOrder = array_map(function (array $columnInfo): string { return $columnInfo['Field']; }, $this->db->fetchAllAssociative(sprintf('SHOW COLUMNS FROM `%s`', $asset->getName())));
 
         $s = 'SELECT ';
         $first = true;
-        foreach (array_keys($cols) as $name) {
-            $isBlobColumn = self::isBlob($name, $cols);
-
+        foreach ($columnOrder as $columnName) {
             if (!$first) {
                 $s .= ', ';
             }
-
-            $s .= $tableConfig->getSelectExpression($name, $isBlobColumn);
-            $s .= " AS `$name`";
-
             $first = false;
+
+            $s .= $tableConfig->getSelectExpression($columnName, self::isBlob($asset->getColumn($columnName)))." AS `$columnName`";
         }
         $s .= " FROM `$table`";
-
         $s .= $tableConfig->getCondition();
 
         $numRows = (int) $this->db->fetchColumn("SELECT COUNT(*) FROM `$table`".$tableConfig->getCondition());
@@ -130,10 +129,10 @@ class Dumper
         $wrappedConnection->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
         $actualRows = 0;
 
-        $this->sqlDumper->writeDataDumpBegin($table);
+        $this->outputFormatDriver->beginTableDataDump($asset, $tableConfig);
 
-        foreach ($this->db->query($s) as $row) {
-            $this->sqlDumper->writeDataDumpRow($row, $table, $tableConfig, $cols);
+        foreach ($this->db->executeQuery($s) as $row) {
+            $this->outputFormatDriver->dumpTableRow($row, $asset, $tableConfig);
 
             if (null !== $progress) {
                 $progress->advance();
@@ -156,27 +155,14 @@ class Dumper
 
         $wrappedConnection->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
 
-        $this->sqlDumper->writeDataDumpEnd($table);
+        $this->outputFormatDriver->endTableDataDump($asset, $tableConfig);
     }
 
-    /**
-     * @param string $table
-     *
-     * @return array
-     */
-    protected function cols($table)
+    public static function isBlob(Schema\Column $column): bool
     {
-        $c = [];
-        foreach ($this->db->fetchAll("SHOW COLUMNS FROM `$table`") as $row) {
-            $c[$row['Field']] = $row['Type'];
-        }
+        $type = $column->getType();
 
-        return $c;
-    }
-
-    public static function isBlob(string $col, array $definitions): bool
-    {
-        return (false !== stripos($definitions[$col], 'blob')) || (false !== stripos($definitions[$col], 'binary'));
+        return $type instanceof BlobType || $type instanceof BinaryType;
     }
 
     private function keepalive()
