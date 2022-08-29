@@ -1,6 +1,3 @@
-# Update this by running
-# curl https://gist.githubusercontent.com/mpdude/ca93a185bcbf56eb7e341632ad4f8263/raw/fix-cs-php.yml > .github/workflows/fix-cs-php.yml
-
 on:
     push:
         branches:

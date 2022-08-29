@@ -12,25 +12,16 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                php: [7.2, 7.3, 7.4]
+                php: [7.2, 7.4, 8.1]
         steps:
-            -   uses: actions/checkout@v1
-            -   name: Install PHIVE
-                run: |
-                    wget --quiet -O phive.phar https://phar.io/releases/phive.phar
-                    # Remove verification; key servers are unreliable and fail tests
-                    #wget --quiet -O phive.phar.asc https://phar.io/releases/phive.phar.asc
-                    #gpg --keyserver pool.sks-keyservers.net --recv-keys 0x9D8A98B29B2D5D79
-                    #gpg --verify phive.phar.asc phive.phar
-                    chmod +x phive.phar
-                    sudo mv phive.phar /usr/local/bin/phive
             -   name: Configure PHP version
                 uses: shivammathur/setup-php@v2
                 with:
                     php-version: ${{ matrix.php }}
                     tools: composer:v2
+            -   uses: actions/checkout@v2
             -   name: Cache Composer Dependencies
-                uses: actions/cache@v1
+                uses: actions/cache@v2
                 with:
                     path: vendor/
                     key: composer-${{ matrix.php }}-${{ hashFiles('composer.*') }}
@@ -38,13 +29,6 @@ jobs:
                         composer-${{ matrix.php }}-${{ github.ref }}
                         composer-${{ matrix.php }}-
             -   run: |
-                    composer install --no-interaction --no-scripts --no-progress
+                    composer update --no-interaction --no-scripts --no-progress
                     composer show
-            -   run: phive --no-progress install --trust-gpg-keys 4AA394086372C20A,E82B2FB314E9906E --force-accept-unsigned
-            -   run: mkdir -p build/logs
-            -   run: tools/phpunit
-            # Commented out Coveralls reporting until https://github.com/php-coveralls/php-coveralls/pull/275 is resolved
-            #-   run: tools/php-coveralls --verbose
-            #    env:
-            #        COVERALLS_RUN_LOCALLY: 1
-            #        COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+            -   run: vendor/bin/phpunit

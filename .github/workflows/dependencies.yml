@@ -7,22 +7,21 @@ on:
     pull_request:
 
 env:
-    PHP_VERSION: 7.2
+    PHP_VERSION: 7.4
 
 jobs:
     composer-require-checker:
         name: Check missing composer requirements
         runs-on: ubuntu-20.04
         steps:
-            -   uses: actions/checkout@v2
-            -   name: Konfiguriere PHP-Version und -Einstellungen im Worker-Node
+            -   name: Configure PHP version
                 uses: shivammathur/setup-php@v2
                 with:
-                  php-version: ${{ env.PHP_VERSION }}
-                  tools: composer:v2
-                  ini-values: variables_order=EGPCS, date.timezone=Europe/Berlin
+                    php-version: ${{ env.PHP_VERSION }}
+                    tools: composer:v2
+            -   uses: actions/checkout@v2
             -   name: Cache Composer Dependencies
-                uses: actions/cache@v1
+                uses: actions/cache@v2
                 with:
                     path: vendor/
                     key: composer-${{ env.PHP_VERSION }}-${{ hashFiles('composer.*') }}
@@ -30,7 +29,7 @@ jobs:
                         composer-${{ env.PHP_VERSION }}-${{ github.ref }}
                         composer-${{ env.PHP_VERSION }}-
             -   run: |
-                    composer install --no-interaction --no-scripts --no-progress --no-suggest
+                    composer update --no-interaction --no-scripts --no-progress
                     composer show
             -   name: ComposerRequireChecker
                 uses: docker://webfactory/composer-require-checker:3.2.0
