@@ -68,6 +68,7 @@ final class SlimdumpCommand extends Command
         $connection = DriverManager::getConnection(
             ['url' => $mysqliIndependentDsn, 'charset' => 'utf8', 'driverClass' => PDOMySqlDriver::class]
         );
+        $connection->getDatabasePlatform()->registerDoctrineTypeMapping('enum', 'string');
 
         $maxExecutionTimeInfo = $connection->fetchAssociative('SHOW VARIABLES LIKE "max_execution_time"');
 

@@ -3,10 +3,11 @@
 namespace Webfactory\Slimdump\Database;
 
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Schema;
 use Symfony\Component\Console\Output\OutputInterface;
 use Webfactory\Slimdump\Config\Table;
 
-class SqlDumper
+class SqlDumper implements OutputFormatDriverInterface
 {
     /** @var OutputInterface */
     private $output;
@@ -45,8 +46,10 @@ class SqlDumper
         $this->output->writeln("\nSET FOREIGN_KEY_CHECKS = 1;", OutputInterface::OUTPUT_RAW);
     }
 
-    public function dumpTableStructure(string $tableName, Table $config): void
+    public function dumpTableStructure(Schema\Table $asset, Table $config): void
     {
+        $tableName = $asset->getName();
+
         $this->output->writeln("-- BEGIN STRUCTURE $tableName", OutputInterface::OUTPUT_RAW);
         $this->output->writeln("DROP TABLE IF EXISTS `$tableName`;", OutputInterface::OUTPUT_RAW);
 
@@ -91,29 +94,24 @@ class SqlDumper
         $this->output->writeln('DELIMITER ;');
     }
 
-    public function dumpView(string $viewName, int $level = Table::DEFINER_NO_DEFINER): void
+    public function dumpViewDefinition(Schema\View $asset, Table $config): void
     {
+        $viewName = $asset->getName();
         $this->output->writeln("-- BEGIN VIEW $viewName", OutputInterface::OUTPUT_RAW);
 
         $createViewCommand = $this->db->fetchColumn("SHOW CREATE VIEW `{$viewName}`", [], 1);
 
-        if (Table::DEFINER_NO_DEFINER === $level) {
+        if (Table::DEFINER_NO_DEFINER === $config->getViewDefinerLevel()) {
             $createViewCommand = preg_replace('/DEFINER=`[^`]*`@`[^`]*` /', '', $createViewCommand);
         }
 
         $this->output->writeln($createViewCommand.";\n", OutputInterface::OUTPUT_RAW);
     }
 
-    public function writeNewDataLineStart(int $rowLength, string $tableName, array $cols): void
+    private function writeInsertStatementBegin(Schema\Table $asset): void
     {
-        // Start a new statement to ensure that the line does not get too long.
-        if ($this->currentBufferSize && $this->currentBufferSize + $rowLength > $this->maxBufferSize) {
-            $this->output->writeln(';', OutputInterface::OUTPUT_RAW);
-            $this->currentBufferSize = 0;
-        }
-
         if (0 === $this->currentBufferSize) {
-            $this->output->write($this->insertValuesStatement($tableName, $cols), false, OutputInterface::OUTPUT_RAW);
+            $this->output->write($this->insertValuesStatement($asset), false, OutputInterface::OUTPUT_RAW);
         } else {
             $this->output->write(',', false, OutputInterface::OUTPUT_RAW);
         }
@@ -125,49 +123,41 @@ class SqlDumper
         $this->output->write('(', false, OutputInterface::OUTPUT_RAW);
     }
 
-    public function writeNewDataLineEnd(int $rowLength): void
+    private function writeInsertStatementEnd(): void
     {
         $this->output->write(')', false, OutputInterface::OUTPUT_RAW);
-
-        $this->incrementCurrentBufferSize($rowLength);
     }
 
-    public function insertValuesStatement(string $tableName, array $cols): string
+    private function insertValuesStatement(Schema\Table $asset): string
     {
-        return "INSERT INTO `$tableName` (`".implode('`, `', array_keys($cols)).'`) VALUES ';
+        return sprintf('INSERT INTO `%s` (%s)', $asset->getName(), implode(', ', array_map(function (Schema\Column $column) { return sprintf('`%s`', $column->getName()); }, $asset->getColumns())));
     }
 
-    public function writeDataDumpBegin(string $tableName): void
+    public function beginTableDataDump(Schema\Table $asset, Table $config): void
     {
+        $tableName = $asset->getName();
         $this->currentBufferSize = 0;
         $this->output->writeln("-- BEGIN DATA $tableName", OutputInterface::OUTPUT_RAW);
         $this->output->writeln("LOCK TABLES `$tableName` WRITE;", OutputInterface::OUTPUT_RAW);
         $this->output->writeln("ALTER TABLE `$tableName` DISABLE KEYS;", OutputInterface::OUTPUT_RAW);
     }
 
-    public function writeDataDumpRow(array $row, string $tableName, Table $config, array $cols): void
+    public function dumpTableRow(array $row, Schema\Table $asset, Table $config): void
     {
         $rowLength = $this->rowLengthEstimate($row);
 
-        $this->writeNewDataLineStart($rowLength, $tableName, $cols);
+        $this->endStatementIfBufferSizeExceeded($rowLength);
 
-        $firstCol = true;
-        foreach ($row as $name => $value) {
-            $isBlobColumn = Dumper::isBlob($name, $cols);
+        $this->writeInsertStatementBegin($asset);
+        $this->writeInsertValueList($row, $asset, $config);
+        $this->writeInsertStatementEnd();
 
-            if (!$firstCol) {
-                $this->output->write(', ', false, OutputInterface::OUTPUT_RAW);
-            }
-
-            $this->output->write($this->getStringForInsertStatement($name, $config, $value, $isBlobColumn), false, OutputInterface::OUTPUT_RAW);
-            $firstCol = false;
-        }
-
-        $this->writeNewDataLineEnd($rowLength);
+        $this->incrementCurrentBufferSize($rowLength);
     }
 
-    public function writeDataDumpEnd(string $tableName): void
+    public function endTableDataDump(Schema\Table $asset, Table $config): void
     {
+        $tableName = $asset->getName();
         if ($this->currentBufferSize) {
             $this->output->writeln(';', OutputInterface::OUTPUT_RAW);
         }
@@ -211,5 +201,30 @@ class SqlDumper
         }
 
         return $this->db->quote($value);
+    }
+
+    private function endStatementIfBufferSizeExceeded(int $rowLength): void
+    {
+        // Start a new statement to ensure that the line does not get too long.
+        if ($this->currentBufferSize && $this->currentBufferSize + $rowLength > $this->maxBufferSize) {
+            $this->output->writeln(';', OutputInterface::OUTPUT_RAW);
+            $this->currentBufferSize = 0;
+        }
+    }
+
+    private function writeInsertValueList(array $row, Schema\Table $asset, Table $config): void
+    {
+        $firstCol = true;
+        foreach ($asset->getColumns() as $column) {
+            if (!$firstCol) {
+                $this->output->write(', ', false, OutputInterface::OUTPUT_RAW);
+            }
+            $firstCol = false;
+
+            $name = $column->getName();
+            $isBlobColumn = Dumper::isBlob($column);
+
+            $this->output->write($this->getStringForInsertStatement($name, $config, $row[$name], $isBlobColumn), false, OutputInterface::OUTPUT_RAW);
+        }
     }
 }
