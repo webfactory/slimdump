@@ -102,7 +102,7 @@ class Dumper
             }
             $first = false;
 
-            $s .= $tableConfig->getSelectExpression($columnName, self::isBlob($asset->getColumn($columnName))) . " AS `$columnName`";
+            $s .= $tableConfig->getSelectExpression($columnName, self::isBlob($asset->getColumn($columnName)))." AS `$columnName`";
         }
         $s .= " FROM `$table`";
         $s .= $tableConfig->getCondition();
@@ -162,7 +162,7 @@ class Dumper
     {
         $type = $column->getType();
 
-        return $type instanceof BlobType || $type instanceof  BinaryType;
+        return $type instanceof BlobType || $type instanceof BinaryType;
     }
 
     private function keepalive()
