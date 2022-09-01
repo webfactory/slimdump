@@ -7,57 +7,44 @@ use Doctrine\DBAL\DBALException;
 use Symfony\Component\Console\Output\OutputInterface;
 use Webfactory\Slimdump\Config\Config;
 use Webfactory\Slimdump\Database\Dumper;
-use Webfactory\Slimdump\Database\MysqlOutputFormatDriver;
+use Webfactory\Slimdump\Database\OutputFormatDriverInterface;
 
 final class DumpTask
 {
-    /**
-     * @var Config
-     */
-    private $config;
-
     /**
      * @var Connection
      */
     private $connection;
 
     /**
+     * @var Config
+     */
+    private $config;
+
+    /**
+     * @var OutputFormatDriverInterface
+     */
+    private $outputFormatDriver;
+
+    /**
      * @var OutputInterface
      */
-    private $output;
-
-    /**
-     * @var bool
-     */
-    private $noProgress;
-
-    /**
-     * @var bool
-     */
-    private $singleLineInsertStatements;
-
-    /**
-     * @var int|null
-     */
-    private $bufferSize;
+    private $progressOutput;
 
     /**
      * @throws DBALException
      */
-    public function __construct(Connection $connection, Config $config, bool $noProgress, bool $singleLineInsertStatements, ?int $bufferSize, OutputInterface $output)
+    public function __construct(Connection $connection, Config $config, OutputFormatDriverInterface $outputFormatDriver, OutputInterface $progressOutput)
     {
         $this->connection = $connection;
         $this->config = $config;
-        $this->noProgress = $noProgress;
-        $this->singleLineInsertStatements = $singleLineInsertStatements;
-        $this->bufferSize = $bufferSize;
-        $this->output = $output;
+        $this->outputFormatDriver = $outputFormatDriver;
+        $this->progressOutput = $progressOutput;
     }
 
     public function dump()
     {
-        $sqlDumper = new MysqlOutputFormatDriver($this->output, $this->connection, $this->bufferSize, $this->singleLineInsertStatements);
-        $dumper = new Dumper($this->output, $this->connection, $sqlDumper);
+        $dumper = new Dumper($this->connection, $this->outputFormatDriver, $this->progressOutput);
         $dumper->beginDump();
 
         $db = $this->connection;
@@ -71,7 +58,7 @@ final class DumpTask
                 continue;
             }
 
-            $dumper->dumpAsset($asset, $tableConfig, $this->noProgress);
+            $dumper->dumpAsset($asset, $tableConfig);
         }
 
         $dumper->endDump();
