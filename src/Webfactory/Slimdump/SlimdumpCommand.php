@@ -15,6 +15,7 @@ use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Webfactory\Slimdump\Config\ConfigBuilder;
+use Webfactory\Slimdump\Database\CsvOutputFormatDriver;
 use Webfactory\Slimdump\Database\MysqlOutputFormatDriver;
 use Webfactory\Slimdump\Database\OutputFormatDriverInterface;
 
@@ -70,19 +71,20 @@ final class SlimdumpCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $progressOutput = $this->createProgressOutput($input, $output);
+
         $connection = $this->createConnection($input);
         $connection->getDatabasePlatform()->registerDoctrineTypeMapping('enum', 'string');
-        $this->setMaxExecutionTimeUnlimited($connection, $output);
+        $this->setMaxExecutionTimeUnlimited($connection, $progressOutput);
 
         $config = ConfigBuilder::createConfigurationFromConsecutiveFiles($input->getArgument('config'));
 
         if ($dir = $input->getOption(self::OUTPUT_CSV)) {
-            $outputFormatDriver = $this->createOutputDriverCsv();
+            $outputFormatDriver = $this->createOutputDriverCsv($dir, $connection);
+            $progressOutput->writeln('<comment>CSV output format is still experimental – format details may change at any time</comment>');
         } else {
             $outputFormatDriver = $this->createOutputDriverMysql($input, $output, $connection);
         }
-
-        $progressOutput = $this->createProgressOutput($input, $output);
 
         $dumptask = new DumpTask($connection, $config, $outputFormatDriver, $progressOutput);
         $dumptask->dump();
@@ -98,9 +100,9 @@ final class SlimdumpCommand extends Command
         return new MysqlOutputFormatDriver($output, $connection, $bufferSize, $singleLineInsertStatements);
     }
 
-    private function createOutputDriverCsv(): OutputFormatDriverInterface
+    private function createOutputDriverCsv(string $directory, Connection $connection): OutputFormatDriverInterface
     {
-        
+        return new CsvOutputFormatDriver($directory, $connection);
     }
 
     private function parseBufferSize(?string $bufferSize): ?int
@@ -136,9 +138,7 @@ final class SlimdumpCommand extends Command
 
         if ($maxExecutionTimeInfo && 0 != $maxExecutionTimeInfo['Value']) {
             $connection->executeQuery('SET SESSION max_execution_time = 0');
-            if ($output instanceof ConsoleOutputInterface) {
-                $output->getErrorOutput()->writeln('<info>The MySQL "max_execution_time" timeout setting has been disabled for the current database connection.</info>');
-            }
+            $output->writeln('<info>The MySQL "max_execution_time" timeout setting has been disabled for the current database connection.</info>');
         }
     }
 

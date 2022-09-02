@@ -4,72 +4,38 @@ namespace Webfactory\Slimdump\Database;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema;
-use Symfony\Component\Console\Output\OutputInterface;
 use Webfactory\Slimdump\Config\Table;
 
 class CsvOutputFormatDriver implements OutputFormatDriverInterface
 {
-    /** @var OutputInterface */
-    private $output;
+    /**
+     * @var Connection
+     */
+    private $connection;
 
-    /** @var Connection */
-    private $db;
+    /**
+     * @var string
+     */
+    private $directory;
 
-    public function __construct(OutputInterface $output, Connection $db)
+    /**
+     * @var ?resource
+     */
+    private $outputFile = null;
+
+    /**
+     * @var bool
+     */
+    private $firstLine = true;
+
+    public function __construct(string $directory, Connection $connection)
     {
-        $this->output = $output;
-        $this->db = $db;
-    }
-
-    public function dumpTableStructure(Schema\Table $asset, Table $config): void
-    {
-        $cols = $this->cols($asset->getName());
-
-        $this->output->writeln(implode(';', $cols), OutputInterface::OUTPUT_RAW);
-    }
-
-    public function dumpTableRow(array $row, Schema\Table $asset, Table $config): void
-    {
-        $firstCol = true;
-        foreach ($row as $columnName => $value) {
-            $isBlobColumn = Dumper::isBlob($asset->getColumn($columnName));
-
-            if (!$firstCol) {
-                $this->output->write(';', false, OutputInterface::OUTPUT_RAW);
-            }
-
-            $this->output->write($this->getStringForInsertStatement($columnName, $config, $value, $isBlobColumn), false, OutputInterface::OUTPUT_RAW);
-            $firstCol = false;
+        if (!is_dir($directory) || !is_writable($directory)) {
+            throw new \InvalidArgumentException(sprintf('The directoy "%s" does not exist or is not writeable', $directory));
         }
 
-        $this->output->write("\n", false, OutputInterface::OUTPUT_RAW);
-    }
-
-    private function cols(string $tableName): array
-    {
-        $c = [];
-        foreach ($this->db->fetchAll("SHOW COLUMNS FROM `$tableName`") as $row) {
-            $c[] = $row['Field'];
-        }
-
-        return $c;
-    }
-
-    private function getStringForInsertStatement(string $columnName, Table $config, ?string $value, bool $isBlobColumn): string
-    {
-        if (null === $value || '' === $value) {
-            return '';
-        }
-
-        if ($column = $config->findColumn($columnName)) {
-            return $this->db->quote($column->processRowValue($value));
-        }
-
-        if ($isBlobColumn) {
-            return $value;
-        }
-
-        return $this->db->quote($value);
+        $this->directory = $directory;
+        $this->connection = $connection;
     }
 
     public function beginDump(): void
@@ -86,9 +52,26 @@ class CsvOutputFormatDriver implements OutputFormatDriverInterface
 
     public function beginTableDataDump(Schema\Table $asset, Table $config): void
     {
+        $this->firstLine = true;
+        $this->outputFile = fopen($this->directory.DIRECTORY_SEPARATOR.$asset->getName().'.csv', 'w');
     }
 
     public function endTableDataDump(Schema\Table $asset, Table $config): void
     {
+        fclose($this->outputFile);
+    }
+
+    public function dumpTableStructure(Schema\Table $asset, Table $config): void
+    {
+    }
+
+    public function dumpTableRow(array $row, Schema\Table $asset, Table $config): void
+    {
+        if ($this->firstLine) {
+            fputcsv($this->outputFile, array_keys($row));
+            $this->firstLine = false;
+        }
+
+        fputcsv($this->outputFile, $row);
     }
 }
