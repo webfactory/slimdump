@@ -61,8 +61,6 @@ class Dumper
 
     private function dumpTable(Schema\Table $asset, Table $config): void
     {
-        $this->keepalive();
-
         $table = $asset->getName();
         $this->outputFormatDriver->dumpTableStructure($asset, $config);
 
@@ -88,7 +86,6 @@ class Dumper
 
     private function dumpData(Schema\Table $asset, Table $tableConfig): void
     {
-        $this->keepalive();
         $table = $asset->getName();
         $columnOrder = array_map(function (array $columnInfo): string {
             return $columnInfo['Field'];
@@ -152,13 +149,5 @@ class Dumper
         $type = $column->getType();
 
         return $type instanceof BlobType || $type instanceof BinaryType;
-    }
-
-    private function keepalive()
-    {
-        if (false === $this->connection->ping()) {
-            $this->connection->close();
-            $this->connection->connect();
-        }
     }
 }
