@@ -1,0 +1,24 @@
+name: Verify composer.lock compatibility with different PHP versions
+
+on:
+    push:
+        branches:
+            - master
+    pull_request:
+
+jobs:
+    compat-check:
+        name: Check dependency compatibility
+        runs-on: ubuntu-20.04
+        strategy:
+            fail-fast: false
+            matrix:
+                php: [7.2, 7.4, 8.1]
+        steps:
+            -   name: Configure PHP version
+                uses: shivammathur/setup-php@v2
+                with:
+                    php-version: ${{ matrix.php }}
+                    tools: composer:v2
+            -   uses: actions/checkout@v2
+            -   run: composer install --dry-run
