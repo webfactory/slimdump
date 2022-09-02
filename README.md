@@ -67,6 +67,16 @@ do this by using the cli-parameter `single-line-insert-statements`. This can spe
 Example:
 `slimdump --single-line-insert-statements {DSN} {config-file}`
 
+#### output-csv
+
+This option turns on the CSV (comma separated values) output mode. It must be given the path to a directory where `.csv` files will be created. The files are named according to tables, e. g. `my_table.csv`.
+
+CSV files contain only data. They are not created for views, triggers, or tables dumped with the `schema` dump mode. Also, no files will be created for empty tables.
+
+Since this output format needs to write to different files for different tables, redirecting `stdout` output (as can be done for the default MySQL SQL mode) is not possible.
+
+**Experimental Feature** CSV support is a new, [experimental feature](https://github.com/webfactory/slimdump/pull/92). The output formatting may change at any time.  
+
 ## Configuration
 Configuration is stored in XML format somewhere in your filesystem. As a benefit, you could add the configuration to your repository to share a quickstart to your database dump with your coworkers.
 
@@ -254,4 +264,4 @@ If you're a developer looking for new challenges, we'd like to hear from you! Ot
 - <https://www.webfactory.de>
 - <https://twitter.com/webfactory>
 
-Copyright 2014-2020 webfactory GmbH, Bonn. Code released under [the MIT license](LICENSE).
+Copyright 2014-2022 webfactory GmbH, Bonn. Code released under [the MIT license](LICENSE).
