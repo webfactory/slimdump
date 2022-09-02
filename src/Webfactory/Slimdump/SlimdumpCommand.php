@@ -2,6 +2,7 @@
 
 namespace Webfactory\Slimdump;
 
+use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DBALException;
 use Doctrine\DBAL\Driver\PDOMySql\Driver as PDOMySqlDriver;
 use Doctrine\DBAL\DriverManager;
@@ -11,8 +12,11 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\ConsoleOutputInterface;
+use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Webfactory\Slimdump\Config\ConfigBuilder;
+use Webfactory\Slimdump\Database\MysqlOutputFormatDriver;
+use Webfactory\Slimdump\Database\OutputFormatDriverInterface;
 
 final class SlimdumpCommand extends Command
 {
@@ -22,9 +26,9 @@ final class SlimdumpCommand extends Command
             ->setName('slimdump:dump')
             ->setDescription('Dump a MySQL database by configuration.')
             ->addArgument(
-               'dsn',
-               InputArgument::REQUIRED,
-               'The Database-DSN to connect to.'
+                'dsn',
+                InputArgument::REQUIRED,
+                'The Database-DSN to connect to.'
             )
             ->addArgument(
                 'config',
@@ -39,13 +43,13 @@ final class SlimdumpCommand extends Command
             )
             ->addOption(
                 'no-progress',
-                '',
+                null,
                 InputOption::VALUE_NONE,
                 'Don\'t print progress information while dumping tables.'
             )
             ->addOption(
                 'single-line-insert-statements',
-                '',
+                null,
                 InputOption::VALUE_NONE,
                 'Write each whole INSERT INTO statement into one single line instead of creating a new line for each row.'
             );
@@ -58,36 +62,26 @@ final class SlimdumpCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $dsn = $input->getArgument('dsn');
-
-        if ('-' === $dsn) {
-            $dsn = getenv('MYSQL_DSN');
-        }
-
-        $mysqliIndependentDsn = preg_replace('_^mysqli:_', 'mysql:', $dsn);
-        $connection = DriverManager::getConnection(
-            ['url' => $mysqliIndependentDsn, 'charset' => 'utf8', 'driverClass' => PDOMySqlDriver::class]
-        );
+        $connection = $this->createConnection($input);
         $connection->getDatabasePlatform()->registerDoctrineTypeMapping('enum', 'string');
+        $this->setMaxExecutionTimeUnlimited($connection, $output);
 
-        $maxExecutionTimeInfo = $connection->fetchAssociative('SHOW VARIABLES LIKE "max_execution_time"');
-
-        if ($maxExecutionTimeInfo && 0 != $maxExecutionTimeInfo['Value']) {
-            $connection->executeQuery('SET SESSION max_execution_time = 0');
-            if ($output instanceof ConsoleOutputInterface) {
-                $output->getErrorOutput()->writeln('<info>The MySQL "max_execution_time" timeout setting has been disabled for the current database connection.</info>');
-            }
-        }
-
-        $noProgress = $input->getOption('no-progress') ? true : false;
-        $singleLineInsertStatements = $input->getOption('single-line-insert-statements') ? true : false;
-        $bufferSize = $this->parseBufferSize($input->getOption('buffer-size'));
         $config = ConfigBuilder::createConfigurationFromConsecutiveFiles($input->getArgument('config'));
+        $outputFormatDriver = $this->createOutputDriverMysql($input, $output, $connection);
+        $progressOutput = $this->createProgressOutput($input, $output);
 
-        $dumptask = new DumpTask($connection, $config, $noProgress, $singleLineInsertStatements, $bufferSize, $output);
+        $dumptask = new DumpTask($connection, $config, $outputFormatDriver, $progressOutput);
         $dumptask->dump();
 
         return 0;
+    }
+
+    private function createOutputDriverMysql(InputInterface $input, OutputInterface $output, Connection $connection): OutputFormatDriverInterface
+    {
+        $singleLineInsertStatements = $input->getOption('single-line-insert-statements') ? true : false;
+        $bufferSize = $this->parseBufferSize($input->getOption('buffer-size'));
+
+        return new MysqlOutputFormatDriver($output, $connection, $bufferSize, $singleLineInsertStatements);
     }
 
     private function parseBufferSize(?string $bufferSize): ?int
@@ -106,14 +100,51 @@ final class SlimdumpCommand extends Command
         switch ($matches[2]) {
             case 'GB':
                 $bufferFactor *= 1024;
-                // no break
+            // no break
             case 'MB':
                 $bufferFactor *= 1024;
-                // no break
+            // no break
             case 'KB':
                 $bufferFactor *= 1024;
         }
 
         return $bufferSize * $bufferFactor;
+    }
+
+    private function setMaxExecutionTimeUnlimited(Connection $connection, OutputInterface $output): void
+    {
+        $maxExecutionTimeInfo = $connection->fetchAssociative('SHOW VARIABLES LIKE "max_execution_time"');
+
+        if ($maxExecutionTimeInfo && 0 != $maxExecutionTimeInfo['Value']) {
+            $connection->executeQuery('SET SESSION max_execution_time = 0');
+            if ($output instanceof ConsoleOutputInterface) {
+                $output->getErrorOutput()->writeln('<info>The MySQL "max_execution_time" timeout setting has been disabled for the current database connection.</info>');
+            }
+        }
+    }
+
+    private function createConnection(InputInterface $input): Connection
+    {
+        $dsn = $input->getArgument('dsn');
+
+        if ('-' === $dsn) {
+            $dsn = getenv('MYSQL_DSN');
+        }
+
+        $mysqliIndependentDsn = preg_replace('_^mysqli:_', 'mysql:', $dsn);
+        $connection = DriverManager::getConnection(
+            ['url' => $mysqliIndependentDsn, 'charset' => 'utf8', 'driverClass' => PDOMySqlDriver::class]
+        );
+
+        return $connection;
+    }
+
+    private function createProgressOutput(InputInterface $input, OutputInterface $output)
+    {
+        if (!$output instanceof ConsoleOutputInterface || $input->getOption('no-progress')) {
+            return new NullOutput();
+        }
+
+        return $output->getErrorOutput();
     }
 }

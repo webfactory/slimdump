@@ -11,29 +11,31 @@ use Doctrine\DBAL\Types\BlobType;
 use InvalidArgumentException;
 use PDO;
 use Symfony\Component\Console\Helper\ProgressBar;
-use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Webfactory\Slimdump\Config\Table;
 
 class Dumper
 {
-    /** @var OutputInterface */
-    protected $output;
+    /**
+     * @var Connection
+     */
+    private $connection;
 
-    /** @var bool */
-    protected $singleLineInsertStatements = false;
-
-    /** @var OutputFormatDriverInterface */
+    /**
+     * @var OutputFormatDriverInterface
+     */
     private $outputFormatDriver;
 
-    /** @var Connection */
-    private $db;
+    /**
+     * @var OutputInterface
+     */
+    private $progressOutput;
 
-    public function __construct(OutputInterface $output, Connection $db, OutputFormatDriverInterface $sqlDumper)
+    public function __construct(Connection $connection, OutputFormatDriverInterface $outputFormatDriver, OutputInterface $progressOutput)
     {
-        $this->output = $output;
-        $this->db = $db;
-        $this->outputFormatDriver = $sqlDumper;
+        $this->connection = $connection;
+        $this->outputFormatDriver = $outputFormatDriver;
+        $this->progressOutput = $progressOutput;
     }
 
     public function beginDump(): void
@@ -46,53 +48,51 @@ class Dumper
         $this->outputFormatDriver->endDump();
     }
 
-    public function dumpAsset(AbstractAsset $asset, Table $config, bool $noProgress = false): void
+    public function dumpAsset(AbstractAsset $asset, Table $config): void
     {
         if ($asset instanceof Schema\Table) {
-            $this->dumpTable($asset, $config, $noProgress);
+            $this->dumpTable($asset, $config);
         } elseif ($asset instanceof Schema\View) {
-            $this->dumpView($asset, $config, $noProgress);
+            $this->dumpView($asset, $config);
         } else {
             throw new InvalidArgumentException();
         }
     }
 
-    private function dumpTable(Schema\Table $asset, Table $config, bool $noProgress = false): void
+    private function dumpTable(Schema\Table $asset, Table $config): void
     {
         $this->keepalive();
 
         $table = $asset->getName();
         $this->outputFormatDriver->dumpTableStructure($asset, $config);
 
-        if (!$noProgress) {
-            $progress = new ProgressBar($this->output, 1);
-            $format = "Dumping schema <fg=cyan>$table</>: <fg=yellow>%percent:3s%%</>";
-            $progress->setFormat($format);
-            $progress->setOverwrite(true);
-            $progress->setRedrawFrequency(1);
-            $progress->start();
-            $progress->setFormat("Dumping schema <fg=green>$table</>: <fg=green>%percent:3s%%</> Took: %elapsed%");
-            $progress->finish();
-            if ($this->output instanceof ConsoleOutput) {
-                $this->output->getErrorOutput()->write("\n"); // write a newline after the progressbar.
-            }
-        }
+        $progress = new ProgressBar($this->progressOutput, 1);
+        $format = "Dumping schema <fg=cyan>$table</>: <fg=yellow>%percent:3s%%</>";
+        $progress->setFormat($format);
+        $progress->setOverwrite(true);
+        $progress->setRedrawFrequency(1);
+        $progress->start();
+        $progress->setFormat("Dumping schema <fg=green>$table</>: <fg=green>%percent:3s%%</> Took: %elapsed%");
+        $progress->finish();
+        $this->progressOutput->write("\n"); // write a newline after the progressbar.
 
         if ($config->isDataDumpRequired()) {
-            $this->dumpData($asset, $config, $noProgress);
+            $this->dumpData($asset, $config);
         }
     }
 
-    private function dumpView(Schema\View $asset, Table $config, bool $noProgress = false): void
+    private function dumpView(Schema\View $asset, Table $config): void
     {
         $this->outputFormatDriver->dumpViewDefinition($asset, $config);
     }
 
-    private function dumpData(Schema\Table $asset, Table $tableConfig, bool $noProgress): void
+    private function dumpData(Schema\Table $asset, Table $tableConfig): void
     {
         $this->keepalive();
         $table = $asset->getName();
-        $columnOrder = array_map(function (array $columnInfo): string { return $columnInfo['Field']; }, $this->db->fetchAllAssociative(sprintf('SHOW COLUMNS FROM `%s`', $asset->getName())));
+        $columnOrder = array_map(function (array $columnInfo): string {
+            return $columnInfo['Field'];
+        }, $this->connection->fetchAllAssociative(sprintf('SHOW COLUMNS FROM `%s`', $asset->getName())));
 
         $s = 'SELECT ';
         $first = true;
@@ -107,50 +107,39 @@ class Dumper
         $s .= " FROM `$table`";
         $s .= $tableConfig->getCondition();
 
-        $numRows = (int) $this->db->fetchColumn("SELECT COUNT(*) FROM `$table`".$tableConfig->getCondition());
+        $numRows = (int) $this->connection->fetchColumn("SELECT COUNT(*) FROM `$table`".$tableConfig->getCondition());
 
         if (0 === $numRows) {
             // Fail fast: No data to dump.
             return;
         }
 
-        if (!$noProgress) {
-            $progress = new ProgressBar($this->output, $numRows);
-            $progress->setFormat("Dumping data <fg=cyan>$table</>: <fg=yellow>%percent:3s%%</> %remaining%/%estimated%");
-            $progress->setOverwrite(true);
-            $progress->setRedrawFrequency(max($numRows / 100, 1));
-            $progress->start();
-        } else {
-            $progress = null;
-        }
+        $progress = new ProgressBar($this->progressOutput, $numRows);
+        $progress->setFormat("Dumping data <fg=cyan>$table</>: <fg=yellow>%percent:3s%%</> %remaining%/%estimated%");
+        $progress->setOverwrite(true);
+        $progress->setRedrawFrequency((int) max($numRows / 100, 1));
+        $progress->start();
 
         /** @var PDOConnection $wrappedConnection */
-        $wrappedConnection = $this->db->getWrappedConnection();
+        $wrappedConnection = $this->connection->getWrappedConnection();
         $wrappedConnection->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
         $actualRows = 0;
 
         $this->outputFormatDriver->beginTableDataDump($asset, $tableConfig);
 
-        foreach ($this->db->executeQuery($s) as $row) {
+        foreach ($this->connection->executeQuery($s) as $row) {
             $this->outputFormatDriver->dumpTableRow($row, $asset, $tableConfig);
 
-            if (null !== $progress) {
-                $progress->advance();
-            }
-
+            $progress->advance();
             ++$actualRows;
         }
 
-        if (null !== $progress) {
-            $progress->setFormat("Dumping data <fg=green>$table</>: <fg=green>%percent:3s%%</> Took: %elapsed%");
-            $progress->finish();
-            if ($this->output instanceof ConsoleOutput) {
-                $this->output->getErrorOutput()->write("\n"); // write a newline after the progressbar.
-            }
-        }
+        $progress->setFormat("Dumping data <fg=green>$table</>: <fg=green>%percent:3s%%</> Took: %elapsed%");
+        $progress->finish();
+        $this->progressOutput->write("\n"); // write a newline after the progressbar.
 
         if ($actualRows !== $numRows) {
-            $this->output->getErrorOutput()->writeln(sprintf('<error>Expected %d rows, actually processed %d – verify results!</error>', $numRows, $actualRows));
+            $this->progressOutput->writeln(sprintf('<error>Expected %d rows, actually processed %d – verify results!</error>', $numRows, $actualRows));
         }
 
         $wrappedConnection->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
@@ -167,9 +156,9 @@ class Dumper
 
     private function keepalive()
     {
-        if (false === $this->db->ping()) {
-            $this->db->close();
-            $this->db->connect();
+        if (false === $this->connection->ping()) {
+            $this->connection->close();
+            $this->connection->connect();
         }
     }
 }
