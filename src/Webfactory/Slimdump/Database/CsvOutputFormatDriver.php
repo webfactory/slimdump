@@ -4,6 +4,7 @@ namespace Webfactory\Slimdump\Database;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Schema;
+use InvalidArgumentException;
 use Webfactory\Slimdump\Config\Table;
 
 class CsvOutputFormatDriver implements OutputFormatDriverInterface
@@ -31,7 +32,7 @@ class CsvOutputFormatDriver implements OutputFormatDriverInterface
     public function __construct(string $directory, Connection $connection)
     {
         if (!is_dir($directory) || !is_writable($directory)) {
-            throw new \InvalidArgumentException(sprintf('The directoy "%s" does not exist or is not writeable', $directory));
+            throw new InvalidArgumentException(sprintf('The directoy "%s" does not exist or is not writeable', $directory));
         }
 
         $this->directory = $directory;
@@ -53,7 +54,7 @@ class CsvOutputFormatDriver implements OutputFormatDriverInterface
     public function beginTableDataDump(Schema\Table $asset, Table $config): void
     {
         $this->firstLine = true;
-        $this->outputFile = fopen($this->directory.DIRECTORY_SEPARATOR.$asset->getName().'.csv', 'w');
+        $this->outputFile = fopen($this->directory.\DIRECTORY_SEPARATOR.$asset->getName().'.csv', 'w');
     }
 
     public function endTableDataDump(Schema\Table $asset, Table $config): void
