@@ -20,6 +20,8 @@ use Webfactory\Slimdump\Database\OutputFormatDriverInterface;
 
 final class SlimdumpCommand extends Command
 {
+    const OUTPUT_CSV = 'output-csv';
+
     protected function configure()
     {
         $this
@@ -34,6 +36,12 @@ final class SlimdumpCommand extends Command
                 'config',
                 InputArgument::IS_ARRAY | InputArgument::REQUIRED,
                 'Configuration files (at least one).'
+            )
+            ->addOption(
+                self::OUTPUT_CSV,
+                null,
+                InputOption::VALUE_REQUIRED,
+                'Output .csv files. Requires a directory path where files will be created (no stdout).'
             )
             ->addOption(
                 'buffer-size',
@@ -67,7 +75,13 @@ final class SlimdumpCommand extends Command
         $this->setMaxExecutionTimeUnlimited($connection, $output);
 
         $config = ConfigBuilder::createConfigurationFromConsecutiveFiles($input->getArgument('config'));
-        $outputFormatDriver = $this->createOutputDriverMysql($input, $output, $connection);
+
+        if ($dir = $input->getOption(self::OUTPUT_CSV)) {
+            $outputFormatDriver = $this->createOutputDriverCsv();
+        } else {
+            $outputFormatDriver = $this->createOutputDriverMysql($input, $output, $connection);
+        }
+
         $progressOutput = $this->createProgressOutput($input, $output);
 
         $dumptask = new DumpTask($connection, $config, $outputFormatDriver, $progressOutput);
@@ -82,6 +96,11 @@ final class SlimdumpCommand extends Command
         $bufferSize = $this->parseBufferSize($input->getOption('buffer-size'));
 
         return new MysqlOutputFormatDriver($output, $connection, $bufferSize, $singleLineInsertStatements);
+    }
+
+    private function createOutputDriverCsv(): OutputFormatDriverInterface
+    {
+        
     }
 
     private function parseBufferSize(?string $bufferSize): ?int
