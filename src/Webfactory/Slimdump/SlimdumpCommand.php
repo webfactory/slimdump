@@ -21,7 +21,7 @@ use Webfactory\Slimdump\Database\OutputFormatDriverInterface;
 
 final class SlimdumpCommand extends Command
 {
-    const OUTPUT_CSV = 'output-csv';
+    public const OUTPUT_CSV = 'output-csv';
 
     protected function configure()
     {
@@ -121,10 +121,10 @@ final class SlimdumpCommand extends Command
         switch ($matches[2]) {
             case 'GB':
                 $bufferFactor *= 1024;
-            // no break
+                // no break
             case 'MB':
                 $bufferFactor *= 1024;
-            // no break
+                // no break
             case 'KB':
                 $bufferFactor *= 1024;
         }

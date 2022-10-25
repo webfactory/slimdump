@@ -22,9 +22,9 @@ class ConfigBuilder
     /**
      * @param string $xmlString
      *
-     * @throws InvalidXmlException
-     *
      * @return Config
+     *
+     * @throws InvalidXmlException
      */
     public static function createFromXmlString($xmlString)
     {
