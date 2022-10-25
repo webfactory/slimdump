@@ -1,0 +1,7 @@
+#!/bin/bash -e
+
+PHP_CS_FIXER_VERSION=${PHP_CS_FIXER_VERSION:-3.11.0}
+if [ -t 1 ]; then TTY='--tty'; else TTY=''; fi
+
+exec docker run --rm --init --interactive $TTY -w=/${PWD} -v $(pwd):/${PWD} oskarstark/php-cs-fixer-ga:$PHP_CS_FIXER_VERSION "$@"
+
