@@ -4,8 +4,8 @@ namespace Webfactory\Slimdump\Database;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\PDOConnection;
+use Doctrine\DBAL\Schema;
 use Doctrine\DBAL\Schema\AbstractAsset;
-use Doctrine\DBAL\Schema as Schema;
 use Doctrine\DBAL\Types\BinaryType;
 use Doctrine\DBAL\Types\BlobType;
 use InvalidArgumentException;

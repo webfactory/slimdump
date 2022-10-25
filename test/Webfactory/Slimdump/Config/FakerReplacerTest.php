@@ -9,6 +9,7 @@ class FakerReplacerTest extends TestCase
 {
     /**
      * @param string $replacementId
+     *
      * @dataProvider provideValidReplacementIds
      */
     public function testIsFakerColumnSuccess($replacementId)
@@ -23,7 +24,9 @@ class FakerReplacerTest extends TestCase
 
     /**
      * @param string $replacementId
+     *
      * @dataProvider provideValidReplacementIds
+     *
      * @doesNotPerformAssertions
      */
     public function testValidateReplacementConfiguredExisting($replacementId)
