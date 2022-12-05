@@ -21,7 +21,7 @@ jobs:
                     tools: composer:v2
             -   uses: actions/checkout@v3
             -   name: Cache Composer Dependencies
-                uses: actions/cache@v2
+                uses: actions/cache@v3
                 with:
                     path: vendor/
                     key: composer-${{ env.PHP_VERSION }}-${{ hashFiles('composer.*') }}
