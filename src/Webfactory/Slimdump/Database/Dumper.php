@@ -77,11 +77,20 @@ class Dumper
         if ($config->isDataDumpRequired()) {
             $this->dumpData($asset, $config);
         }
+
+        if ($config->isTriggerDumpRequired()) {
+            $this->dumpTriggers($asset, $config);
+        }
     }
 
     private function dumpView(Schema\View $asset, Table $config): void
     {
         $this->outputFormatDriver->dumpViewDefinition($asset, $config);
+    }
+
+    private function dumpTriggers(Schema\Table $asset, Table $config): void
+    {
+        $this->outputFormatDriver->dumpTriggerDefinition($asset, $config);
     }
 
     private function dumpData(Schema\Table $asset, Table $tableConfig): void
