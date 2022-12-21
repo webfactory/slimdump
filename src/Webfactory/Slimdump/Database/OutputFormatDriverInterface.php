@@ -28,6 +28,11 @@ interface OutputFormatDriverInterface
     public function dumpViewDefinition(Schema\View $asset, Table $config): void;
 
     /**
+     * Called to dump trigger definitions.
+     */
+    public function dumpTriggerDefinition(Schema\Table $asset, Table $config): void;
+
+    /**
      * Called at the beginning when dumping data for a single table.
      */
     public function beginTableDataDump(Schema\Table $asset, Table $config): void;

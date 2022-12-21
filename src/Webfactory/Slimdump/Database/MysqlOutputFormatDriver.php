@@ -60,23 +60,19 @@ class MysqlOutputFormatDriver implements OutputFormatDriverInterface
         }
 
         $this->output->writeln($tableCreationCommand.";\n", OutputInterface::OUTPUT_RAW);
-
-        if ($config->isTriggerDumpRequired()) {
-            $this->dumpTriggers($tableName, $config->getDumpTriggersLevel());
-        }
     }
 
-    /**
-     * @param int $level One of the Table::TRIGGER_* constants
-     */
-    private function dumpTriggers(string $tableName, int $level = Table::DEFINER_NO_DEFINER): void
+    public function dumpTriggerDefinition(Schema\Table $asset, Table $config): void
     {
+        $tableName = $asset->getName();
+
         $triggers = $this->db->fetchAll(sprintf('SHOW TRIGGERS LIKE %s', $this->db->quote($tableName)));
 
         if (!$triggers) {
             return;
         }
 
+        $level = $config->getDumpTriggersLevel();
         $this->output->writeln("-- BEGIN TRIGGERS $tableName", OutputInterface::OUTPUT_RAW);
 
         $this->output->writeln("DELIMITER ;;\n");

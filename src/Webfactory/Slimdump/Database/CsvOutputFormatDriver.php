@@ -75,4 +75,8 @@ class CsvOutputFormatDriver implements OutputFormatDriverInterface
 
         fputcsv($this->outputFile, $row);
     }
+
+    public function dumpTriggerDefinition(Schema\Table $asset, Table $config): void
+    {
+    }
 }
