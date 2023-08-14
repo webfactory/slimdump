@@ -37,13 +37,19 @@ class MysqlOutputFormatDriver implements OutputFormatDriverInterface
 
     public function beginDump(): void
     {
-        $this->output->writeln('SET NAMES utf8;', OutputInterface::OUTPUT_RAW);
+        $this->dumpCharacterSetConnection();
         $this->output->writeln("SET FOREIGN_KEY_CHECKS = 0;\n", OutputInterface::OUTPUT_RAW);
     }
 
     public function endDump(): void
     {
         $this->output->writeln("\nSET FOREIGN_KEY_CHECKS = 1;", OutputInterface::OUTPUT_RAW);
+    }
+
+    public function dumpCharacterSetConnection(): void
+    {
+        $charset = $this->db->fetchColumn("SHOW VARIABLES LIKE 'character_set_connection'", [], 1);
+        $this->output->writeln(sprintf('SET NAMES %s;', $charset));
     }
 
     public function dumpTableStructure(Schema\Table $asset, Table $config): void
