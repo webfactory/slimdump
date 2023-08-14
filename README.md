@@ -37,9 +37,9 @@ If you want to use an environment variable for the DSN, replace the first parame
 
 The DSN has to be in the following format:
 
-`mysql://[user[:password]@]host[:port]/dbname`
+`mysql://[user[:password]@]host[:port]/dbname[?charset=utf8mb4]`
 
-For further explanations have a look at the [Doctrine documentation](http://doctrine-orm.readthedocs.org/projects/doctrine-dbal/en/latest/reference/configuration.html#connecting-using-a-url).
+For further explanations have a look at the [Doctrine documentation](https://www.doctrine-project.org/projects/doctrine-dbal/en/current/reference/configuration.html#connecting-using-a-url).
 
 ### Optional parameters and command line switches
 
