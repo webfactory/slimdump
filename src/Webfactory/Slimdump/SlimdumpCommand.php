@@ -18,6 +18,7 @@ use Webfactory\Slimdump\Config\ConfigBuilder;
 use Webfactory\Slimdump\Database\CsvOutputFormatDriver;
 use Webfactory\Slimdump\Database\MysqlOutputFormatDriver;
 use Webfactory\Slimdump\Database\OutputFormatDriverInterface;
+use Webfactory\Slimdump\Doctrine\DummyTypeRegistrationEventSubscriber;
 
 final class SlimdumpCommand extends Command
 {
@@ -74,7 +75,7 @@ final class SlimdumpCommand extends Command
         $progressOutput = $this->createProgressOutput($input, $output);
 
         $connection = $this->createConnection($input);
-        $connection->getDatabasePlatform()->registerDoctrineTypeMapping('enum', 'string');
+        $connection->getEventManager()->addEventSubscriber(new DummyTypeRegistrationEventSubscriber($connection->getSchemaManager()));
         $this->setMaxExecutionTimeUnlimited($connection, $progressOutput);
 
         $config = ConfigBuilder::createConfigurationFromConsecutiveFiles($input->getArgument('config'));
