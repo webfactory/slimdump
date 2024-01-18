@@ -9,6 +9,7 @@ use Doctrine\DBAL\Types\BinaryType;
 use Doctrine\DBAL\Types\BlobType;
 use InvalidArgumentException;
 use PDO;
+use RuntimeException;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Output\OutputInterface;
 use Webfactory\Slimdump\Config\Table;
@@ -131,7 +132,7 @@ class Dumper
         } elseif ($wrappedConnection instanceof \Doctrine\DBAL\Driver\PDO\Connection) {
             $pdo = $wrappedConnection->getWrappedConnection();
         } else {
-            throw new \RuntimeException('failed to obtain the wrapped PDO object from the DBAL connection');
+            throw new RuntimeException('failed to obtain the wrapped PDO object from the DBAL connection');
         }
         $pdo->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
         $actualRows = 0;

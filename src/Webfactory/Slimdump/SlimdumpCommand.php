@@ -3,8 +3,8 @@
 namespace Webfactory\Slimdump;
 
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Driver\PDO\MySQL\Driver as PDOMySqlDriver;
+use Doctrine\DBAL\DriverManager;
 use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
