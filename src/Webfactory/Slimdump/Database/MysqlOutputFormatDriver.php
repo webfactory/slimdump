@@ -48,7 +48,7 @@ class MysqlOutputFormatDriver implements OutputFormatDriverInterface
 
     public function dumpCharacterSetConnection(): void
     {
-        $charset = $this->db->fetchColumn("SHOW VARIABLES LIKE 'character_set_connection'", [], 1);
+        $charset = $this->db->fetchNumeric("SHOW VARIABLES LIKE 'character_set_connection'")[1];
         $this->output->writeln(sprintf('SET NAMES %s;', $charset));
     }
 
@@ -59,7 +59,7 @@ class MysqlOutputFormatDriver implements OutputFormatDriverInterface
         $this->output->writeln("-- BEGIN STRUCTURE $tableName", OutputInterface::OUTPUT_RAW);
         $this->output->writeln("DROP TABLE IF EXISTS `$tableName`;", OutputInterface::OUTPUT_RAW);
 
-        $tableCreationCommand = $this->db->fetchColumn("SHOW CREATE TABLE `$tableName`", [], 1);
+        $tableCreationCommand = $this->db->fetchNumeric("SHOW CREATE TABLE `$tableName`")[1];
 
         if (!$config->keepAutoIncrement()) {
             $tableCreationCommand = preg_replace('/ AUTO_INCREMENT=\d*/', '', $tableCreationCommand);
@@ -72,7 +72,7 @@ class MysqlOutputFormatDriver implements OutputFormatDriverInterface
     {
         $tableName = $asset->getName();
 
-        $triggers = $this->db->fetchAll(sprintf('SHOW TRIGGERS LIKE %s', $this->db->quote($tableName)));
+        $triggers = $this->db->fetchAllAssociative(sprintf('SHOW TRIGGERS LIKE %s', $this->db->quote($tableName)));
 
         if (!$triggers) {
             return;
@@ -84,7 +84,7 @@ class MysqlOutputFormatDriver implements OutputFormatDriverInterface
         $this->output->writeln("DELIMITER ;;\n");
 
         foreach ($triggers as $row) {
-            $createTriggerCommand = $this->db->fetchColumn("SHOW CREATE TRIGGER `{$row['Trigger']}`", [], 2);
+            $createTriggerCommand = $this->db->fetchNumeric("SHOW CREATE TRIGGER `{$row['Trigger']}`")[2];
 
             if (Table::DEFINER_NO_DEFINER === $level) {
                 $createTriggerCommand = preg_replace('/DEFINER=`[^`]*`@`[^`]*` /', '', $createTriggerCommand);
@@ -101,7 +101,7 @@ class MysqlOutputFormatDriver implements OutputFormatDriverInterface
         $viewName = $asset->getName();
         $this->output->writeln("-- BEGIN VIEW $viewName", OutputInterface::OUTPUT_RAW);
 
-        $createViewCommand = $this->db->fetchColumn("SHOW CREATE VIEW `{$viewName}`", [], 1);
+        $createViewCommand = $this->db->fetchNumeric("SHOW CREATE VIEW `{$viewName}`")[1];
 
         if (Table::DEFINER_NO_DEFINER === $config->getViewDefinerLevel()) {
             $createViewCommand = preg_replace('/DEFINER=`[^`]*`@`[^`]*` /', '', $createViewCommand);

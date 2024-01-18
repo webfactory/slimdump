@@ -76,7 +76,7 @@ class FakerReplacer
     private function validateReplacementConfigured($replacementName)
     {
         try {
-            $this->faker->__get($replacementName);
+            $this->faker->$replacementName();
         } catch (InvalidArgumentException $exception) {
             throw new InvalidReplacementOptionException($replacementName.' is no valid faker replacement');
         }
@@ -85,7 +85,7 @@ class FakerReplacer
     private function validateReplacementConfiguredModifier($replacementModifier, $replacementName)
     {
         try {
-            $this->faker->__get($replacementModifier)->__get($replacementName);
+            $this->faker->$replacementModifier()->$replacementName();
         } catch (InvalidArgumentException $exception) {
             throw new InvalidReplacementOptionException($replacementModifier.'->'.$replacementName.' is no valid faker replacement');
         }
