@@ -3,6 +3,7 @@
 namespace Webfactory\Slimdump;
 
 use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputInterface;
 
 class SlimdumpApplication extends Application
@@ -14,7 +15,7 @@ class SlimdumpApplication extends Application
      *
      * @return string The command name
      */
-    protected function getCommandName(InputInterface $input)
+    protected function getCommandName(InputInterface $input): string
     {
         return 'slimdump:dump';
     }
@@ -24,7 +25,7 @@ class SlimdumpApplication extends Application
      *
      * @return array An array of default Command instances
      */
-    protected function getDefaultCommands()
+    protected function getDefaultCommands(): array
     {
         // Keep the core default commands to have the HelpCommand
         // which is used when using the --help option
@@ -39,7 +40,7 @@ class SlimdumpApplication extends Application
      * Overridden so that the application doesn't expect the command
      * name to be the first argument.
      */
-    public function getDefinition()
+    public function getDefinition(): InputDefinition
     {
         $inputDefinition = parent::getDefinition();
         // clear out the normal first argument, which is the command name

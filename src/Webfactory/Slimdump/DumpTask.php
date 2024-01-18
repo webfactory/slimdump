@@ -3,7 +3,6 @@
 namespace Webfactory\Slimdump;
 
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\DBALException;
 use Symfony\Component\Console\Output\OutputInterface;
 use Webfactory\Slimdump\Config\Config;
 use Webfactory\Slimdump\Database\Dumper;
@@ -31,9 +30,6 @@ final class DumpTask
      */
     private $progressOutput;
 
-    /**
-     * @throws DBALException
-     */
     public function __construct(Connection $connection, Config $config, OutputFormatDriverInterface $outputFormatDriver, OutputInterface $progressOutput)
     {
         $this->connection = $connection;

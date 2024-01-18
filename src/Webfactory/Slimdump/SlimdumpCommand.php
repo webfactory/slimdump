@@ -3,8 +3,7 @@
 namespace Webfactory\Slimdump;
 
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\DBALException;
-use Doctrine\DBAL\Driver\PDOMySql\Driver as PDOMySqlDriver;
+use Doctrine\DBAL\Driver\PDO\MySQL\Driver as PDOMySqlDriver;
 use Doctrine\DBAL\DriverManager;
 use RuntimeException;
 use Symfony\Component\Console\Command\Command;
@@ -24,7 +23,7 @@ final class SlimdumpCommand extends Command
 {
     public const OUTPUT_CSV = 'output-csv';
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('slimdump:dump')
@@ -65,12 +64,7 @@ final class SlimdumpCommand extends Command
             );
     }
 
-    /**
-     * @return int
-     *
-     * @throws DBALException
-     */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $progressOutput = $this->createProgressOutput($input, $output);
 
@@ -138,7 +132,7 @@ final class SlimdumpCommand extends Command
         $maxExecutionTimeInfo = $connection->fetchAssociative('SHOW VARIABLES LIKE "max_execution_time"');
 
         if ($maxExecutionTimeInfo && 0 != $maxExecutionTimeInfo['Value']) {
-            $connection->executeQuery('SET SESSION max_execution_time = 0');
+            $connection->executeStatement('SET SESSION max_execution_time = 0');
             $output->writeln('<info>The MySQL "max_execution_time" timeout setting has been disabled for the current database connection.</info>');
         }
     }
@@ -159,7 +153,7 @@ final class SlimdumpCommand extends Command
         return $connection;
     }
 
-    private function createProgressOutput(InputInterface $input, OutputInterface $output)
+    private function createProgressOutput(InputInterface $input, OutputInterface $output): OutputInterface
     {
         if (!$output instanceof ConsoleOutputInterface || $input->getOption('no-progress')) {
             return new NullOutput();

@@ -3,13 +3,13 @@
 namespace Webfactory\Slimdump\Database;
 
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Driver\PDOConnection;
 use Doctrine\DBAL\Schema;
 use Doctrine\DBAL\Schema\AbstractAsset;
 use Doctrine\DBAL\Types\BinaryType;
 use Doctrine\DBAL\Types\BlobType;
 use InvalidArgumentException;
 use PDO;
+use RuntimeException;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Output\OutputInterface;
 use Webfactory\Slimdump\Config\Table;
@@ -113,7 +113,7 @@ class Dumper
         $s .= " FROM `$table`";
         $s .= $tableConfig->getCondition();
 
-        $numRows = (int) $this->connection->fetchColumn("SELECT COUNT(*) FROM `$table`".$tableConfig->getCondition());
+        $numRows = (int) $this->connection->fetchOne("SELECT COUNT(*) FROM `$table`".$tableConfig->getCondition());
 
         if (0 === $numRows) {
             // Fail fast: No data to dump.
@@ -126,14 +126,21 @@ class Dumper
         $progress->setRedrawFrequency((int) max($numRows / 100, 1));
         $progress->start();
 
-        /** @var PDOConnection $wrappedConnection */
         $wrappedConnection = $this->connection->getWrappedConnection();
-        $wrappedConnection->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
+        if ($wrappedConnection instanceof PDO) {
+            $pdo = $wrappedConnection;
+        } elseif ($wrappedConnection instanceof \Doctrine\DBAL\Driver\PDO\Connection) {
+            $pdo = $wrappedConnection->getWrappedConnection();
+        } else {
+            throw new RuntimeException('failed to obtain the wrapped PDO object from the DBAL connection');
+        }
+        $pdo->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
         $actualRows = 0;
 
         $this->outputFormatDriver->beginTableDataDump($asset, $tableConfig);
 
-        foreach ($this->connection->executeQuery($s) as $row) {
+        $result = $this->connection->executeQuery($s);
+        while (($row = $result->fetchAssociative()) !== false) {
             $this->outputFormatDriver->dumpTableRow($row, $asset, $tableConfig);
 
             $progress->advance();
@@ -148,7 +155,7 @@ class Dumper
             $this->progressOutput->writeln(sprintf('<error>Expected %d rows, actually processed %d – verify results!</error>', $numRows, $actualRows));
         }
 
-        $wrappedConnection->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
+        $pdo->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
 
         $this->outputFormatDriver->endTableDataDump($asset, $tableConfig);
     }
