@@ -6,7 +6,7 @@ name: Build .phar on release
 
 jobs:
     build_phar:
-        runs-on: ubuntu-20.04
+        runs-on: ubuntu-22.04
         steps:
             -   name: Configure PHP version
                 uses: shivammathur/setup-php@v2

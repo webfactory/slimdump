@@ -138,7 +138,6 @@ class TableTest extends TestCase
      * @dataProvider  dumpTriggerAttributeValues
      *
      * @param string $value
-     * @param $expected
      *
      * @throws mixed InvalidDumpTypeException
      */

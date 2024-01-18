@@ -49,8 +49,6 @@ class Config
 
     /**
      * @param string $needle
-     *
-     * @return mixed
      */
     public static function findBySelector(array $haystack, $needle)
     {
