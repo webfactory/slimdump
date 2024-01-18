@@ -15,7 +15,7 @@
         "bin/slimdump"
     ],
     "require": {
-        "php": "^7.2|8.0.*|8.1.*",
+        "php": "^7.2|^8.0",
         "ext-libxml": "*",
         "ext-pdo": "*",
         "ext-SimpleXML": "*",
