@@ -6,10 +6,7 @@ use Doctrine\Common\EventSubscriber;
 use Doctrine\DBAL\Event\SchemaColumnDefinitionEventArgs;
 use Doctrine\DBAL\Events;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
-use Doctrine\DBAL\Types\StringType;
 use Doctrine\DBAL\Types\Type;
-use Doctrine\DBAL\Types\TypeRegistry;
-use Doctrine\DBAL\Types\Types;
 
 class DoctrineSubscriber implements EventSubscriber
 {
@@ -30,13 +27,12 @@ class DoctrineSubscriber implements EventSubscriber
 
     public function onSchemaColumnDefinition(SchemaColumnDefinitionEventArgs $event): void
     {
-        $tableColumn = array_change_key_case($event->getTableColumn(), CASE_LOWER);
+        $tableColumn = array_change_key_case($event->getTableColumn(), \CASE_LOWER);
         $dbType = strtolower($tableColumn['type']);
         $dbType = strtok($dbType, '(), ');
 
         if (isset($tableColumn['comment'])) {
             $type = $this->schemaManager->extractDoctrineTypeFromComment($tableColumn['comment'], '');
-
 
             if ($type && !Type::hasType($type)) {
                 Type::addType($type, DummyType::class);
@@ -44,7 +40,7 @@ class DoctrineSubscriber implements EventSubscriber
         }
 
         $databasePlatform = $this->schemaManager->getDatabasePlatform();
-        if (! $databasePlatform->hasDoctrineTypeMappingFor($dbType)) {
+        if (!$databasePlatform->hasDoctrineTypeMappingFor($dbType)) {
             if (!Type::hasType(DummyType::NAME)) {
                 Type::addType(DummyType::NAME, DummyType::class);
             }
