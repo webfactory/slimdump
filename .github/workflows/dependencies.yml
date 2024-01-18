@@ -7,12 +7,12 @@ on:
     pull_request:
 
 env:
-    PHP_VERSION: 7.4
+    PHP_VERSION: 8.1
 
 jobs:
     composer-require-checker:
         name: Check missing composer requirements
-        runs-on: ubuntu-20.04
+        runs-on: ubuntu-22.04
         steps:
             -   name: Configure PHP version
                 uses: shivammathur/setup-php@v2
@@ -32,4 +32,4 @@ jobs:
                     composer update --no-interaction --no-scripts --no-progress
                     composer show
             -   name: ComposerRequireChecker
-                uses: docker://webfactory/composer-require-checker:3.2.0
+                uses: docker://ghcr.io/webfactory/composer-require-checker:4.8.0
