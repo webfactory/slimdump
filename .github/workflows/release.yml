@@ -13,7 +13,7 @@ jobs:
                 with:
                     php-version: 7.4
                     tools: composer:v2
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
             -   name: Install PHIVE
                 run: |
                     wget --quiet -O phive.phar https://phar.io/releases/phive.phar
