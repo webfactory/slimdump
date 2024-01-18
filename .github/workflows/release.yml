@@ -11,7 +11,7 @@ jobs:
             -   name: Configure PHP version
                 uses: shivammathur/setup-php@v2
                 with:
-                    php-version: 7.4
+                    php-version: 8.1
                     tools: composer:v2
             -   uses: actions/checkout@v4
             -   name: Install PHIVE
