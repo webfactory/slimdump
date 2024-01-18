@@ -127,7 +127,7 @@ class Dumper
         $progress->start();
 
         $wrappedConnection = $this->connection->getWrappedConnection();
-        if ($wrappedConnection instanceof \Doctrine\DBAL\Driver\PDOConnection) {
+        if ($wrappedConnection instanceof \PDO) {
             $pdo = $wrappedConnection;
         } elseif ($wrappedConnection instanceof \Doctrine\DBAL\Driver\PDO\Connection) {
             $pdo = $wrappedConnection->getWrappedConnection();
