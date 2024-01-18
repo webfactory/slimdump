@@ -46,9 +46,6 @@ class Column
         return $this->selector;
     }
 
-    /**
-     * @return mixed
-     */
     public function getDump()
     {
         return $this->dump;

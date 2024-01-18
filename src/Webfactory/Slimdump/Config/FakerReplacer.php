@@ -39,7 +39,7 @@ class FakerReplacer
      */
     public static function isFakerColumn($replacement)
     {
-        return 0 === strpos($replacement, self::PREFIX);
+        return str_starts_with($replacement, self::PREFIX);
     }
 
     /**
@@ -53,7 +53,7 @@ class FakerReplacer
     {
         $replacementMethodName = str_replace(self::PREFIX, '', $replacementId);
 
-        if (false !== strpos($replacementMethodName, '->')) {
+        if (str_contains($replacementMethodName, '->')) {
             [$modifierName, $replacementMethodName] = explode('->', $replacementMethodName);
 
             $this->validateReplacementConfiguredModifier($modifierName, $replacementMethodName);

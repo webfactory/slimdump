@@ -22,7 +22,7 @@ class CsvOutputFormatDriver implements OutputFormatDriverInterface
     /**
      * @var ?resource
      */
-    private $outputFile = null;
+    private $outputFile;
 
     /**
      * @var bool
