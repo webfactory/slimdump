@@ -8,7 +8,7 @@ use Doctrine\DBAL\Events;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Types\Type;
 
-class DoctrineSubscriber implements EventSubscriber
+class DummyTypeRegistrationEventSubscriber implements EventSubscriber
 {
     /**
      * @var AbstractSchemaManager
