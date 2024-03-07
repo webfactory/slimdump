@@ -19,6 +19,7 @@ jobs:
                 uses: shivammathur/setup-php@v2
                 with:
                     php-version: ${{ matrix.php }}
+                    coverage: none
                     tools: composer:v2
             -   uses: actions/checkout@v4
             -   run: composer install --dry-run
