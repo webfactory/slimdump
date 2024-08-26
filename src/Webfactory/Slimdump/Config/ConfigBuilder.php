@@ -37,7 +37,7 @@ class ConfigBuilder
             $errorAsString = '';
             foreach ($errors as $error) {
                 /* @var libXMLError $error */
-                $errorAsString .= sprintf("%s %d: %s\n", $error->file, $error->line, $error->message);
+                $errorAsString .= \sprintf("%s %d: %s\n", $error->file, $error->line, $error->message);
             }
             throw new InvalidXmlException("Invalid XML! Errors:\n$errorAsString");
         }

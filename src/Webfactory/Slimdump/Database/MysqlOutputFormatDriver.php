@@ -27,7 +27,7 @@ class MysqlOutputFormatDriver implements OutputFormatDriverInterface
     /**
      * @param int|null $maxBufferSize Default buffer size is 100MB
      */
-    public function __construct(OutputInterface $output, Connection $db, int $maxBufferSize = null, bool $singleLineInsertStatements = false)
+    public function __construct(OutputInterface $output, Connection $db, ?int $maxBufferSize = null, bool $singleLineInsertStatements = false)
     {
         $this->output = $output;
         $this->db = $db;
@@ -49,7 +49,7 @@ class MysqlOutputFormatDriver implements OutputFormatDriverInterface
     public function dumpCharacterSetConnection(): void
     {
         $charset = $this->db->fetchNumeric("SHOW VARIABLES LIKE 'character_set_connection'")[1];
-        $this->output->writeln(sprintf('SET NAMES %s;', $charset));
+        $this->output->writeln(\sprintf('SET NAMES %s;', $charset));
     }
 
     public function dumpTableStructure(Schema\Table $asset, Table $config): void
@@ -72,7 +72,7 @@ class MysqlOutputFormatDriver implements OutputFormatDriverInterface
     {
         $tableName = $asset->getName();
 
-        $triggers = $this->db->fetchAllAssociative(sprintf('SHOW TRIGGERS LIKE %s', $this->db->quote($tableName)));
+        $triggers = $this->db->fetchAllAssociative(\sprintf('SHOW TRIGGERS LIKE %s', $this->db->quote($tableName)));
 
         if (!$triggers) {
             return;
@@ -132,7 +132,7 @@ class MysqlOutputFormatDriver implements OutputFormatDriverInterface
 
     private function insertValuesStatement(array $row, Schema\Table $asset): string
     {
-        return sprintf('INSERT INTO `%s` (`%s`) VALUES ', $asset->getName(), implode('`, `', array_keys($row)));
+        return \sprintf('INSERT INTO `%s` (`%s`) VALUES ', $asset->getName(), implode('`, `', array_keys($row)));
     }
 
     public function beginTableDataDump(Schema\Table $asset, Table $config): void

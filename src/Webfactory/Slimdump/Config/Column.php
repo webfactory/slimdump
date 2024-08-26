@@ -32,7 +32,7 @@ class Column
         if (\defined($const)) {
             $this->dump = \constant($const);
         } else {
-            throw new InvalidDumpTypeException(sprintf('Invalid dump type %s for column %s.', $attr->dump, $this->selector));
+            throw new InvalidDumpTypeException(\sprintf('Invalid dump type %s for column %s.', $attr->dump, $this->selector));
         }
 
         $this->fakerReplacer = new FakerReplacer();
