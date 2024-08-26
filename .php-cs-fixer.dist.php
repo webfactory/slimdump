@@ -1,8 +1,10 @@
 <?php
 
 return (new PhpCsFixer\Config())
+    ->setParallelConfig(PhpCsFixer\Runner\Parallel\ParallelConfigFactory::detect())
     ->setRules([
         '@Symfony' => true,
+        'phpdoc_separation' => false,
         '@Symfony:risky' => true,
         'array_syntax' => array('syntax' => 'short'),
         'no_unreachable_default_argument_value' => false,
