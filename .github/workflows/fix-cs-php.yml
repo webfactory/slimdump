@@ -18,7 +18,7 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   name: Run PHP-CS-Fixer
-                uses: docker://oskarstark/php-cs-fixer-ga:3.26.0
+                uses: docker://ghcr.io/webfactory/php-cs-fixer:3.62.0
 
             -   name: Commit and push back changes
                 uses: stefanzweifel/git-auto-commit-action@v4
