@@ -98,7 +98,7 @@ class Dumper
         $table = $asset->getName();
         $columnOrder = array_map(function (array $columnInfo): string {
             return $columnInfo['Field'];
-        }, $this->connection->fetchAllAssociative(sprintf('SHOW COLUMNS FROM `%s`', $asset->getName())));
+        }, $this->connection->fetchAllAssociative(\sprintf('SHOW COLUMNS FROM `%s`', $asset->getName())));
 
         $s = 'SELECT ';
         $first = true;
@@ -152,7 +152,7 @@ class Dumper
         $this->progressOutput->write("\n"); // write a newline after the progressbar.
 
         if ($actualRows !== $numRows) {
-            $this->progressOutput->writeln(sprintf('<error>Expected %d rows, actually processed %d – verify results!</error>', $numRows, $actualRows));
+            $this->progressOutput->writeln(\sprintf('<error>Expected %d rows, actually processed %d – verify results!</error>', $numRows, $actualRows));
         }
 
         $pdo->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);

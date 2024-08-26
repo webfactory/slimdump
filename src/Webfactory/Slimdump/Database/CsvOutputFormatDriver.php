@@ -32,7 +32,7 @@ class CsvOutputFormatDriver implements OutputFormatDriverInterface
     public function __construct(string $directory, Connection $connection)
     {
         if (!is_dir($directory) || !is_writable($directory)) {
-            throw new InvalidArgumentException(sprintf('The directoy "%s" does not exist or is not writeable', $directory));
+            throw new InvalidArgumentException(\sprintf('The directoy "%s" does not exist or is not writeable', $directory));
         }
 
         $this->directory = $directory;

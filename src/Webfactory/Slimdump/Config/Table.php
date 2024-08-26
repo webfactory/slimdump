@@ -46,7 +46,7 @@ class Table
         if (\defined($const)) {
             $this->dump = \constant($const);
         } else {
-            throw new InvalidDumpTypeException(sprintf('Invalid dump type %s for table %s.', $attr->dump, $this->selector));
+            throw new InvalidDumpTypeException(\sprintf('Invalid dump type %s for table %s.', $attr->dump, $this->selector));
         }
 
         $this->keepAutoIncrement = self::attributeToBoolean($attr->{'keep-auto-increment'}, true);
