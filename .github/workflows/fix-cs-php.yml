@@ -1,3 +1,6 @@
+# Update this by running
+# curl https://gist.github.com/mpdude/ca93a185bcbf56eb7e341632ad4f8263/raw/fix-cs-php.yml > .github/workflows/fix-cs-php.yml
+
 on:
     push:
         branches:
@@ -7,7 +10,7 @@ on:
 name: Coding Standards
 
 jobs:
-    open-pr-for-cs-violations:
+    fix-cs-issues:
         name: PHP-CS-Fixer
         runs-on: ubuntu-22.04
         if: github.actor != 'dependabot[bot]'
@@ -18,9 +21,11 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   name: Run PHP-CS-Fixer
-                uses: docker://ghcr.io/webfactory/php-cs-fixer:3.62.0
+                uses: docker://ghcr.io/php-cs-fixer/php-cs-fixer:3.62.0-php8.3
+                with:
+                    args: "fix --show-progress=dots"
 
             -   name: Commit and push back changes
-                uses: stefanzweifel/git-auto-commit-action@v4
+                uses: stefanzweifel/git-auto-commit-action@v5
                 with:
                     commit_message: "Fix CS with PHP-CS-Fixer"
