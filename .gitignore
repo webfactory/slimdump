@@ -1,4 +1,5 @@
 vendor/
+tmp/
 tools/
 slimdump.phar
 .phpunit.cache
