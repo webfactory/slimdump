@@ -73,6 +73,12 @@ class CsvOutputFormatDriver implements OutputFormatDriverInterface
             $this->firstLine = false;
         }
 
+        foreach ($row as $columnName => $value) {
+            if ($column = $config->findColumn($columnName)) {
+                $row[$columnName] = $column->processRowValue($value);
+            }
+        }
+
         fputcsv($this->outputFile, $row);
     }
 
