@@ -3,14 +3,16 @@
 namespace Webfactory\Slimdump\Database;
 
 use Doctrine\DBAL\Connection;
+use Generator;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use SimpleXMLElement;
 use Webfactory\Slimdump\Config\Table;
 
 final class CsvOutputFormatDriverTest extends TestCase
 {
-    private const OUTPUT_DIRECTORY = __DIR__ . '/../../../../tmp';
+    private const OUTPUT_DIRECTORY = __DIR__.'/../../../../tmp';
 
     private CsvOutputFormatDriver $driver;
 
@@ -33,7 +35,7 @@ final class CsvOutputFormatDriverTest extends TestCase
         $this->assertSame($expectedValue, $csvData[1][0]);
     }
 
-    public static function provideDataFor_dumpTableRow(): \Generator
+    public static function provideDataFor_dumpTableRow(): Generator
     {
         yield 'can dump row as is' => [
             '<table dump="full" />',
@@ -50,20 +52,21 @@ final class CsvOutputFormatDriverTest extends TestCase
 
     /**
      * @param array<string, string> $tableRow
+     *
      * @return array<int, array<string>> the dumped CSV data as array of rows, each row being an array of columns
      */
     private function dumpTableAsCsv(string $tableConfigAsXml, array $tableRow): array
     {
         $tableSchema = new \Doctrine\DBAL\Schema\Table('my-table');
         $tableConfig = new Table(
-            new \SimpleXMLElement($tableConfigAsXml)
+            new SimpleXMLElement($tableConfigAsXml)
         );
 
         $this->driver->beginTableDataDump($tableSchema, $tableConfig);
         $this->driver->dumpTableRow($tableRow, $tableSchema, $tableConfig);
         $this->driver->endTableDataDump($tableSchema, $tableConfig);
 
-        $outputFile = self::OUTPUT_DIRECTORY . '/my-table.csv';
+        $outputFile = self::OUTPUT_DIRECTORY.'/my-table.csv';
         $this->assertFileExists($outputFile);
 
         return array_map('str_getcsv', file($outputFile));
