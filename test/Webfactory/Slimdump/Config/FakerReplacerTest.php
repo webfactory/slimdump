@@ -50,7 +50,7 @@ class FakerReplacerTest extends TestCase
      *
      * @return array
      */
-    public function provideValidReplacementIds()
+    public static function provideValidReplacementIds()
     {
         return [
             [FakerReplacer::PREFIX.'firstname'], // original faker property

@@ -153,7 +153,7 @@ class TableTest extends TestCase
         $this->assertEquals($table->isTriggerDumpRequired(), Table::TRIGGER_SKIP !== $expected);
     }
 
-    public function dumpTriggerAttributeValues()
+    public static function dumpTriggerAttributeValues()
     {
         return [
             ['true', Table::DEFINER_NO_DEFINER],

@@ -1,6 +1,7 @@
 vendor/
 tools/
 slimdump.phar
+.phpunit.cache
 phpunit.xml
 .php-cs-fixer.cache
 .phpunit.result.cache
