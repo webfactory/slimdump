@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phive xmlns="https://phar.io/phive">
-  <phar name="humbug/box" version="4.5.1" installed="4.5.1" location="./tools/box" copy="false"/>
+  <phar name="humbug/box" version="4.6.2" installed="4.6.2" location="./tools/box" copy="false"/>
 </phive>
