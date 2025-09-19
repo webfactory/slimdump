@@ -31,9 +31,9 @@ jobs:
             -   run: tools/box compile --verbose --no-ansi
             -   name: Fetch tag name from GITHUB_REF
                 id: get_version
-                run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
+                run: echo "VERSION=$(echo $GITHUB_REF | cut -d / -f 3)" >> $GITHUB_OUTPUT
             -   name: Attach .phar to release
-                uses: svenstaro/upload-release-action@14569a2d348419d066e34e5dfa65071ecd30b64b
+                uses: svenstaro/upload-release-action@v2
                 with:
                     repo_token: ${{ secrets.GITHUB_TOKEN }}
                     file: slimdump.phar
