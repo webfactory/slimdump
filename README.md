@@ -262,6 +262,5 @@ This tool was written by webfactory GmbH, Bonn, Germany. We're a software develo
 If you're a developer looking for new challenges, we'd like to hear from you! Otherwise, if this tool is useful for you, add a ⭐️.
 
 - <https://www.webfactory.de>
-- <https://twitter.com/webfactory>
 
-Copyright 2014-2022 webfactory GmbH, Bonn. Code released under [the MIT license](LICENSE).
+Copyright 2014-2026 webfactory GmbH, Bonn. Code released under [the MIT license](LICENSE).
