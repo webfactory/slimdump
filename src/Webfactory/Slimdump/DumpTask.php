@@ -3,6 +3,7 @@
 namespace Webfactory\Slimdump;
 
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Symfony\Component\Console\Output\OutputInterface;
 use Webfactory\Slimdump\Config\Config;
 use Webfactory\Slimdump\Database\Dumper;
@@ -45,7 +46,7 @@ final class DumpTask
 
         $db = $this->connection;
 
-        $manager = $db->getSchemaManager();
+        $manager = $db->createSchemaManager();
 
         foreach (array_merge($manager->listTables(), $manager->listViews()) as $asset) {
             $tableConfig = $this->config->findTable($asset->getName());

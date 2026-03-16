@@ -5,6 +5,7 @@ namespace Webfactory\Slimdump;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\PDO\MySQL\Driver as PDOMySqlDriver;
 use Doctrine\DBAL\DriverManager;
+use Doctrine\DBAL\Tools\DsnParser;
 use RuntimeException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -69,7 +70,14 @@ final class SlimdumpCommand extends Command
         $progressOutput = $this->createProgressOutput($input, $output);
 
         $connection = $this->createConnection($input);
-        $connection->getEventManager()->addEventSubscriber(new DummyTypeRegistrationEventSubscriber($connection->getSchemaManager()));
+
+        // In DBAL 3, the SchemaManager parses DC2Type column comments and throws when encountering
+        // unknown types. We register a DummyType for any unknown type to work around this.
+        // In DBAL 4, the DC2Type comment mechanism was removed entirely, so this is no longer needed.
+        if (class_exists(\Doctrine\DBAL\Events::class)) {
+            $connection->getEventManager()->addEventSubscriber(new DummyTypeRegistrationEventSubscriber($connection->createSchemaManager()));
+        }
+
         $this->setMaxExecutionTimeUnlimited($connection, $progressOutput);
 
         $config = ConfigBuilder::createConfigurationFromConsecutiveFiles($input->getArgument('config'));
@@ -146,8 +154,16 @@ final class SlimdumpCommand extends Command
         }
 
         $mysqliIndependentDsn = preg_replace('_^mysqli:_', 'mysql:', $dsn);
+
+        if (class_exists(DsnParser::class)) {
+            // DBAL 4: the 'url' connection parameter was removed in favour of DsnParser
+            $params = (new DsnParser(['mysql' => 'pdo_mysql']))->parse($mysqliIndependentDsn);
+        } else {
+            $params = ['url' => $mysqliIndependentDsn];
+        }
+
         $connection = DriverManager::getConnection(
-            ['url' => $mysqliIndependentDsn, 'charset' => 'utf8', 'driverClass' => PDOMySqlDriver::class]
+            array_merge($params, ['charset' => 'utf8', 'driverClass' => PDOMySqlDriver::class])
         );
 
         return $connection;
