@@ -45,7 +45,7 @@ final class DumpTask
 
         $db = $this->connection;
 
-        $manager = $db->getSchemaManager();
+        $manager = $db->createSchemaManager();
 
         foreach (array_merge($manager->listTables(), $manager->listViews()) as $asset) {
             $tableConfig = $this->config->findTable($asset->getName());

@@ -126,7 +126,7 @@ class Dumper
         $progress->setRedrawFrequency((int) max($numRows / 100, 1));
         $progress->start();
 
-        $wrappedConnection = $this->connection->getWrappedConnection();
+        $wrappedConnection = $this->connection->getNativeConnection();
         if ($wrappedConnection instanceof PDO) {
             $pdo = $wrappedConnection;
         } elseif ($wrappedConnection instanceof \Doctrine\DBAL\Driver\PDO\Connection) {
