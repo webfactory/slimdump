@@ -74,7 +74,7 @@ final class SlimdumpCommand extends Command
         // In DBAL 3, the SchemaManager parses DC2Type column comments and throws when encountering
         // unknown types. We register a DummyType for any unknown type to work around this.
         // In DBAL 4, the DC2Type comment mechanism was removed entirely, so this is no longer needed.
-        if (class_exists('\Doctrine\DBAL\Events')) {
+        if (class_exists(\Doctrine\DBAL\Events::class)) {
             $connection->getEventManager()->addEventSubscriber(new DummyTypeRegistrationEventSubscriber($connection->createSchemaManager()));
         }
 

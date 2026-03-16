@@ -34,3 +34,5 @@ jobs:
                     composer show
             -   name: ComposerRequireChecker
                 uses: docker://ghcr.io/webfactory/composer-require-checker:4.18.0
+                with:
+                    args: --config-file=.composer-require-checker.json
