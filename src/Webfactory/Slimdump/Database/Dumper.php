@@ -14,6 +14,8 @@ use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Output\OutputInterface;
 use Webfactory\Slimdump\Config\Table;
 
+use function phpversion;
+
 class Dumper
 {
     /**
@@ -134,7 +136,7 @@ class Dumper
         } else {
             throw new RuntimeException('failed to obtain the wrapped PDO object from the DBAL connection');
         }
-        $pdo->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
+        $this->controlBufferedQuery($pdo, false);
         $actualRows = 0;
 
         $this->outputFormatDriver->beginTableDataDump($asset, $tableConfig);
@@ -155,7 +157,7 @@ class Dumper
             $this->progressOutput->writeln(\sprintf('<error>Expected %d rows, actually processed %d – verify results!</error>', $numRows, $actualRows));
         }
 
-        $pdo->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
+        $this->controlBufferedQuery($pdo, true);
 
         $this->outputFormatDriver->endTableDataDump($asset, $tableConfig);
     }
@@ -165,5 +167,15 @@ class Dumper
         $type = $column->getType();
 
         return $type instanceof BlobType || $type instanceof BinaryType;
+    }
+
+    private function controlBufferedQuery(PDO $pdo, bool $value): void
+    {
+        if (version_compare(phpversion(), '8.4.0', '<')) {
+            $pdo->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
+            return;
+        }
+
+        $pdo->setAttribute(PDO\Mysql::ATTR_USE_BUFFERED_QUERY, $value);
     }
 }
