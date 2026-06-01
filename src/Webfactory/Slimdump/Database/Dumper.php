@@ -14,8 +14,6 @@ use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Output\OutputInterface;
 use Webfactory\Slimdump\Config\Table;
 
-use function phpversion;
-
 class Dumper
 {
     /**
@@ -171,8 +169,9 @@ class Dumper
 
     private function controlBufferedQuery(PDO $pdo, bool $value): void
     {
-        if (version_compare(phpversion(), '8.4.0', '<')) {
+        if (version_compare(\PHP_VERSION, '8.4.0', '<')) {
             $pdo->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
+
             return;
         }
 
