@@ -17,8 +17,6 @@ jobs:
         steps:
             -   name: Checkout code
                 uses: actions/checkout@v6
-                with:
-                    ref: ${{ github.head_ref }}
 
             -   name: Run PHP-CS-Fixer
                 uses: docker://ghcr.io/php-cs-fixer/php-cs-fixer:3.62.0-php8.3
