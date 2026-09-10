@@ -3,7 +3,7 @@ name: Verify composer.lock compatibility with different PHP versions
 on:
     push:
         branches:
-            - master
+            - main
     pull_request:
 
 jobs:
