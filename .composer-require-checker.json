@@ -2,6 +2,7 @@
     "symbol-whitelist": [
         "Doctrine\\Common\\EventSubscriber",
         "Doctrine\\DBAL\\Event\\SchemaColumnDefinitionEventArgs",
-        "Doctrine\\DBAL\\Events"
+        "Doctrine\\DBAL\\Events",
+        "PDO\\Mysql"
     ]
 }
